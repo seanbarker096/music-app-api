@@ -1,0 +1,17 @@
+{
+  "configurations": [
+    {
+      "name": "Python: Remote Attach",
+      "type": "python",
+      "request": "attach",
+      "port": 10001,
+      "host": "localhost",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/flask-api", // This ensures we tell vscode that our local files in ./flask-api map to files in /usr/src/app which is where we copied all these files to the docker container (see Dockerfile)
+          "remoteRoot": "/usr/src/app"
+        }
+      ]
+    }
+  ]
+}

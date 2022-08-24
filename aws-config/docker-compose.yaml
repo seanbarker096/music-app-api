@@ -1,0 +1,6 @@
+version: "3.8"
+services:
+  music_app_api:
+    image: "seanbarker096/music-fan-api:0001"
+    ports:
+      - "80:5000"

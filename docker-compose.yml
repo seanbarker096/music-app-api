@@ -1,0 +1,14 @@
+# docker-compose.yml
+version: "3.4"
+
+services:
+  flask-api:
+    image: flask
+    build:
+      context: flask-api/ # This is where docker compose looks for our Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+      - 10001:10001
+    volumes:
+      - ./flask-api:/usr/src/app #This needs to be ./flask-api: as this is where our appcode is. In our docker file this is what our workdir is set to hence this is where all our code will be stored. We want to make a volume out of this code/folders
