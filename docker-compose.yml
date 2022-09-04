@@ -4,7 +4,9 @@ version: "3.4"
 services:
   flask-api:
     image: flask
-    env_file: ${ENV_FILE:-.env.prod}
+    env_file:
+      - ${ENV_FILE:-.env.prod}
+      - ./.env.stg
     build:
       context: src/ # This is where docker compose looks for our Dockerfile
       dockerfile: Dockerfile

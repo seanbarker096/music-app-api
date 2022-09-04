@@ -13,7 +13,5 @@ RUN pip install pylint
 COPY . .
 
 ENV FLASK_APP="application.py"
-ENV AWS_ACCESS_KEY_ID=AKIAR56DCSXK3D5WLYRU
-ENV AWS_SECRET_ACCESS_KEY=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
 
 CMD [ "flask", "run", "--host=0.0.0.0"]

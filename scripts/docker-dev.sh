@@ -2,4 +2,7 @@
 
 export ENV_FILE=".env.dev"
 
-docker compose up --build flask-api
+
+# Need to run in detached mode otherwise the container will not be left running and wont appear with docker ps
+docker compose up --detach --build flask-api 
+
