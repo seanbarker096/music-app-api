@@ -1,6 +1,7 @@
 import boto3
 from flask import Flask, json
 
+from db import DB
 from debugger import initialize_flask_server_debugger_if_needed
 
 initialize_flask_server_debugger_if_needed()
@@ -22,6 +23,11 @@ def get_s3_file():
 
     data = open('./assets/mic.png', 'rb')
     s3.Bucket('seansgreattestbucket').put_object(Key='mic.png', Body=data)
+
+@app.route("/db/")
+def hit_db():
+    response = DB.hit_db()
+    return response
 
 # Run the application
 if __name__ == "__main__":
