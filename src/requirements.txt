@@ -1,4 +1,0 @@
-Flask==2.0.2
-debugpy
-boto3==1.24.*
-PyMySQL==1.0.*

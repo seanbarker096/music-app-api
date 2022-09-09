@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.8
+FROM python:3.10
 
 EXPOSE 5000 5000
 

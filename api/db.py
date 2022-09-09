@@ -3,7 +3,7 @@ import pymysql.cursors
 
 class DB:
 
-    def hit_db():
+    def get_password_from_db():
         connection = pymysql.connect(host='localhost',
                              user='root',
                              password='79Whiteladies',
@@ -24,4 +24,4 @@ class DB:
                 sql = "SELECT `id`, `password` FROM `users` WHERE `email`=%s"
                 cursor.execute(sql, ('webmaster@python.org',))
                 result = cursor.fetchone()
-                print(result)
+                return result['password']

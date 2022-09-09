@@ -6,12 +6,13 @@ services:
     image: flask
     env_file:
       - ${ENV_FILE:-.env.prod}
-      - ./.env.stg
+      ##- ./.env.stg this was just to provde you can use multiple env files
     build:
-      context: src/ # This is where docker compose looks for our Dockerfile
+      context: api/ # This is where docker compose looks for our Dockerfile
       dockerfile: Dockerfile
     ports:
       - 5000:5000
-      - 10001:10001
+      # - 10001:10001
     volumes:
-      - ./src:/usr/src/app #This needs to be ./flask-api: as this is where our appcode is. In our docker file this is what our workdir is set to hence this is where all our code will be stored. We want to make a volume out of this code/folders
+      - ./api:/usr/src/app #This needs to be ./flask-api: as this is where our appcode is. In our docker file this is what our workdir is set to hence this is where all our code will be stored. We want to make a volume out of this code/folders
+      - ./test:/usr/test
