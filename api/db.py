@@ -4,7 +4,7 @@ import pymysql.cursors
 class DB:
 
     def get_password_from_db():
-        connection = pymysql.connect(host='localhost',
+        connection = pymysql.connect(host='127.0.0.1',
                              user='root',
                              password='mysqlroot',
                              database='gigs',
