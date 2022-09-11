@@ -1,8 +1,9 @@
 from api.db import DB
 
+
 def test_db():
     print('yooooo')
-    assert DB.get_password_from_db() == 'very-secret'
+    assert DB.get_password_from_db() == 'My great post'
 
 
 if __name__ == '__main__':
