@@ -1,6 +1,9 @@
-from storage_imp import StorageImp
+from api.file_service.storage.storage_imp import StorageImp
 
 
 class S3StorageImp(StorageImp):
     def __init__(self):
-        super().__init__()
+        pass
+
+    def save():
+        return

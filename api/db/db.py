@@ -4,6 +4,7 @@ import pymysql.cursors
 
 from config import DBConfig
 
+## TODO: Make agnostic of the platform hosting our DB
 
 class DB:
 
@@ -21,7 +22,7 @@ class DB:
     def run_query(self, sql, binds) -> Dict:
         ## TODO: validate sql and binds
         ## TODO: Check connection exists
-        
+
         with self.connection:
             with self.connection.cursor() as cursor:
                 cursor.execute(sql, binds)
