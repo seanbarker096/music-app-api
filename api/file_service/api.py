@@ -7,7 +7,9 @@ from api.file_service.core.api import FileService
 
 class FileServiceAPI():
     def __init__(self, config):
-        self.file_service = FileService(self, config)
+        self.file_service = FileService(config)
+        print(config['config_file'])
+        print(self.file_service.test)
         
     def upload(self, request: FileUploadRequest):
         # 1. Parse the request object with the upload meta data
@@ -20,6 +22,8 @@ class FileServiceAPI():
 
         # 2. Extract uuid and upload to S3
         uuid4 = request.uuid
+        
+        return self.file_service.upload_to_storage(uuid4)
 
         
 

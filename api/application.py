@@ -6,12 +6,12 @@ from api.file_service.api import FileServiceAPI
 
 class FlaskApp(Flask):
     def __init__(self, config):
-        self.config  = {}
-        self.config['config_file'] = config
-        ##self.conns.file_service = FileServiceAPI(self.config)
-
-        print(json.dumps(config.get('file-service', 'storage-platform')))
         super().__init__(__name__)
+
+        self.config['config_file'] = config
+        print(self.config['config_file'])
+
+        self.conns = Connections(self.config)
 
 #     @app.route("/api/")
 #     def hello_world():
@@ -34,3 +34,6 @@ class FlaskApp(Flask):
 #     return response
 
 
+class Connections():
+    def __init__(self, config):
+        self.file_service = FileServiceAPI(config)

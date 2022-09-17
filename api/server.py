@@ -1,4 +1,3 @@
-import json
 import os
 from configparser import ConfigParser
 
@@ -6,6 +5,7 @@ import flask
 
 from api.application import FlaskApp
 from api.debugger import initialize_flask_server_debugger_if_needed
+from api.rest import file_service_api
 
 initialize_flask_server_debugger_if_needed()
 
@@ -20,12 +20,7 @@ config.read(filename)
 
 app = FlaskApp(config)
 
-## TODO: Use blueprints
-
-@app.route("/api/")
-def hello_world():
-    response = {"message": "this has now changed erg"}
-    return json.jsonify(response)
+app.register_blueprint(file_service_api.blueprint, url_prefix="/api/fileservice/0.1")
 
 if __name__ == "__main__":
     app.run()

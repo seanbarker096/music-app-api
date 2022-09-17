@@ -8,7 +8,8 @@ class Storage():
         # determine storage impementation from environment vars
         self.config = config
 
-        implementation_type = self.config.get('storage-platform')
+        ## might need to use config parser syntax here
+        implementation_type = self.config['config_file']['file-service'].get('storage-platform', 's3')
 
         match implementation_type:
             case 's3':
