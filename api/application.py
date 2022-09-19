@@ -1,6 +1,7 @@
 # import boto3
 from flask import Flask, json
 
+from api.db.db import DB
 from api.file_service.api import FileService
 
 
@@ -37,3 +38,4 @@ class FlaskApp(Flask):
 class Connections():
     def __init__(self, config):
         self.file_service = FileService(config)
+        self.db = DB(config)

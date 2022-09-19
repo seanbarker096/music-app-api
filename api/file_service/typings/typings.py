@@ -18,43 +18,36 @@ class FileMeta(object):
 class FileServiceFile(object):
     '''Id of file stored in the file service db table'''
     id:  int = ...
-    meta: FileMeta = ...
+    uuid: str = ...
+    mime_type: str = ...
+    file_size: Optional[int] = ...
     download_url: Optional[str] = ...
 
-    def __init__(self, id: str, meta: FileMeta, download_url: Optional[str] = None):
+    def __init__(self, id: str, uuid: str, mime_type: str, file_size: Optional[int] = None, download_url: Optional[str] = None):
         self.id = id
-        self.meta = meta
-        self.download_url = download_url
+        self.uuid: str = uuid
+        self.mime_type: str = mime_type
+        self.file_size: Optional[int] = file_size
+        self.download_url = Optional[str] = download_url
 
 
 class FileCreateRequest(object):
     uuid: str = ...
     mime_type: str = ...
     file_size: Optional[int] = ...
-    download_url: Optional[str] = ...
     bytes: Optional[bytes] = ...
     
-    def __init__(self, uuid: str,mime_type: str, file_size: Optional[int] = None, download_url: Optional[str] = ..., bytes: Optional[bytes] = None) -> None:
+    def __init__(self, uuid: str,mime_type: str, file_size: Optional[int] = None, bytes: Optional[bytes] = None) -> None:
         self.uuid = uuid
         self.mime_type = mime_type
         self.file_size = file_size
-        self.download_url = download_url
         self.bytes = bytes
 
 class FileCreateResponse(object):
-    uuid: str = ...
-    '''The id of the file entry created in the database, which the file will later be stored in'''
-    file_id: int = ...
-    mime_type: str = ...
-    file_size: Optional[int] = ...
-    download_url: Optional[str]
+    file = FileServiceFile
     
-    def __init__(self, uuid: str, file_id: int, mime_type: str, file_size: Optional[int], download_url: Optional[str]) -> None:
-        self.uuid = uuid
-        self.file_id = file_id
-        self.mime_type = mime_type
-        self.file_size = file_size
-        self.download_url = download_url
+    def __init__(self, file: FileServiceFile) -> None:
+        self.file = file
 
     def create_response(self) -> dict[str, str | int]:
         return {

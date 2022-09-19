@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS gigs.files;
 CREATE TABLE gigs.files (
     id int(10) unsigned auto_increment,
     uuid varchar(255) NOT NULL,
-    file_location varchar(255) NOT NULL,
+    download_url varchar(255) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;

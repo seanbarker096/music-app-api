@@ -15,7 +15,7 @@ class AcceptedMimeTypes(Enum):
 class FileService():
     def __init__(self, config, storage: Optional[Storage] = None, file_service_dao: Optional[FileServiceDAO] = None):
         self.storage = storage if storage else Storage(config)
-        self.file_service_dao = file_service_dao if file_service_dao else FileServiceDAO
+        self.file_service_dao = file_service_dao if file_service_dao else FileServiceDAO()
 
     ## Post should just fil in db with all entries in request and hence download url will be empty.
 
@@ -40,13 +40,13 @@ class FileService():
         download_url = self.storage.upload_file(request)
 
         ## save file along with meta and download url to our internal db
-        file_id = self.file_service_dao.create_file()
+        file = self.file_service_dao.create_file(FileCreateRequest)
       
         ## Build response
 
-        response_body = FileCreateResponse().create_response()
-        
+        return FileCreateResponse(file)
 
+        
         # 3. Take uuid and s3 download url and store in the resource mapping table
 
         # 4. Return the fileservice GET url which will be used to stream the video back to the user

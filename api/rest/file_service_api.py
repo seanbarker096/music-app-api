@@ -13,11 +13,13 @@ def upload():
 
     request = FileCreateRequest(uuid, mime_type, file_size)
 
-    response = flask.current_app.conns.file_service.create_file(request)
+    file_create_response = flask.current_app.conns.file_service.create_file(request)
     ## Build response from db entry
     
+    file_create_response.file = vars(file_create_response.file)
+    file_create_response = vars(file_create_response)
 
-    response = flask.make_response(response_body) 
+    response = flask.make_response(file_create_response) 
     #Set headers
     response.location = f'https://domain/api/file_service/0.1/{uuid}'
 
