@@ -35,14 +35,10 @@ class FileService():
 
 
         ## TODO: check if file uuid exists
-
-        ##upload actual file if it exists
         download_url = self.storage.upload_file(request)
-
-        ## save file along with meta and download url to our internal db
+      
         file = self.file_service_dao.create_file(FileCreateRequest)
       
-        ## Build response
 
         return FileCreateResponse(file)
 
