@@ -1,15 +1,21 @@
+from enum import Enum
+from typing import Optional
+
+from api.file_service.dao.api import FileServiceDAO
 from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import (FileCreateRequest,
                                               FileCreateResponse,
                                               FileUpdateRequest)
-from typings import Optional
 
+
+class AcceptedMimeTypes(Enum):
+    APP_OCTET_STREAM = 'application/octet-stream'
 
 ## These are responsible for create response objects whilst the inner layers can return reosurces e.g. FileServiceFile
 class FileService():
-    def __init__(self, config, storage: Optional[Storage] = None):
+    def __init__(self, config, storage: Optional[Storage] = None, file_service_dao: Optional[FileServiceDAO] = None):
         self.storage = storage if storage else Storage(config)
-        self.test = 'adsadasdasd'
+        self.file_service_dao = file_service_dao if file_service_dao else FileServiceDAO
 
     ## Post should just fil in db with all entries in request and hence download url will be empty.
 
@@ -18,24 +24,23 @@ class FileService():
 
     '''This doesn't handle actually uploading the bytes'''
     def create_file(self, request: FileCreateRequest) -> FileCreateResponse:
-           # 1. Parse the request object with the upload meta data
-        if not isinstance(request.uuid, str):
-            raise Exception('uuid argument must be a string')
-
-        if len(request.uuid) == 0:
-            raise Exception('uuid must not be empty string') ##update ot check its uuid4
+        if not isinstance(request.uuid, str) or len(request.uuid) == 0:
+            raise Exception('Failed to create file for file because uuid is not valid')
+        
+        ## TODO: Check string is url safe
         
         ## If meta data is valid then save this and create file entry
+        if request.mime_type not in AcceptedMimeTypes:
+            raise Exception(f'Failed to create file. Invalid or unnaccepted MIME type of type {request.mime_type}')
 
-        ## If bytes field is valid then we can also save the bytes to s3 and get download url, and return this
 
-        ## check if file uuid exists
+        ## TODO: check if file uuid exists
 
         ##upload actual file if it exists
-        download_url = self.storage.upload_file()
+        download_url = self.storage.upload_file(request)
 
         ## save file along with meta and download url to our internal db
-        file_id = self.storage.create_file()
+        file_id = self.file_service_dao.create_file()
       
         ## Build response
 

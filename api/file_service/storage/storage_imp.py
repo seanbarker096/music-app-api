@@ -5,5 +5,10 @@ from abc import ABC, abstractmethod
 class StorageImp(ABC):
     
     @abstractmethod
-    def save(self):
-        pass
+    def save(self, upload_request: object):
+        ...
+
+    '''Abstract method which takes in some form of file related request object, and generates an upload request object with parameters specific to the given storage implementation'''
+    @abstractmethod
+    def process_upload_request(self, ) -> object:
+        ...
