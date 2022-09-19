@@ -6,4 +6,10 @@ class S3StorageImp(StorageImp):
         pass
 
     def save():
-        return
+        ...
+        #s3 = boto3.resource('s3')
+#     for bucket in s3.buckets.all():
+#         print(bucket.name)
+
+#     data = open('./assets/mic.png', 'rb')
+#     s3.Bucket('seansgreattestbucket').put_object(Key='mic.png', Body=data)

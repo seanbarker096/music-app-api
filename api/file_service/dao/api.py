@@ -1,3 +1,11 @@
 class FileServiceDAO():
     def __init__(self):
-        return
+        ...
+    
+    def create_file():
+        ...
+
+
+
+    def update_file():
+        ...

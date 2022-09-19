@@ -1,18 +1,43 @@
-from urllib import request
+import flask
+from api.file_service.typings.typings import (FileCreateRequest,
+                                              FileUpdateRequest)
 
-from api_types.api_types import FileUploadRequest
-from flask import Blueprint, current_app, json
+blueprint =  flask.Blueprint('file_service', __name__)
 
-blueprint =  Blueprint('file_service', __name__)
-
-
-@blueprint.route('/upload')
+'''Upload the file meta data and return the file upload location.'''
+@blueprint.route('/upload/', methods=['POST'])
 def upload():
-    request = FileUploadRequest(uuid='sdafasdfasdfaa', file_type='post')
+    ## Receives the FileUploadRequest and we internall convert to MetaDataRequest due to our implementation of uploads
+    json_data = flask.request.json
+    uuid, mime_type, file_size = json_data.values()
 
-    print(request.uuid)
-    print(request.file_type)
-    response = current_app.conns.file_service.upload(request)
-    print(current_app.config)
-    print(current_app.conns)
-    return json.jsonify(response)
+    request = FileCreateRequest(uuid, mime_type, file_size)
+
+    response = flask.current_app.conns.file_service.create_file(request)
+    ## Build response from db entry
+    
+
+    response = flask.make_response(response_body) 
+    #Set headers
+    response.location = f'https://domain/api/file_service/0.1/{uuid}'
+
+   
+    ## Set Location header to be url to upload the file to
+
+    return flask.json.jsonify()
+
+
+'''Upload the file and create the download url.'''
+@blueprint.route('/upload/<string:file_uuid>', methods=['PATCH'])
+def test():
+    ## uploads
+    file_bytes = flask.data
+
+    request = FileUpdateRequest(bytes=file_bytes)
+
+    response = flask.current_app.conns.file_service.update_file()
+
+
+
+    ##print(uploaded_file)
+    ##file_object = uploaded_file.save()

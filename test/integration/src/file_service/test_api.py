@@ -1,25 +1,66 @@
-from types.types import *
+from configparser import ConfigParser
+from unittest.mock import Mock
 
-from api.file_service.api import FileServiceAPI
+from api.file_service.api import FileService
+from api.file_service.storage.api import Storage
+from api.file_service.typings.typings import FileCreateRequest
 
 
-class FileUploadAPIIntegrationTestCase:
-
-
+class FileUploadIntegrationTestCase:
     def __init__(self):
         return
 
-    def testFileUploadToS3Success():
-
+    def test_file_create_with_no_file():
         test_uuid = 'abcdefghikklmnop'
-        fileUploadRequest = FileUploadRequest(test_uuid, FileType.POST)
+        mime_type = 'test_mime_type'
 
-        fileServiceAPI = FileServiceAPI()
+        request = FileCreateRequest(test_uuid, mime_type)
 
-        downloadUrl = fileServiceAPI.upload(fileUploadRequest)
-        # Should create entry in db for uuid and the specific product
-        ## TODO - Use the same db class we will use in the DAO to grab the data
+        storage_imp_mock = Mock()
+        storage = Storage(storage_imp_mock)
+        
+        mock_config = {}
+        mock_config['config_file'] = ConfigParser.read_dict({'file_service': {'storage-platform': 's3'}})
+        
+        file_service = FileService(mock_config, storage)
 
-        # Should return file service download url to client
-        ## assert s3ImpMock.upload called with test_uuid
-        assert downloadUrl == f'api/v0.1/fileservice/download/{test_uuid}'
+        response = file_service.create_file(request)
+
+        ## Assert meta data has been added to db correctly
+        assert test_uuid == response.uuid
+        assert mime_type == response.mime_type
+        
+        ## Assert storage imp not called
+        storage_imp_mock.save.assert_not_called()
+
+        ## Assert that download_url is empty
+        assert response.download_url == None
+
+    
+    ''' Tests file create with url unsafe uuid'''
+    def test_file_create_with_invalid_uuid():
+        ...
+
+    def test_file_create_with_duplicate_uuid():
+        ...
+    
+    def test_file_create_with_invalid_mime_type():
+        ...
+
+    def test_file_create_above_size_limit():
+        ...
+
+    def test_file_create_with_file():
+        ## assert that file created as above
+        ## assert download url returned
+        ## assert up to s3 mock calling the actual sdk function. Assert s3ImpMock.upload called with test_uuid. Once succesful we should then upload to our db and assert this has worked
+
+         ## This should only be returned if whole process, including adding to our db table, was successful
+        assert fileServiceUploadResponse.download_url == f'api/v0.1/fileservice/download/{test_uuid}'
+
+    def test_file_update():
+        ## Assert that download_url is set during update
+        ...
+
+    def test_file_update_from_non_owner():
+        ...
