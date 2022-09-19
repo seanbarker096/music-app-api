@@ -2,7 +2,7 @@ import unittest
 from configparser import ConfigParser
 from unittest.mock import Mock
 
-from api.file_service.api import FileService
+from api.file_service.api import AcceptedMimeTypes, FileService
 from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import FileCreateRequest
 
@@ -26,7 +26,7 @@ class FileUploadIntegrationTestCase(unittest.TestCase):
 
     def test_file_create_with_no_file(self):
         test_uuid = 'abcdefghikklmnop'
-        mime_type = 'test_mime_type'
+        mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
 
         request = FileCreateRequest(test_uuid, mime_type)
 

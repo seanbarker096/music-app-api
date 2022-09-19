@@ -26,8 +26,8 @@ CREATE TABLE gigs.files (
     uuid varchar(255) NOT NULL,
     file_size int(10) NULL,
     mime_type varchar(255) NOT NULL,
-    download_url varchar(255) NOT NULL,
+    download_url varchar(255) NULL,
     PRIMARY KEY (id),
-    UNIQUE INDEX uuid
+    UNIQUE INDEX uuid_idx(uuid)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;

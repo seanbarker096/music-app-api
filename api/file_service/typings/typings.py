@@ -20,8 +20,8 @@ class FileServiceFile(object):
     id:  int = ...
     uuid: str = ...
     mime_type: str = ...
-    file_size: Optional[int] = ...
-    download_url: Optional[str] = ...
+    file_size: Optional[int] = None
+    download_url: Optional[str] = None
 
     def __init__(self, id: str, uuid: str, mime_type: str, file_size: Optional[int] = None, download_url: Optional[str] = None):
         self.id = id
@@ -34,8 +34,8 @@ class FileServiceFile(object):
 class FileCreateRequest(object):
     uuid: str = ...
     mime_type: str = ...
-    file_size: Optional[int] = ...
-    bytes: Optional[bytes] = ...
+    file_size: Optional[int] = None
+    bytes: Optional[bytes] = None
     
     def __init__(self, uuid: str,mime_type: str, file_size: Optional[int] = None, bytes: Optional[bytes] = None) -> None:
         self.uuid = uuid
@@ -48,15 +48,6 @@ class FileCreateResponse(object):
     
     def __init__(self, file: FileServiceFile) -> None:
         self.file = file
-
-    def create_response(self) -> dict[str, str | int]:
-        return {
-            'uuid': self.uuid,
-            'download_url': self.download_url,
-            'mime_type': self.mime_type,
-            'file_size': self.file_size,
-            'file_id': self.file_id
-        }
 
 
 class FileUpdateRequest(object):

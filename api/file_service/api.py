@@ -7,12 +7,16 @@ from api.file_service.typings.typings import (FileCreateRequest,
                                               FileCreateResponse,
                                               FileUpdateRequest)
 
+# TODO: Update this
+
 
 class AcceptedMimeTypes(Enum):
     APP_OCTET_STREAM = 'application/octet-stream'
 
 ## These are responsible for create response objects whilst the inner layers can return reosurces e.g. FileServiceFile
 class FileService():
+    MAX_FILE_SIZE = 1000000000000000
+
     def __init__(self, config, storage: Optional[Storage] = None, file_service_dao: Optional[FileServiceDAO] = None):
         self.storage = storage if storage else Storage(config)
         self.file_service_dao = file_service_dao if file_service_dao else FileServiceDAO()
@@ -30,22 +34,32 @@ class FileService():
         ## TODO: Check string is url safe
         
         ## If meta data is valid then save this and create file entry
-        if request.mime_type not in AcceptedMimeTypes:
+        accepted_mime_types = set(item.value for item in AcceptedMimeTypes)
+        print(accepted_mime_types)
+        print(request.mime_type)
+        if request.mime_type not in accepted_mime_types:
             raise Exception(f'Failed to create file. Invalid or unnaccepted MIME type of type {request.mime_type}')
 
+        download_url = None
+
+        if request.bytes:
+            if not isinstance(request.bytes, bytes):
+                raise Exception('Failed to create file because bytes is not valid')
+            
+            download_url = self.storage.upload_file(request)    
+
+        if isinstance(request.file_size, int) and request.file_size > self.MAX_FILE_SIZE:
+            raise Exception(f'Failed to create file. File size exceeds maximum allowed value of {self.MAX_FILE_SIZE}')
 
         ## TODO: check if file uuid exists
-        download_url = self.storage.upload_file(request)
-      
-        file = self.file_service_dao.create_file(FileCreateRequest)
-      
+        ## if self.file_service_dao.get_file_by_uuid(request.uuid):
+            #raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
+
+
+        file = self.file_service_dao.create_file(FileCreateRequest, download_url=download_url)
+        
 
         return FileCreateResponse(file)
-
-        
-        # 3. Take uuid and s3 download url and store in the resource mapping table
-
-        # 4. Return the fileservice GET url which will be used to stream the video back to the user
 
     def update_file(self, request: FileUpdateRequest):
         ## Currenty we only support updating the bytes of a file (e.g. uploading a new file and linking it to an existing internal file object)
