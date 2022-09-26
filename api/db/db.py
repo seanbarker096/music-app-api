@@ -1,3 +1,4 @@
+import json
 from typing import Dict
 
 import pymysql.cursors
@@ -11,9 +12,10 @@ class DB:
     def __init__(self, config: Dict[str, str]):
         self.connection = None
 
-        db_config = config['config_file'].get('db', {})
-        if db_config and db_config.host and db_config.user and db_config.password and db_config.database:
-            self.config = DBConfig(db_config.host, db_config.user, db_config.password, db_config.database)
+        db_config = config['config_file']['db']
+        print(json.dumps(db_config['host']))
+        if db_config and db_config['host'] and db_config['user'] and db_config['password'] and db_config['database']:
+            self.config = DBConfig(db_config['host'], db_config['user'], db_config['password'], db_config['database'])
         else:
             raise Exception('Failed to instantiate DB class. Invalid configuration supplied')
     

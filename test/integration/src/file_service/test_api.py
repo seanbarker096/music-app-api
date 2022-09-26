@@ -1,5 +1,6 @@
 import unittest
 from configparser import ConfigParser
+from test import IntegrationTestAPI
 from unittest.mock import Mock
 
 from api.file_service.api import AcceptedMimeTypes, FileService
@@ -7,22 +8,7 @@ from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import FileCreateRequest
 
 
-class FileUploadIntegrationTestCase(unittest.TestCase):
-
-    def setUp(self) -> None:
-        self.storage_imp_mock = Mock()
-
-        self.config = {}
-
-        config_parser = ConfigParser()
-        self.config['config_file'] = config_parser.read_dict(
-            dictionary={
-                'file_service': {
-                    'storage-platform': 's3'
-                }
-            }
-        )
-
+class FileUploadIntegrationTestCase(IntegrationTestAPI):
 
     def test_file_create_with_no_file(self):
         test_uuid = 'abcdefghikklmnop'
@@ -30,13 +16,8 @@ class FileUploadIntegrationTestCase(unittest.TestCase):
 
         request = FileCreateRequest(test_uuid, mime_type)
 
-        
-        storage = Storage(self.config, self.storage_imp_mock)
-        
-        
-        file_service = FileService(self.config, storage)
-
-        response = file_service.create_file(request)
+        response = self.app.conns.file_service.create_file(request)
+    
 
         ## Assert meta data has been added to db correctly
         assert test_uuid == response.uuid

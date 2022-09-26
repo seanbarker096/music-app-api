@@ -6,7 +6,7 @@
 ### DB Container ###
 export MYSQL_ROOT_PASSWORD='mysqlroot'
 export MY_SQL_CONTAINER_NAME='integration-test-mysql-host'
-export ENVIRONMENT = 'dev-integration-test'
+export ENVIRONMENT='test'
 
 echo "Checking for old containers and volumes..."
 
@@ -30,7 +30,13 @@ do
 done
 echo "container is up"
 
+## get the IP of the container as we need it to connect to the mysql service
+export CONTAINER_IP=`$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $MY_SQL_CONTAINER_NAME)`
+
+echo "Container IP: $CONTAINER_IP"
+
 # Need to active pyenv environment befor running this script. Also cd out into parent dir so that All our different python packages can access eachother
+
 cd ../
 
 python -m pytest
