@@ -12,6 +12,7 @@ services:
     volumes:
       # - ./src/db:/usr/src/db #Mount db folder so we can run seed files etc.
       - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    network_mode: bridge
     healthcheck:
       test: "mysqladmin -u root -p$MYSQL_ROOT_PASSWORD -h 127.0.0.1 ping --silent 2> /dev/null || exit 1" ## We need to filter Warning: Using a password on the command line interface can be insecure warning, as it causes health checks to fail
       interval: 5s
