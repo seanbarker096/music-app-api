@@ -2,3 +2,4 @@ Flask==2.2.0
 debugpy
 boto3==1.24.*
 PyMySQL==1.0.*
+#might need to add the cyrptography package here as was needed when logging in as non root user

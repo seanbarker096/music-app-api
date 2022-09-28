@@ -9,6 +9,11 @@ from api.file_service.typings.typings import FileCreateRequest, FileServiceFile
 
 
 class FileServiceDAO():
+
+    def ___init__(self, config):
+        ## Consider making this static, or maybe a flyweight or singleton
+        self.db = DB(config)
+
     '''Download url is present if file was created in s3 before this'''
     ## TODO: Update return type
     def create_file(self, request: FileCreateRequest, download_url: Optional[str])->any:
@@ -20,7 +25,7 @@ class FileServiceDAO():
 
         binds = (request.uuid, request.file_size, request.mime_type, download_url)
 
-        file = flask.current_app.conns.db.run_query(sql, binds)
+        file = self.db.run_query(sql, binds)
 
         print("created file:")
         print(json.encoder(file))

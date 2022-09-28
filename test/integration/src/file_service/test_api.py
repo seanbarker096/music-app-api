@@ -1,5 +1,7 @@
+import os
 import unittest
 from configparser import ConfigParser
+from msilib.schema import File
 from test import IntegrationTestAPI
 from unittest.mock import Mock
 
@@ -9,8 +11,21 @@ from api.file_service.typings.typings import FileCreateRequest
 
 
 class FileUploadIntegrationTestCase(IntegrationTestAPI):
+    
+    def setUp(self):
+        config = ConfigParser(allow_no_value=True, interpolation=None)
+        config.optionxform = str
+
+        filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../api/config/dev.cfg')
+        
+        config.read(filename)
+
+        self.config['config_file'] = config
 
     def test_file_create_with_no_file(self):
+
+        file_service = FileService(self.config)
+
         test_uuid = 'abcdefghikklmnop'
         mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
 

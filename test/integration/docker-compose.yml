@@ -7,11 +7,15 @@ services:
     container_name: ${MY_SQL_CONTAINER_NAME}
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_USER=newuser
+      - MYSQL_PASSWORD=newpassword
+      - MYSQL_DATABASE=gigs
     ports:
       - "3306:3306" ## This is the default port applications like mypysql expect to use
     volumes:
       # - ./src/db:/usr/src/db #Mount db folder so we can run seed files etc.
       - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
+      #- mysql:/var/lib/mysql
     network_mode: bridge
     healthcheck:
       test: "mysqladmin -u root -p$MYSQL_ROOT_PASSWORD -h 127.0.0.1 ping --silent 2> /dev/null || exit 1" ## We need to filter Warning: Using a password on the command line interface can be insecure warning, as it causes health checks to fail
@@ -20,6 +24,12 @@ services:
       retries: 5
       start_period: 10s #start period provides initialization time for containers that need time to bootstrap. Probe failure during that period will not be counted towards the maximum number of retries.
     entrypoint: sh -c "
-      echo 'CREATE SCHEMA IF NOT EXISTS gigs;' > /docker-entrypoint-initdb.d/init.sql;
       /usr/local/bin/docker-entrypoint.sh --default-authentication-plugin=mysql_native_password
       "
+# volumes:
+#   mysql:
+
+# sh -c "
+#       echo 'CREATE SCHEMA IF NOT EXISTS gigs;' > /docker-entrypoint-initdb.d/init.sql;
+#       /usr/local/bin/docker-entrypoint.sh --default-authentication-plugin=mysql_native_password
+#       "

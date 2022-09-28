@@ -31,7 +31,7 @@ done
 echo "container is up"
 
 ## get the IP of the container as we need it to connect to the mysql service
-export CONTAINER_IP=172.17.0.1
+export CONTAINER_IP=172.0.0.1
 
 echo "Container IP: $CONTAINER_IP"
 

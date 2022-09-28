@@ -19,7 +19,7 @@ class FileService():
 
     def __init__(self, config, storage: Optional[Storage] = None, file_service_dao: Optional[FileServiceDAO] = None):
         self.storage = storage if storage else Storage(config)
-        self.file_service_dao = file_service_dao if file_service_dao else FileServiceDAO()
+        self.file_service_dao = file_service_dao if file_service_dao else FileServiceDAO(config)
 
     ## Post should just fil in db with all entries in request and hence download url will be empty.
 

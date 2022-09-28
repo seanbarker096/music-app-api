@@ -13,17 +13,18 @@ class DB:
         self.connection = None
 
         db_config = config['config_file']['db']
-        print(json.dumps(db_config['host']))
+
         if db_config and db_config['host'] and db_config['user'] and db_config['password'] and db_config['database']:
             self.config = DBConfig(db_config['host'], db_config['user'], db_config['password'], db_config['database'])
         else:
             raise Exception('Failed to instantiate DB class. Invalid configuration supplied')
     
+
         self.connection = pymysql.connect(
-            host=self.config.host,
-            user=self.config.user,
-            password=self.config.password,
-            database=self.config.database,
+            host='localhost',
+            user='newuser',
+            password='newpassword',
+            database='gigs',
             cursorclass=pymysql.cursors.DictCursor
         )
 

@@ -12,16 +12,11 @@ class IntegrationTestAPI(unittest.TestCase):
         config = ConfigParser(allow_no_value=True, interpolation=None)
         config.optionxform = str
 
-        env = os.environ.get("ENVIRONMENT", "test")
-        filename = os.path.join(flask.helpers.get_root_path(__name__), f'{env}.cfg')
+        filename = os.path.join(flask.helpers.get_root_path(__name__), 'dev.cfg')
         ## Get IPs from environment variables
         db_host = os.environ.get("CONTAINER_IP")
 
         config.read(filename)
         config['db']['host'] = db_host
-
-        for key in config['db']:  
-            print(key)
-
 
         self.app = FlaskApp(config)
