@@ -35,8 +35,7 @@ class FileService():
         
         ## If meta data is valid then save this and create file entry
         accepted_mime_types = set(item.value for item in AcceptedMimeTypes)
-        print(accepted_mime_types)
-        print(request.mime_type)
+        
         if request.mime_type not in accepted_mime_types:
             raise Exception(f'Failed to create file. Invalid or unnaccepted MIME type of type {request.mime_type}')
 
@@ -55,8 +54,7 @@ class FileService():
         ## if self.file_service_dao.get_file_by_uuid(request.uuid):
             #raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
 
-
-        file = self.file_service_dao.create_file(FileCreateRequest, download_url=download_url)
+        file = self.file_service_dao.create_file(request, download_url=download_url)
         
 
         return FileCreateResponse(file)

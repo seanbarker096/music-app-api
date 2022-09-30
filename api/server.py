@@ -16,11 +16,7 @@ config.optionxform = str
 env = os.environ.get("ENVIRONMENT", "dev")
 filename = os.path.join(flask.helpers.get_root_path(__name__), "config", f'{env}.cfg')
 
-## Get IPs from environment variables
-db_host = os.environ.get("ENVIRONMENT", "CONTAINER_IP")
-
 config.read(filename)
-config['db']['host'] = db_host
 
 app = FlaskApp(config)
 

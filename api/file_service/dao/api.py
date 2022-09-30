@@ -10,7 +10,7 @@ from api.file_service.typings.typings import FileCreateRequest, FileServiceFile
 
 class FileServiceDAO():
 
-    def ___init__(self, config):
+    def __init__(self, config):
         ## Consider making this static, or maybe a flyweight or singleton
         self.db = DB(config)
 
@@ -26,9 +26,6 @@ class FileServiceDAO():
         binds = (request.uuid, request.file_size, request.mime_type, download_url)
 
         file = self.db.run_query(sql, binds)
-
-        print("created file:")
-        print(json.encoder(file))
 
         ##file = FileServiceFile(id=file_id, uuid=request.uuid, mime_type=request.mime_type, ##file_size=request.file_size, download_url=download_url)
 

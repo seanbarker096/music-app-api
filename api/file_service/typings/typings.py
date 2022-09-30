@@ -44,7 +44,7 @@ class FileCreateRequest(object):
         self.bytes = bytes
 
 class FileCreateResponse(object):
-    file = FileServiceFile
+    file: FileServiceFile
     
     def __init__(self, file: FileServiceFile) -> None:
         self.file = file

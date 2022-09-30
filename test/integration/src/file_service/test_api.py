@@ -1,26 +1,10 @@
-import os
-import unittest
-from configparser import ConfigParser
-from msilib.schema import File
-from test import IntegrationTestAPI
-from unittest.mock import Mock
+from test.integration import IntegrationTestAPI
 
 from api.file_service.api import AcceptedMimeTypes, FileService
-from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import FileCreateRequest
 
 
 class FileUploadIntegrationTestCase(IntegrationTestAPI):
-    
-    def setUp(self):
-        config = ConfigParser(allow_no_value=True, interpolation=None)
-        config.optionxform = str
-
-        filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../api/config/dev.cfg')
-        
-        config.read(filename)
-
-        self.config['config_file'] = config
 
     def test_file_create_with_no_file(self):
 
@@ -31,18 +15,18 @@ class FileUploadIntegrationTestCase(IntegrationTestAPI):
 
         request = FileCreateRequest(test_uuid, mime_type)
 
-        response = self.app.conns.file_service.create_file(request)
-    
+        response = file_service.create_file(request)
+        file_response = response.file
 
         ## Assert meta data has been added to db correctly
-        assert test_uuid == response.uuid
-        assert mime_type == response.mime_type
+        assert test_uuid == file_response.uuid
+        assert mime_type == file_response.mime_type
         
         ## Assert storage imp not called
         self.storage_imp_mock.save.assert_not_called()
 
         ## Assert that download_url is empty
-        assert response.download_url == None
+        assert file_response.download_url == None
 
     
     # ''' Tests file create with url unsafe uuid'''

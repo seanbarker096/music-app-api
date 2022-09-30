@@ -21,21 +21,22 @@ class DB:
     
 
         self.connection = pymysql.connect(
-            host='localhost',
-            user='newuser',
-            password='newpassword',
-            database='gigs',
+            host=self.config.host,
+            user=self.config.user,
+            password=self.config.password,
+            database=self.config.database,
             cursorclass=pymysql.cursors.DictCursor
         )
 
     def run_query(self, sql, binds) -> Dict:
+        print("running")
         ## TODO: validate sql and binds
         ## TODO: Check connection exists
 
-        with self.connection:
-            with self.connection.cursor() as cursor:
-                cursor.execute(sql, binds)
-                result = cursor.fetchone()
+        with self.connection.cursor() as cursor:
+            a = cursor.execute(sql, binds)
             self.connection.commit()
-        
+            result = cursor.fetchone()
+        print(result)
+        print(a)
         return result
