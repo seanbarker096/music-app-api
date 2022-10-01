@@ -8,9 +8,10 @@ from api.file_service.api import FileService
 class FlaskApp(Flask):
     def __init__(self, config):
         super().__init__(__name__)
-        
-        self.config['config_file'] = config
+
+        self.config["config_file"] = config
         self.conns = Connections(self.config)
+
 
 #     @app.route("/api/")
 #     def hello_world():
@@ -33,6 +34,6 @@ class FlaskApp(Flask):
 #     return response
 
 
-class Connections():
+class Connections:
     def __init__(self, config):
         self.file_service = FileService(config)

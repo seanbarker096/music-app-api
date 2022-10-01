@@ -28,7 +28,7 @@ class FileServiceDAO():
 
         insert_id = self.db.run_query(sql, binds)
 
-        file = FileServiceFile(id=insert_id, uuid=request.uuid, mime_type=request.mime_type, file_size=request.file_size, download_url=download_url)
+        file = FileServiceFile(id=insert_id, uuid=request.uuid, mime_type=request.mime_type, file_size=request.file_size, download_url=download_url) 
 
         return file
 

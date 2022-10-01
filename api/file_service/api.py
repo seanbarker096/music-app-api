@@ -3,11 +3,13 @@ from typing import Optional
 
 from api.file_service.dao.api import FileServiceDAO
 from api.file_service.storage.api import Storage
-from api.file_service.typings.typings import (FileCreateRequest,
-                                              FileCreateResponse,
-                                              FileUpdateRequest)
+from api.file_service.typings.typings import (
+    FileCreateRequest,
+    FileCreateResponse,
+    FileUpdateRequest,
+)
 
-# TODO: Update this
+# TODO: Update this 
 
 
 class AcceptedMimeTypes(Enum):
@@ -39,7 +41,7 @@ class FileService():
         if request.mime_type not in accepted_mime_types:
             raise Exception(f'Failed to create file. Invalid or unnaccepted MIME type of type {request.mime_type}')
 
-        download_url = None
+        download_url = None 
 
         if request.bytes:
             if not isinstance(request.bytes, bytes):

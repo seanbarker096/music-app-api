@@ -5,7 +5,6 @@ from configparser import ConfigParser
 from api.db.db import DB
 
 
-##
 class IntegrationTestAPI(unittest.TestCase):        
     def setUp(self):
         config = ConfigParser(allow_no_value=True, interpolation=None)

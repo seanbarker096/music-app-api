@@ -5,12 +5,11 @@ from api.file_service.typings.typings import FileCreateRequest
 
 
 class FileUploadIntegrationTestCase(IntegrationTestAPI):
-
     def test_file_create(self):
 
         file_service = FileService(self.config)
 
-        test_uuid = 'abcdefghikklmnop'
+        test_uuid = "abcdefghikklmnop"
         mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
 
         request = FileCreateRequest(test_uuid, mime_type)
@@ -27,16 +26,16 @@ class FileUploadIntegrationTestCase(IntegrationTestAPI):
 
     def test_file_create_with_no_file(self):
         ...
-         ## Assert storage imp not called
+        ## Assert storage imp not called
         ## self.storage_imp_mock.save.assert_not_called()
-    
+
     # ''' Tests file create with url unsafe uuid'''
     # def test_file_create_with_invalid_uuid():
     #     ...
 
     # def test_file_create_with_duplicate_uuid():
     #     ...
-    
+
     # def test_file_create_with_invalid_mime_type():
     #     ...
 
@@ -46,7 +45,7 @@ class FileUploadIntegrationTestCase(IntegrationTestAPI):
     # def test_file_create_with_file():
     #     ## assert that file created as above
     #     ## assert download url returned
-    #     ## assert up to s3 mock calling the actual sdk function. Assert s3ImpMock.upload called with test_uuid. Once succesful we should then upload to our db and assert this has worked
+    #     ## assert up to s3 mock calling the actual sdk function. Assert s3ImpMocksadsadasdsadasdsad upload called  with test_uuid. Once succesful we should then upload to our db and assert this has worked
 
     #      ## This should only be returned if whole process, including adding to our db table, was successful
     #     assert fileServiceUploadResponse.download_url == f'api/v0.1/fileservice/download/{test_uuid}'
