@@ -9,17 +9,23 @@ from api.file_service.typings.typings import (
     FileUpdateRequest,
 )
 
-# TODO: Update this 
+# TODO: Update this
 
 
 class AcceptedMimeTypes(Enum):
-    APP_OCTET_STREAM = 'application/octet-stream'
+    APP_OCTET_STREAM = "application/octet-stream"
+
 
 ## These are responsible for create response objects whilst the inner layers can return reosurces e.g. FileServiceFile
-class FileService():
+class FileService:
     MAX_FILE_SIZE = 1000000000000000
 
-    def __init__(self, config, storage: Optional[Storage] = None, file_service_dao: Optional[FileServiceDAO] = None):
+    def __init__(
+        self,
+        config,
+        storage: Optional[Storage] = None,
+        file_service_dao: Optional[FileServiceDAO] = None,
+    ):
         self.storage = storage if storage else Storage(config)
         self.file_service_dao = file_service_dao if file_service_dao else FileServiceDAO(config)
 
@@ -27,34 +33,37 @@ class FileService():
 
     ## PUT/PATCH should check UpdateRequest object to see what fields are being updated. Should not use same request object as the POST request as then gets confusing as to which fields already exist vs which are ebing uploda
 
-
-    '''This doesn't handle actually uploading the bytes'''
     def create_file(self, request: FileCreateRequest) -> FileCreateResponse:
+        """This doesn't handle actually uploading the bytes."""
         if not isinstance(request.uuid, str) or len(request.uuid) == 0:
-            raise Exception('Failed to create file for file because uuid is not valid')
-        
+            raise Exception("Failed to create file for file because uuid is not valid")
+
         ## TODO: Check string is url safe
-        
+
         ## If meta data is valid then save this and create file entry
         accepted_mime_types = set(item.value for item in AcceptedMimeTypes)
-        
-        if request.mime_type not in accepted_mime_types:
-            raise Exception(f'Failed to create file. Invalid or unnaccepted MIME type of type {request.mime_type}')
 
-        download_url = None 
+        if request.mime_type not in accepted_mime_types:
+            raise Exception(
+                f"Failed to create file. Invalid or unnaccepted MIME type of type {request.mime_type}"
+            )
+
+        download_url = None
 
         if request.bytes:
             if not isinstance(request.bytes, bytes):
-                raise Exception('Failed to create file because bytes is not valid')
-            
-            download_url = self.storage.upload_file(request)    
+                raise Exception("Failed to create file because bytes is not valid")
+
+            download_url = self.storage.upload_file(request)
 
         if isinstance(request.file_size, int) and request.file_size > self.MAX_FILE_SIZE:
-            raise Exception(f'Failed to create file. File size exceeds maximum allowed value of {self.MAX_FILE_SIZE}')
+            raise Exception(
+                f"Failed to create file. File size exceeds maximum allowed value of {self.MAX_FILE_SIZE}"
+            )
 
         ## TODO: check if file uuid exists
         ## if self.file_service_dao.get_file_by_uuid(request.uuid):
-            #raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
+        # raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
 
         file = self.file_service_dao.create_file(request, download_url=download_url)
         return FileCreateResponse(file)
@@ -65,4 +74,3 @@ class FileService():
         download_url = self.storage.upload_file()
 
         self.storage.update_file()
-

@@ -1,11 +1,13 @@
 from test.integration import IntegrationTestAPI
+from unittest.mock import Mock
 
-from api.file_service.api import AcceptedMimeTypes, FileService
+from api.file_service.api import AcceptedMimeTypes, FileService, Storage
 from api.file_service.typings.typings import FileCreateRequest
 
 
 class FileUploadIntegrationTestCase(IntegrationTestAPI):
-    def test_file_create(self):
+    def test_file_create_with_meta_data(self):
+        """Asserts that can succesfully upload file meta data, and no calls are made to try to store the file bytes given they do not exist."""
 
         file_service = FileService(self.config)
 
@@ -18,15 +20,39 @@ class FileUploadIntegrationTestCase(IntegrationTestAPI):
         file_response = response.file
 
         ## Assert meta data has been added to db correctly
-        assert test_uuid == file_response.uuid
-        assert mime_type == file_response.mime_type
+        assert file_response.uuid == test_uuid
+        assert file_response.mime_type == mime_type
+        assert file_response.download_url is None
+        assert file_response.file_size is None
 
-        ## Assert that download_url is empty
-        assert file_response.download_url == None
+    def test_file_create_with_file_data(self):
+        mock_storage_imp = Mock()
+        mock_storage_imp_save_request = Mock()  ## This method usually returns some sort of object
+        mock_storage_imp.save = Mock(return_value="www.s3.com/download/some-random-location")
+        mock_storage_imp.process_upload_request = Mock(return_value=mock_storage_imp_save_request)
 
-    def test_file_create_with_no_file(self):
-        ...
-        ## Assert storage imp not called
+        storage = Storage(mock_storage_imp)
+
+        file_service = FileService(config=self.config, storage=storage)
+
+        test_uuid = None
+        mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
+        byte_message = bytes("message", "utf-8")
+
+        request = FileCreateRequest(test_uuid, mime_type, file_size=2342342, bytes=byte_message)
+
+        response = file_service.create_file(request)
+        file_response = response.file
+
+        mock_storage_imp.process_upload_request.assert_called_once()
+        mock_storage_imp.save.assert_called_once_with(mock_storage_imp_save_request)
+
+        assert file_response.uuid == test_uuid
+        assert file_response.mime_type == mime_type
+        assert file_response.download_url == "www.s3.com/download/some-random-location"
+        assert file_response.file_size == 2342342
+
+        ## Assert storage imp not called and error thrown
         ## self.storage_imp_mock.save.assert_not_called()
 
     # ''' Tests file create with url unsafe uuid'''
