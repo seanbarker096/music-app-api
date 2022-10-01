@@ -55,8 +55,6 @@ class FileService():
             #raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
 
         file = self.file_service_dao.create_file(request, download_url=download_url)
-        
-
         return FileCreateResponse(file)
 
     def update_file(self, request: FileUpdateRequest):

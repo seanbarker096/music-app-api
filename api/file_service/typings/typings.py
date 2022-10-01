@@ -24,11 +24,11 @@ class FileServiceFile(object):
     download_url: Optional[str] = None
 
     def __init__(self, id: str, uuid: str, mime_type: str, file_size: Optional[int] = None, download_url: Optional[str] = None):
-        self.id = id
+        self.id: int = id
         self.uuid: str = uuid
         self.mime_type: str = mime_type
         self.file_size: Optional[int] = file_size
-        self.download_url = Optional[str] = download_url
+        self.download_url : Optional[str] = download_url
 
 
 class FileCreateRequest(object):

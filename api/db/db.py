@@ -14,8 +14,8 @@ class DB:
 
         db_config = config['config_file']['db']
 
-        if db_config and db_config['host'] and db_config['user'] and db_config['password'] and db_config['database']:
-            self.config = DBConfig(db_config['host'], db_config['user'], db_config['password'], db_config['database'])
+        if db_config and db_config['host'] and db_config['user'] and db_config['password'] and db_config['database'] and db_config['port']:
+            self.config = DBConfig(db_config['host'], db_config['user'], db_config['password'], db_config['database'], db_config['port'])
         else:
             raise Exception('Failed to instantiate DB class. Invalid configuration supplied')
     
@@ -25,18 +25,16 @@ class DB:
             user=self.config.user,
             password=self.config.password,
             database=self.config.database,
-            cursorclass=pymysql.cursors.DictCursor
+            port=int(self.config.port),
+            cursorclass=pymysql.cursors.DictCursor,
+            autocommit=True
         )
 
     def run_query(self, sql, binds) -> Dict:
-        print("running")
         ## TODO: validate sql and binds
         ## TODO: Check connection exists
 
+        ## TODO: What if connection fails? Shoulld i return None, throw error??
         with self.connection.cursor() as cursor:
-            a = cursor.execute(sql, binds)
-            self.connection.commit()
-            result = cursor.fetchone()
-        print(result)
-        print(a)
-        return result
+            cursor.execute(sql, binds)
+            return cursor.lastrowid

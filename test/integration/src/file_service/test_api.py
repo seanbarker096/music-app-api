@@ -6,7 +6,7 @@ from api.file_service.typings.typings import FileCreateRequest
 
 class FileUploadIntegrationTestCase(IntegrationTestAPI):
 
-    def test_file_create_with_no_file(self):
+    def test_file_create(self):
 
         file_service = FileService(self.config)
 
@@ -21,13 +21,14 @@ class FileUploadIntegrationTestCase(IntegrationTestAPI):
         ## Assert meta data has been added to db correctly
         assert test_uuid == file_response.uuid
         assert mime_type == file_response.mime_type
-        
-        ## Assert storage imp not called
-        self.storage_imp_mock.save.assert_not_called()
 
         ## Assert that download_url is empty
         assert file_response.download_url == None
 
+    def test_file_create_with_no_file(self):
+        ...
+         ## Assert storage imp not called
+        ## self.storage_imp_mock.save.assert_not_called()
     
     # ''' Tests file create with url unsafe uuid'''
     # def test_file_create_with_invalid_uuid():

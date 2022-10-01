@@ -21,13 +21,9 @@ class IntegrationTestAPI(unittest.TestCase):
         self.config = {}
         self.config['config_file'] = config
         self.db = DB(self.config)
-        
-        # self.truncate_db()
-
 
     def tearDown(self):
-        print('running truncate')
-        #self.truncate_db()
+        self.truncate_db()
        
     def truncate_db(self):
         with self.db.connection:

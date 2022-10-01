@@ -1,4 +1,5 @@
 import json
+from turtle import down
 from typing import Optional
 
 import flask
@@ -16,7 +17,7 @@ class FileServiceDAO():
 
     '''Download url is present if file was created in s3 before this'''
     ## TODO: Update return type
-    def create_file(self, request: FileCreateRequest, download_url: Optional[str])->any:
+    def create_file(self, request: FileCreateRequest, download_url: Optional[str])->FileServiceFile:
 
         ## TODO: Handle case where download_url not being set (just uploading meta)
         sql  = """
@@ -25,9 +26,9 @@ class FileServiceDAO():
 
         binds = (request.uuid, request.file_size, request.mime_type, download_url)
 
-        file = self.db.run_query(sql, binds)
+        insert_id = self.db.run_query(sql, binds)
 
-        ##file = FileServiceFile(id=file_id, uuid=request.uuid, mime_type=request.mime_type, ##file_size=request.file_size, download_url=download_url)
+        file = FileServiceFile(id=insert_id, uuid=request.uuid, mime_type=request.mime_type, file_size=request.file_size, download_url=download_url)
 
         return file
 
