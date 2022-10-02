@@ -1,6 +1,9 @@
 from enum import Enum
 from typing import Optional
 
+from exceptions.exceptions import InvalidArgumentException
+from exceptions.response.exceptions import FileTooLargeException
+
 from api.file_service.dao.api import FileServiceDAO
 from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import (
@@ -35,33 +38,36 @@ class FileService:
 
     def create_file(self, request: FileCreateRequest) -> FileCreateResponse:
         """This doesn't handle actually uploading the bytes."""
-        if not isinstance(request.uuid, str) or len(request.uuid) == 0:
-            raise Exception("Failed to create file for file because uuid is not valid")
+        download_url = None
 
-        ## TODO: Check string is url safe
+        # Validate inputs
+        if not isinstance(request.uuid, str) or len(request.uuid) == 0:
+            raise InvalidArgumentException(
+                message="Failed to create file because uuid is not valid", source="uuid"
+            )
+
+        ## TODO: Check string is url safe. Check if uuid exists
 
         ## If meta data is valid then save this and create file entry
         accepted_mime_types = set(item.value for item in AcceptedMimeTypes)
-
         if request.mime_type not in accepted_mime_types:
-            raise Exception(
+            raise ValueError(
                 f"Failed to create file. Invalid or unnaccepted MIME type of type {request.mime_type}"
             )
 
-        download_url = None
-
         if request.bytes:
             if not isinstance(request.bytes, bytes):
-                raise Exception("Failed to create file because bytes is not valid")
+                raise TypeError("Failed to create file because bytes argument is not valid")
 
             download_url = self.storage.upload_file(request)
 
         if isinstance(request.file_size, int) and request.file_size > self.MAX_FILE_SIZE:
-            raise Exception(
+            raise InvalidArgumentException(
                 f"Failed to create file. File size exceeds maximum allowed value of {self.MAX_FILE_SIZE}"
             )
 
         ## TODO: check if file uuid exists
+
         ## if self.file_service_dao.get_file_by_uuid(request.uuid):
         # raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
 

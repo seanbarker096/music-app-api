@@ -1,7 +1,11 @@
+import json
+import traceback
 from typing import Dict
 
 import pymysql.cursors
+import pymysql.err
 from api.db.config import DBConfig
+from exceptions.db.exceptions import DBDuplicateKeyException
 
 
 ## TODO: Make agnostic of the platform hosting our DB
@@ -45,6 +49,10 @@ class DB:
         ## TODO: Check connection exists
 
         ## TODO: What if connection fails? Shoulld i return None, throw error??
-        with self.connection.cursor() as cursor:
-            cursor.execute(sql, binds)
+
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(sql, binds)
             return cursor.lastrowid
+        except pymysql.err.IntegrityError as e:
+            raise DBDuplicateKeyException(e.args[1])
