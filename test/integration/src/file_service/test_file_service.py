@@ -1,4 +1,4 @@
-from test.integration import IntegrationTestAPI
+from test.integration import IntegrationTestCase
 from unittest.mock import Mock
 
 from api.file_service.api import AcceptedMimeTypes, FileService, Storage
@@ -8,7 +8,7 @@ from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import FileUUIDNotUniqueException
 
 
-class FileUploadIntegrationTestCase(IntegrationTestAPI):
+class FileUploadIntegrationTestCase(IntegrationTestCase):
     def test_file_create_with_meta_data(self):
         """Asserts that can succesfully upload file meta data, and no calls are made to try to store the file bytes given they do not exist."""
 

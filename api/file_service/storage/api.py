@@ -20,7 +20,7 @@ class Storage:
 
             match implementation_type:
                 case "s3":
-                    self.storage_imp = S3StorageImp()
+                    self.storage_imp = S3StorageImp(config)
         else:
             self.storage_imp = storage_imp
 

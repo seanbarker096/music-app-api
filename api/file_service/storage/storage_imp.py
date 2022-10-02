@@ -17,3 +17,8 @@ class StorageImp(ABC):
     ) -> object:
         """Abstract method which takes in some form of file related request object, and generates an upload request object with parameters specific to the given storage implementation"""
         ...
+
+    @abstractmethod
+    def get_item(self) -> any:
+        """Get an item from the storage service PaaS"""
+        ...
