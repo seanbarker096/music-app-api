@@ -19,7 +19,7 @@ class S3GetRequest(object):
 
 class S3StorageImp(StorageImp):
     def __init__(self, config):
-        self.bucket = config["config_file"]["file-service"].get("s3", "file-service-bucket")
+        self.bucket = config["config_file"]["s3"].get("file-service-bucket-arn")
         self.config = config
         self.connection = None
 
