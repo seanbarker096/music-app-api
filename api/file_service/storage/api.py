@@ -26,8 +26,10 @@ class Storage:
 
     """Upload file to third party storage service"""
 
-    def upload_file(self, request: FileCreateRequest) -> str:
+    def upload_file(self, request: FileCreateRequest) -> FileCreateResult:
         save_request = self.storage_imp.process_upload_request(request)
 
         ## method to save meta data to db
         return self.storage_imp.save(save_request)
+
+    def get_file(self, request: FileGetRequest) -> FileGetResult

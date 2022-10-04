@@ -78,3 +78,10 @@ class FileUploadResponse(object):
     def __init__(self, uuid: str, download_url: str) -> None:
         self.uuid = uuid
         self.download_url = download_url
+
+
+class FileDownloadURLGetRequest(object):
+    file_identifier: str = ...
+
+    def __init__(self, file_identifier: str):
+        self.file_identifier = file_identifier

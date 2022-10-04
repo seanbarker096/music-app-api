@@ -80,3 +80,6 @@ class FileService:
         download_url = self.storage.upload_file()
 
         self.storage.update_file()
+
+    # def get_file(self, request: FileGetRequest) -> FileGetResult:
+    #     ...

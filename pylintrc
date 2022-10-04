@@ -80,6 +80,7 @@ enable=bad-indentation,       # Used when an unexpected number of indentation’
       abstract-class-instantiated,
       access-member-before-definition,
       anomalous-backslash-in-string,
+      arguments-differ, # Although we cannot enforce that subclasses of abstract classes match function signatures of their parents, we can ensure lint warnings are raised with pylint
       assign-to-new-keyword,
       assigning-non-slot,
       assignment-from-no-return,

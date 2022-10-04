@@ -1,7 +1,9 @@
 from io import BytesIO
 
-import boto3
+from boto3 import Session
+from botocore.exceptions import ClientError
 from exceptions.exceptions import InvalidArgumentException
+from file_service.typings.typings import FileDownloadURLGetRequest
 
 from api.file_service.storage.storage_imp import StorageImp
 
@@ -23,12 +25,12 @@ class S3StorageImp(StorageImp):
         self.config = config
         self.connection = None
 
-    def _get_s3_connection(self):
+    def _get_s3_connection(self) -> Session:
         config_file = self.config["config_file"]
         s3_access_key = config_file.get("aws", "aws_access_key_id")
         s3_secret_key = config_file.get("aws", "aws_secret_access_key")
 
-        return boto3.Session(
+        return Session(
             aws_access_key_id=s3_access_key,
             aws_secret_access_key=s3_secret_key,
             aws_session_token=None,
@@ -73,3 +75,36 @@ class S3StorageImp(StorageImp):
         s3_upload_request = S3UploadRequest(bytes=request.bytes, key=request.uuid)
 
         return s3_upload_request
+
+    def get_file_download_url(self, request: FileDownloadURLGetRequest) -> str:
+        if not isinstance(request.file_identifier, str) or len(request.file_identifier) == 0:
+            raise InvalidArgumentException(
+                f"Failed to get file download url. Invalid value {request.file_identifier} for parameter file_identifier",
+                "request.file_identifier",
+            )
+        bucket_name = self.config["config_file"].get("s3", "file-service-bucket-arn")
+
+        url = self._create_presigned_url(
+            bucket_name=bucket_name, object_name=request.file_identifier, expiration=3600
+        )
+
+        # TODO:: Validate the url returned from s3
+
+        return url
+
+    def _create_presigned_url(self, bucket_name: str, object_name: str, expiration=3600):
+        session = self._get_s3_connection()
+        s3_client = session.client("s3")
+        try:
+            response = s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": bucket_name, "Key": object_name},
+                ExpiresIn=expiration,
+            )
+        except ClientError as e:
+            # TODO:: Implement logging and maybe make an custom exception here depending on what the client error returned
+            # logging.error(e)
+            raise Exception()
+
+        # The response contains the presigned URL
+        return response
