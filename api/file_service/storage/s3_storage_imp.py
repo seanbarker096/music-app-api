@@ -3,9 +3,10 @@ from io import BytesIO
 from boto3 import Session
 from botocore.exceptions import ClientError
 from exceptions.exceptions import InvalidArgumentException
-from file_service.typings.typings import FileDownloadURLGetRequest
+from exceptions.response.exceptions import CreateFileDownloadURLFailedException
 
 from api.file_service.storage.storage_imp import StorageImp
+from api.file_service.typings.typings import FileDownloadURLGetRequest
 
 
 class S3UploadRequest(object):
@@ -21,9 +22,8 @@ class S3GetRequest(object):
 
 class S3StorageImp(StorageImp):
     def __init__(self, config):
-        self.bucket = config["config_file"]["s3"].get("file-service-bucket-arn")
+        self._bucket = config["config_file"]["s3"].get("file-service-bucket-arn")
         self.config = config
-        self.connection = None
 
     def _get_s3_connection(self) -> Session:
         config_file = self.config["config_file"]
@@ -41,7 +41,7 @@ class S3StorageImp(StorageImp):
         session = self._get_s3_connection()
         s3 = session.resource("s3")
 
-        s3_object = s3.Bucket(self.bucket).put_object(Key=request.key, Body=request.bytes)
+        s3_object = s3.Bucket(self._bucket).put_object(Key=request.key, Body=request.bytes)
 
         return s3_object
 
@@ -50,7 +50,7 @@ class S3StorageImp(StorageImp):
         s3 = session.resource("s3")
 
         bytes_obj = BytesIO()
-        s3.Bucket(self.bucket).download_fileobj(Key=request.key, Fileobj=bytes_obj)
+        s3.Bucket(self._bucket).download_fileobj(Key=request.key, Fileobj=bytes_obj)
 
         return bytes_obj
 
@@ -82,8 +82,8 @@ class S3StorageImp(StorageImp):
                 f"Failed to get file download url. Invalid value {request.file_identifier} for parameter file_identifier",
                 "request.file_identifier",
             )
-        bucket_name = self.config["config_file"].get("s3", "file-service-bucket-arn")
 
+        bucket_name = self.config["config_file"].get("s3", "file-service-bucket-arn")
         url = self._create_presigned_url(
             bucket_name=bucket_name, object_name=request.file_identifier, expiration=3600
         )
@@ -92,7 +92,7 @@ class S3StorageImp(StorageImp):
 
         return url
 
-    def _create_presigned_url(self, bucket_name: str, object_name: str, expiration=3600):
+    def _create_presigned_url(self, bucket_name: str, object_name: str, expiration=3600) -> str:
         session = self._get_s3_connection()
         s3_client = session.client("s3")
         try:
@@ -101,10 +101,11 @@ class S3StorageImp(StorageImp):
                 Params={"Bucket": bucket_name, "Key": object_name},
                 ExpiresIn=expiration,
             )
-        except ClientError as e:
+        except ClientError:
             # TODO:: Implement logging and maybe make an custom exception here depending on what the client error returned
-            # logging.error(e)
-            raise Exception()
+            raise CreateFileDownloadURLFailedException(
+                f"Failed to generate s3 presigned url for object {object_name} in s3 bucket {bucket_name}"
+            )
 
         # The response contains the presigned URL
         return response

@@ -4,8 +4,8 @@ from test.integration import IntegrationTestCase
 from api.file_service.api import AcceptedMimeTypes
 from api.file_service.storage.s3_storage_imp import S3GetRequest, S3StorageImp
 from api.file_service.typings.typings import (
-    FileCreateRequest,
     FileDownloadURLGetRequest,
+    FileUploadRequest,
 )
 
 
@@ -25,7 +25,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         ) as bytes:
             byte_stream = bytes.read()
 
-            request = FileCreateRequest(
+            request = FileUploadRequest(
                 uuid="atestfileuuid",
                 bytes=byte_stream,
                 mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
@@ -51,7 +51,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         ) as bytes:
             byte_stream = bytes.read()
 
-            request = FileCreateRequest(
+            request = FileUploadRequest(
                 uuid="atestfileuuid",
                 bytes=byte_stream,
                 mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
@@ -62,9 +62,11 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         # Now fetch the download url
         request = FileDownloadURLGetRequest(file_identifier="atestfileuuid")
 
-        download_url = s3_storage_imp.get_download_url(request)
+        download_url = s3_storage_imp.get_file_download_url(request)
 
         self.assertTrue(isinstance(download_url, str))
         self.assertTrue(len(download_url) > 0)
+        self.assertTrue("https://" in download_url)
+        self.assertTrue(".s3.amazonaws.com/atestfileuuid?" in download_url)
 
         ## assert the download url is a string and contains some sort of information we expect

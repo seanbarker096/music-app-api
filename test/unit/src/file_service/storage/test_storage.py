@@ -1,37 +1,65 @@
 from test.unit import TestCase
 from unittest.mock import Mock
 
+from api.file_service.api import AcceptedMimeTypes
 from api.file_service.storage.api import Storage
+from api.file_service.storage.s3_storage_imp import S3UploadRequest
+from api.file_service.typings.typings import (
+    FileDownloadURLGetRequest,
+    FileServiceFile,
+    FileUploadRequest,
+    FileUploadResult,
+)
 
 
-class FileUploadIntegrationTestCase(TestCase):
+class StorageUnitTestCase(TestCase):
     def test_get_download_url(self):
-        request = FileGetRequest()
+        request = FileDownloadURLGetRequest(file_identifier="myfile123")
 
         mock_storage_imp = Mock()
         mock_storage_imp.get_file_download_url = Mock(return_value="www.test.com/download/12345")
-        mock_storage_imp.get_file_download_url.assert_called_once_with(GetDownloadUrlRequest)
 
-        storage = Storage(config=self.config, storage_imp=mock_storage_imp)
+        storage = Storage(self.config, mock_storage_imp)
 
-        result = storage.get_file(request)
+        result = storage.get_file_download_url(request)
 
-        assert request.download_url == "www.test.com/download/12345"
-
-    def test_get_file(self):
-        ...
+        mock_storage_imp.get_file_download_url.assert_called_once_with(request)
+        assert result == "www.test.com/download/12345"
 
     def test_upload_file(self):
-        file_upload_request = FileUploadRequest()
-        response = FileUploadResult()  # should contain download url
+        file_upload_request = FileUploadRequest(
+            uuid="fileuuid",
+            bytes=b"makesomebytesbaby",
+            mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
+            file_size=222,
+        )
+
+        returned_file = FileServiceFile(
+            id=1234,
+            uuid="fileuuid",
+            mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
+            file_size=222,
+            download_url="www.test.com/download/12345",
+        )
+        response = FileUploadResult(file=returned_file)
 
         mock_storage_imp = Mock()
-        mock_storage_imp.save = Mock(return_value=response)
 
-        mock_storage_imp.save.assert_called_once_with(file_upload_request)
+        mock_storage_imp.save = Mock(return_value=response)
+        storage_imp_save_request = S3UploadRequest(bytes=b"makesomebytesbaby", key="fileuuid")
+
+        mock_storage_imp.process_upload_request = Mock(return_value=storage_imp_save_request)
 
         storage = Storage(config=self.config, storage_imp=mock_storage_imp)
 
         result = storage.upload_file(file_upload_request)
 
-        assert result.download_url == "www.test.com/download/12345"
+        mock_storage_imp.save.assert_called_once_with(storage_imp_save_request)
+
+        self.assertEqual(result.file.download_url, "www.test.com/download/12345")
+        self.assertEqual(result.file.file_size, 222)
+        self.assertEqual(result.file.mime_type, AcceptedMimeTypes.APP_OCTET_STREAM.value)
+        self.assertEqual(result.file.id, 1234)
+
+    def test_get_file(self):
+        ...

@@ -1,5 +1,5 @@
 import flask
-from api.file_service.typings.typings import FileCreateRequest, FileUpdateRequest
+from api.file_service.typings.typings import FileUpdateRequest, FileUploadRequest
 
 blueprint = flask.Blueprint("file_service", __name__)
 
@@ -11,15 +11,15 @@ def upload():
     json_data = flask.request.json
     uuid, mime_type, file_size = json_data.values()
 
-    request = FileCreateRequest(uuid, mime_type, file_size)
+    request = FileUploadRequest(uuid, mime_type, file_size)
 
-    file_create_response = flask.current_app.conns.file_service.create_file(request)
+    file_upload_response = flask.current_app.conns.file_service.upload_file(request)
     ## Build response from db entry
 
-    file_create_response.file = vars(file_create_response.file)
-    file_create_response = vars(file_create_response)
+    file_upload_response.file = vars(file_upload_response.file)
+    file_upload_response = vars(file_upload_response)
 
-    response = flask.make_response(file_create_response)
+    response = flask.make_response(file_upload_response)
     # Set headers
     response.location = f"https://domain/api/file_service/0.1/{uuid}"
 

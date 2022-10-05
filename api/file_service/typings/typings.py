@@ -38,7 +38,7 @@ class FileServiceFile(object):
         self.download_url: Optional[str] = download_url
 
 
-class FileCreateRequest(object):
+class FileUploadRequest(object):
     uuid: str = ...
     mime_type: str = ...
     file_size: Optional[int] = None
@@ -57,7 +57,7 @@ class FileCreateRequest(object):
         self.bytes = bytes
 
 
-class FileCreateResponse(object):
+class FileUploadResult(object):
     file: FileServiceFile
 
     def __init__(self, file: FileServiceFile) -> None:
@@ -71,17 +71,16 @@ class FileUpdateRequest(object):
         self.bytes = bytes
 
 
-class FileUploadResponse(object):
-    uuid: str = ...
-    download_url: str = ...
-
-    def __init__(self, uuid: str, download_url: str) -> None:
-        self.uuid = uuid
-        self.download_url = download_url
-
-
 class FileDownloadURLGetRequest(object):
     file_identifier: str = ...
 
     def __init__(self, file_identifier: str):
         self.file_identifier = file_identifier
+
+
+class FileGetRequest(object):
+    ...
+
+
+class FileGetResult(object):
+    ...

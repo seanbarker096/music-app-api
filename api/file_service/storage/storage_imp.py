@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from api.file_service.typings.typings import FileDownloadURLGetRequest
+
 
 # Methods receive generic request objects and extract the fields it requires. Then it returns a response object common to all storage implementations so the Storage class does not have to be aware of all potential reponse types that could be returned depending on a given StorageImp.
 class StorageImp(ABC):
@@ -23,5 +25,5 @@ class StorageImp(ABC):
         ...
 
     @abstractmethod
-    def get_download_url(self, request: object) -> str:
+    def get_file_download_url(self, request: FileDownloadURLGetRequest) -> str:
         ...

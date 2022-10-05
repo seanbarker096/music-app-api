@@ -1,6 +1,8 @@
 # This module contains errors intended to be delivered to the user
 
 
+from typing import Optional
+
 from exceptions.codes import ErrorCodes
 
 
@@ -10,12 +12,17 @@ class ResponseBaseException(Exception):
     _http_code: int  # Should be set by the parent error class
     _name: str
     _code: int
-    _message: str  # For debugging. Not shown to client
-    _source: str
+    _detail: str  # Sent to front end but not shown to client
+    _source: Optional[str] = None
+    _message: str  # For debugging and logging purposes
 
-    def __init__(self, source=None):
+    def __init__(self, message=None, source=None):
         """We set some common properties here to avoid repeatedly doing this in child classes"""
+        self._message = message
         self._source = source
+
+    def get_detail(self):
+        return self._detail
 
     def get_message(self):
         return self._message
@@ -55,3 +62,16 @@ class FileUUIDNotUniqueException(ResponseBaseException):
 
 class BadRequestException(ResponseBaseException):
     ...
+
+
+class CreateFileDownloadURLFailedException(ResponseBaseException):
+    # We are creating this error purely to avoid throwing an S3 error. Otherwise we wouldn't
+    # usually create errors for a specific action. Instead we would throw an error indicating
+    # why the action failed
+    _http_code = 500
+    _name = "CREATE_FILE_DOWNLOAD_URL_FAILED"
+    _code = ErrorCodes.CREATE_FILE_DOWNLOAD_URL_FAILED.value
+    _detail = "Failed to create file download url."
+
+    def __init__(self, message: str):
+        super().__init__(message)
