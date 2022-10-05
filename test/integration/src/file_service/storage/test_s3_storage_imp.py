@@ -66,7 +66,4 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
 
         self.assertTrue(isinstance(download_url, str))
         self.assertTrue(len(download_url) > 0)
-        self.assertTrue("https://" in download_url)
         self.assertTrue(".s3.amazonaws.com/atestfileuuid?" in download_url)
-
-        ## assert the download url is a string and contains some sort of information we expect
