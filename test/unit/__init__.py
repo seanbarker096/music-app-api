@@ -1,6 +1,11 @@
 import os
 import unittest
 from configparser import ConfigParser
+from unittest.mock import Mock
+
+import flask
+from api.application import FlaskApp
+from api.rest import file_service_api
 
 
 class TestCase(unittest.TestCase):
