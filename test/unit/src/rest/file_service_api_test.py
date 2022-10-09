@@ -1,3 +1,4 @@
+import copy
 import json
 from unittest.mock import Mock
 
@@ -13,31 +14,30 @@ class FileServiceApiTest(FileServiceAPITestCase):
             id=1, uuid="a-random-file-uuid", mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value
         )
 
-        mock_file_service_response = FileUploadResult(file=file_response)
+        expected_response = FileUploadResult(file=file_response)
 
         self.app.conns.file_service = Mock()
-        self.app.conns.file_service.upload_file = Mock(return_value=mock_file_service_response)
+        self.app.conns.file_service.upload_file = Mock(return_value=expected_response)
+
+        request_body = {
+            "uuid": "a-random-file-uuid",
+            "mime_type": AcceptedMimeTypes.APP_OCTET_STREAM.value,
+        }
 
         response = self.test_client.post(
             "/upload/",
-            json={
-                "uuid": "a-random-file-uuid",
-                "mime_type": AcceptedMimeTypes.APP_OCTET_STREAM.value,
-            },
+            json=request_body,
         )
+
+        expected_json_response = {}
+        expected_json_response["file"] = vars(expected_response.file)
 
         response_body = response.json
-        ##print(response.mimetype)
 
         self.assertEqual(
-            response_body["file"]["uuid"],
-            "a-random-file-uuid",
+            response_body,
+            expected_json_response,
             "Should return the correct file uuid",
-        )
-        self.assertEqual(
-            response_body["file"]["mime_type"],
-            AcceptedMimeTypes.APP_OCTET_STREAM.value,
-            "Should return the correct mime type",
         )
         self.assertEqual(
             response.location,

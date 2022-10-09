@@ -17,11 +17,11 @@ def upload():
 
     file_upload_result = flask.current_app.conns.file_service.upload_file(request)
 
-    file_upload_result.file = vars(file_upload_result.file)
-    file_upload_result = vars(file_upload_result)
+    response = {}
+    response["file"] = vars(file_upload_result.file)
 
     response = flask.current_app.response_class(
-        response=json.dumps(file_upload_result), status=200, mimetype="application/json"
+        response=json.dumps(response), status=200, mimetype="application/json"
     )
 
     ## Set Location header to be url to upload the file to
