@@ -1,5 +1,3 @@
-import copy
-import json
 from unittest.mock import Mock
 
 from api.file_service.api import AcceptedMimeTypes
@@ -29,6 +27,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
             json=request_body,
         )
 
+        ## To do: create some sort of json -> dict encoder to avoid ahving to do this everytime
         expected_json_response = {}
         expected_json_response["file"] = vars(expected_response.file)
 
@@ -46,7 +45,5 @@ class FileServiceApiTest(FileServiceAPITestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    #  def test_upload(self):
-    #     response = self.test_client.get("/api/fileservice/0.1/test/")
-    #     print(response.get_json())
-    #     self.assertTrue(response.get_json()["test"])
+    ##def test_upload_file_bytes():
+    ##  ...

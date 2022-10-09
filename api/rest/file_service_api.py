@@ -30,22 +30,22 @@ def upload():
     return response
 
 
-# @blueprint.route("/upload/<string:file_uuid>", methods=["PATCH"])
-# def test():
-#     """Upload the file and create the download url."""
-#     ## uploads
-#     # file_bytes = flask.data
+@blueprint.route("/upload/<string:file_uuid>", methods=["PATCH"])
+def upload_file_bytes():
+    """Upload the file and create the download url."""
+    ## uploads
+    # file_bytes = flask.data
 
-#     # request = FileUpdateRequest(bytes=file_bytes)
+    # request = FileUpdateRequest(bytes=file_bytes)
 
-#     # response = flask.current_app.conns.file_service.update_file()
+    # response = flask.current_app.conns.file_service.update_file()
 
-#     print("running test route")
+    print("running test route")
 
-#     return True
+    return True
 
-#     ##print(uploaded_file)
-#     ##file_object = uploaded_file.save()
+    ##print(uploaded_file)
+    ##file_object = uploaded_file.save()
 
 
 @blueprint.route("/test/", methods=["GET"])
