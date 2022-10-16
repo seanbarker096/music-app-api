@@ -1,9 +1,8 @@
 # import boto3
 from typing import Dict
 
-from flask import Flask, json
+from flask import Flask
 
-from api.db.db import DB
 from api.file_service.api import FileService
 
 
