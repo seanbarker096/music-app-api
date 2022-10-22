@@ -17,6 +17,7 @@ from api.file_service.typings.typings import (
 
 class AcceptedMimeTypes(Enum):
     APP_OCTET_STREAM = "application/octet-stream"
+    MULTIPART = "multipart/form-data"
 
 
 ## These are responsible for create response objects whilst the inner layers can return reosurces e.g. FileServiceFile
@@ -75,11 +76,8 @@ class FileService:
         return FileUploadResult(file)
 
     def update_file(self, request: FileUpdateRequest):
-        ## Currenty we only support updating the bytes of a file (e.g. uploading a new file and linking it to an existing internal file object)
-
-        download_url = self.storage.upload_file()
-
-        self.storage.update_file()
+        """Used to update file fields e.g. the bytes field when a user tries to upload the actual file after its meta data has been saved."""
+        ...
 
     # def get_file(self, request: FileGetResult) -> FileGetResult:
     #     ...

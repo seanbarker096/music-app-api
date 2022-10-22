@@ -6,18 +6,18 @@ from api.file_service.typings.typings import FileUpdateRequest, FileUploadReques
 blueprint = flask.Blueprint("file_service", __name__)
 
 
-@blueprint.route("/upload/", methods=["POST"])
-def upload():
+@blueprint.route("/upload_file_meta/", methods=["POST"])
+def upload_file_meta():
     """Upload the file meta data and return the file upload location."""
 
     json_data = flask.request.json
-    print("json_data", json_data)
+
     # TODO: Validate the request
     request = FileUploadRequest(
         uuid=json_data["uuid"], mime_type=json_data["mime_type"], file_size=None
     )
 
-    file_upload_result = flask.current_app.conns.file_service.upload_file(request)
+    file_upload_result = flask.current_app.conns.file_service.upload_file(request=request)
 
     response = {}
     response["file"] = vars(file_upload_result.file)
@@ -27,7 +27,7 @@ def upload():
     )
 
     ## Set Location header to be url to upload the file to
-    response.location = f"https://domain/api/file_service/0.1/upload/{json_data['uuid']}"
+    response.location = f"http://192.168.1.217:5000/api/fileservice/0.1/upload/{json_data['uuid']}"
 
     return response
 
@@ -37,21 +37,22 @@ def upload_file_bytes(file_uuid: str):
     """Upload the file and create the download url."""
     ## TODO: BUild the request using file_uuid and bytes we receive
 
-    print("file uuid", file_uuid)
-    print(flask.request.data)
-    # file_bytes = flask.data
+    mime_type = flask.request.headers.get("Content-Type")
+    file = flask.request.files["file"]
 
-    # request = FileUpdateRequest(bytes=file_bytes)
+    if not file:
+        raise Exception("No file provided")
 
-    # response = flask.current_app.conns.file_service.update_file()
+    byte_stream = file.read()
 
-    return True
+    file_upload_request = FileUploadRequest(uuid=file_uuid, bytes=byte_stream, mime_type=mime_type)
 
-    ##print(uploaded_file)
-    ##file_object = uploaded_file.save()
+    flask.current_app.conns.file_service.upload_file(request=file_upload_request)
 
 
-@blueprint.route("/test/", methods=["GET"])
+@blueprint.route("/test/", methods=["POST"])
 def test():
-    response = flask.make_response({"test": True})
+    print(f"request\n {flask.request.form}")
+    print(f"files\n {flask.request.files['bytes'].read()}")
+    response = flask.make_response({"test": 3333})
     return response

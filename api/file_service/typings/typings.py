@@ -38,6 +38,7 @@ class FileServiceFile(object):
         self.download_url: Optional[str] = download_url
 
 
+# Our storage service is built to integrate with any type of external service provider, so we can switch this out for a new Request object if a new provider is used and new fields are needed. The storage implementation validates the Request to ensure it has all the fields it needs. Validation shouldn't be done elsewhere to avoid coupling other Storage Service code to the specific service provider (e.g. S3)
 class FileUploadRequest(object):
     uuid: str = ...
     mime_type: str = ...
