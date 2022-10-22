@@ -84,6 +84,7 @@ class S3StorageImp(StorageImp):
             )
 
         bucket_name = self.config["config_file"].get("s3", "file-service-bucket-arn")
+        ## TODO: Shoulld store this in db and only call S3 to generate it the first time the file is created
         url = self._create_presigned_url(
             bucket_name=bucket_name, object_name=request.file_identifier, expiration=3600
         )

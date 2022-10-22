@@ -13,9 +13,7 @@ class StorageImp(ABC):
         ...
 
     @abstractmethod
-    def process_upload_request(
-        self,
-    ) -> object:
+    def process_upload_request(self, request: object) -> object:
         """Abstract method which takes in some form of file related request object, and generates an upload request object with parameters specific to the given storage implementation"""
         ...
 

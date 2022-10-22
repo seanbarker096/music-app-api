@@ -1,5 +1,3 @@
-from enum import Enum
-from turtle import down
 from typing import Optional
 
 
@@ -40,6 +38,7 @@ class FileServiceFile(object):
 
 # Our storage service is built to integrate with any type of external service provider, so we can switch this out for a new Request object if a new provider is used and new fields are needed. The storage implementation validates the Request to ensure it has all the fields it needs. Validation shouldn't be done elsewhere to avoid coupling other Storage Service code to the specific service provider (e.g. S3)
 class FileUploadRequest(object):
+    id: int = ...
     uuid: str = ...
     mime_type: str = ...
     file_size: Optional[int] = None
@@ -47,10 +46,31 @@ class FileUploadRequest(object):
 
     def __init__(
         self,
+        id: int,
         uuid: str,
         mime_type: str,
         file_size: Optional[int] = None,
         bytes: Optional[bytes] = None,
+    ) -> None:
+        self.id = id
+        self.uuid = uuid
+        self.mime_type = mime_type
+        self.file_size = file_size
+        self.bytes = bytes
+
+
+class FileCreateAndUploadRequest(object):
+    uuid: str = ...
+    mime_type: str = ...
+    bytes: bytes = ...
+    file_size: Optional[int] = None
+
+    def __init__(
+        self,
+        uuid: str,
+        mime_type: str,
+        bytes: bytes,
+        file_size: Optional[int] = None,
     ) -> None:
         self.uuid = uuid
         self.mime_type = mime_type

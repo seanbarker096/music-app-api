@@ -1,7 +1,7 @@
 from typing import Optional
 
 from api.db.db import DB
-from api.file_service.typings.typings import FileUploadRequest, FileServiceFile
+from api.file_service.typings.typings import FileServiceFile, FileUploadRequest
 
 
 class FileServiceDAO:
@@ -12,7 +12,7 @@ class FileServiceDAO:
     """Download url is present if file was created in s3 before this"""
     ## TODO: Update return type
     def create_file(
-        self, request: FileUploadRequest, download_url: Optional[str]
+        self, request: FileUploadRequest, download_url: Optional[str] = None
     ) -> FileServiceFile:
 
         ## TODO: Handle case where download_url not being set (just uploading meta)

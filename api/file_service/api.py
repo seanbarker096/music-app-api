@@ -7,6 +7,7 @@ from exceptions.response.exceptions import FileTooLargeException
 from api.file_service.dao.api import FileServiceDAO
 from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import (
+    FileCreateAndUploadRequest,
     FileUpdateRequest,
     FileUploadRequest,
     FileUploadResult,
@@ -37,10 +38,17 @@ class FileService:
 
     ## PUT/PATCH should check UpdateRequest object to see what fields are being updated. Should not use same request object as the POST request as then gets confusing as to which fields already exist vs which are ebing uploda
 
-    def upload_file(self, request: FileUploadRequest) -> FileUploadResult:
-        """This doesn't handle actually uploading the bytes."""
-        download_url = None
+    def create_file():
+        """Creates a file by storing is meta data in the database."""
+        ...
 
+    def upload_file_bytes():
+        """Once a file has been created, this function will upload the file bytes to the third party storage service provider."""
+
+        ## Check file exists in db. If it does then upload bytes to s3 and get download url
+        ...
+
+    def create_and_upload_file(self, request: FileCreateAndUploadRequest):
         # Validate inputs
         if not isinstance(request.uuid, str) or len(request.uuid) == 0:
             raise InvalidArgumentException(
@@ -50,17 +58,15 @@ class FileService:
         ## TODO: Check string is url safe. Check if uuid exists
 
         ## If meta data is valid then save this and create file entry
-        accepted_mime_types = set(item.value for item in AcceptedMimeTypes)
-        if request.mime_type not in accepted_mime_types:
-            raise ValueError(
-                f"Failed to upload file. Invalid or unnaccepted MIME type of type {request.mime_type}"
-            )
+        ## TODO: SPLIT string by ; and check if any of the types match the accepted ones. This because of mime types like
+        # accepted_mime_types = set(item.value for item in AcceptedMimeTypes)
+        # if request.mime_type not in accepted_mime_types:
+        #     raise ValueError(
+        #         f"Failed to upload file. Invalid or unnaccepted MIME type of type {request.mime_type}"
+        #     )
 
-        if request.bytes:
-            if not isinstance(request.bytes, bytes):
-                raise TypeError("Failed to upload file because bytes argument is not valid")
-
-            download_url = self.storage.upload_file(request)
+        if not isinstance(request.bytes, bytes):
+            raise TypeError("Failed to upload file because bytes argument is not valid")
 
         if isinstance(request.file_size, int) and request.file_size > self.MAX_FILE_SIZE:
             raise InvalidArgumentException(
@@ -72,7 +78,23 @@ class FileService:
         ## if self.file_service_dao.get_file_by_uuid(request.uuid):
         # raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
 
-        file = self.file_service_dao.create_file(request, download_url=download_url)
+        ## create the file
+        file_create_request = FileCreateRequest(
+            uuid=request.uuid, file_size=request.file_size, mimetype=request.mime_type
+        )
+
+        file = self.file_service_dao.create_file(file_create_request)
+
+        ## upload to cloud storage provider
+        file_upload_request = FileUploadRequest(
+            id=file.id,
+            uuid=file.uuid,
+            mime_type=file.mime_type,
+            bytes=file.bytes,
+        )
+
+        file = self.storage.upload_file(request)
+
         return FileUploadResult(file)
 
     def update_file(self, request: FileUpdateRequest):
