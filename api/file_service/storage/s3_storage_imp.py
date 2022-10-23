@@ -6,7 +6,10 @@ from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import CreateFileDownloadURLFailedException
 
 from api.file_service.storage.storage_imp import StorageImp
-from api.file_service.typings.typings import FileDownloadURLGetRequest
+from api.file_service.typings.typings import (
+    FileDownloadURLGetRequest,
+    StorageFileGetRequest,
+)
 
 
 class S3UploadRequest(object):
@@ -45,12 +48,12 @@ class S3StorageImp(StorageImp):
 
         return s3_object
 
-    def get_item(self, request: S3GetRequest) -> BytesIO:
+    def get_item(self, request: StorageFileGetRequest) -> BytesIO:
         session = self._get_s3_connection()
         s3 = session.resource("s3")
 
         bytes_obj = BytesIO()
-        s3.Bucket(self._bucket).download_fileobj(Key=request.key, Fileobj=bytes_obj)
+        s3.Bucket(self._bucket).download_fileobj(Key=request.lookup_key, Fileobj=bytes_obj)
 
         return bytes_obj
 
@@ -93,6 +96,7 @@ class S3StorageImp(StorageImp):
 
         return url
 
+    # TODO: Either remove the expiration on the download url, or set the time expiration time in the db so we know if we need to get a new aws download url when getting the file from the db
     def _create_presigned_url(self, bucket_name: str, object_name: str, expiration=3600) -> str:
         session = self._get_s3_connection()
         s3_client = session.client("s3")

@@ -9,6 +9,8 @@ from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import (
     FileCreateRequest,
     FileCreateResult,
+    FileGetFilter,
+    FileGetResult,
     FileMetaCreateRequest,
     FileUpdateRequest,
     FileUploadRequest,
@@ -78,7 +80,7 @@ class FileService:
         ## if self.file_service_dao.get_file_by_uuid(request.uuid):
         # raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
 
-        ## store the file meta data in the db
+        ## store the file meta data in the db first. This means if our db is down we aren't storing files in s3 without having any info in our db. Also means if s3 is down we have some information in db to try again later with
         file_meta_create_request = FileMetaCreateRequest(
             uuid=request.uuid, mime_type=request.mime_type
         )
@@ -97,11 +99,13 @@ class FileService:
         ## Uploads file and returns a download url
         file = self.storage.upload_file(file_upload_request)
 
+        # TODO: If file upload was successful then store the download_url in the DB
+
         return FileCreateResult(file)
 
     def update_file(self, request: FileUpdateRequest):
         """Used to update file fields e.g. the bytes field when a user tries to upload the actual file after its meta data has been saved."""
         ...
 
-    # def get_file(self, request: FileGetResult) -> FileGetResult:
-    #     ...
+    def get_file(self, filter: FileGetFilter) -> FileGetResult:
+        ...

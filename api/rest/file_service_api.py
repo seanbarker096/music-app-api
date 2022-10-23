@@ -1,19 +1,19 @@
 import json
+import os
 
 import flask
-from api.file_service.typings.typings import FileCreateRequest
+from api.file_service.typings.typings import FileCreateRequest, FileGetFilter
 
 blueprint = flask.Blueprint("file_service", __name__)
 
-
-@blueprint.route("/upload_file/", methods=["POST"])
+# TODO: Limit file extensions accepted (see https://flask.palletsprojects.com/en/2.2.x/patterns/fileuploads/)
+# TODO: use secure_filename function from flask
+@blueprint.route("files/upload_file/", methods=["POST"])
 def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
 
-    # return flask.current_app.response_class(
-    #     response=json.dumps({"file": {"test": "4"}}), status=200, mimetype="application/json"
-    # )
-
+    print("form", flask.request.form)
+    print("files", flask.request.files)
     form_data = flask.request.form
     file = flask.request.files["file"]
     mime_type = flask.request.headers.get("Content-Type")
@@ -36,6 +36,18 @@ def upload_file():
     )
 
     return response
+
+
+@blueprint.route("/files/<string:file_uuid>", methods=["GET"])
+def get_file(file_uuid: str):
+    """Get file from the file service"""
+    get_filter = FileGetFilter(uuid=file_uuid)
+
+    get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
+
+    return flask.current_app.response_class(
+        response=get_result.file, mimetype=get_result.file.mime_type, status=200
+    )
 
 
 # @blueprint.route("/upload/<string:file_uuid>", methods=["PATCH"])
@@ -62,9 +74,12 @@ def upload_file():
 #     )
 
 
-@blueprint.route("/test/", methods=["POST"])
+@blueprint.route("files/test/", methods=["GET"])
 def test():
-    print(f"request\n {flask.request.form}")
-    print(f"files\n {flask.request.files['bytes'].read()}")
-    response = flask.make_response({"test": 3333})
+
+    file = open(
+        os.path.dirname(os.path.realpath(__file__)) + "/../../test/test_files/nav-bar.png", "rb"
+    )
+
+    response = flask.current_app.response_class(response=file, mimetype="image/png", status=200)
     return response

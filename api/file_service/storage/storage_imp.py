@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
+from io import BytesIO
 
-from api.file_service.typings.typings import FileDownloadURLGetRequest
+from api.file_service.typings.typings import (
+    FileDownloadURLGetRequest,
+    StorageFileGetRequest,
+)
 
 
 # Methods receive generic request objects and extract the fields it requires. Then it returns a response object common to all storage implementations so the Storage class does not have to be aware of all potential reponse types that could be returned depending on a given StorageImp.
@@ -18,7 +22,7 @@ class StorageImp(ABC):
         ...
 
     @abstractmethod
-    def get_item(self, request: object) -> object:
+    def get_item(self, request: StorageFileGetRequest) -> BytesIO:
         """Get an item from the storage service PaaS. Should return the raw bytes"""
         ...
 

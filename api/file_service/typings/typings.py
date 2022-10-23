@@ -1,3 +1,4 @@
+from inspect import formatannotationrelativeto
 from typing import Optional
 
 
@@ -120,9 +121,25 @@ class FileDownloadURLGetRequest(object):
         self.file_identifier = file_identifier
 
 
-class FileGetRequest(object):
-    ...
+class FileGetFilter(object):
+    uuid: str = ...
+
+    def __init__(self, uuid: str) -> None:
+        self.uuid = uuid
 
 
 class FileGetResult(object):
-    ...
+    file: FileServiceFile
+    file_bytes: bytes
+
+    def __init__(self, file: FileServiceFile, file_bytes: bytes):
+        self.file = file
+        self.file_bytes = file_bytes
+
+
+## Storage
+class StorageFileGetRequest(object):
+    lookup_key: str = ...
+
+    def __init__(self, lookup_key: str) -> None:
+        self.lookup_key = lookup_key

@@ -32,7 +32,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
             "file": open(self.test_files + "/nav-bar.png", "rb"),
         }
 
-        response = self.test_client.post("/upload_file/", data=data)
+        response = self.test_client.post("files/upload_file/", data=data)
 
         ## To do: create some sort of json -> dict encoder to avoid ahving to do this everytime
         expected_json_response = {}
