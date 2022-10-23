@@ -1,18 +1,18 @@
 import json
 
 import flask
-from api.file_service.typings.typings import (
-    FileCreateAndUploadRequest,
-    FileUpdateRequest,
-    FileUploadRequest,
-)
+from api.file_service.typings.typings import FileCreateRequest
 
 blueprint = flask.Blueprint("file_service", __name__)
 
 
 @blueprint.route("/upload_file/", methods=["POST"])
 def upload_file():
-    """Upload the file meta data and return the file upload location."""
+    """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
+
+    # return flask.current_app.response_class(
+    #     response=json.dumps({"file": {"test": "4"}}), status=200, mimetype="application/json"
+    # )
 
     form_data = flask.request.form
     file = flask.request.files["file"]
@@ -24,11 +24,9 @@ def upload_file():
     byte_stream = file.read()
 
     # TODO: Validate the request
-    request = FileCreateAndUploadRequest(
-        uuid=form_data["uuid"], mime_type=mime_type, bytes=byte_stream, file_size=None
-    )
+    request = FileCreateRequest(uuid=form_data["uuid"], mime_type=mime_type, bytes=byte_stream)
 
-    result = flask.current_app.conns.file_service.create_and_upload_file(request=request)
+    result = flask.current_app.conns.file_service.create_file(request=request)
 
     response = {}
     response["file"] = vars(result.file)

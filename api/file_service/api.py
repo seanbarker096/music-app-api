@@ -7,10 +7,11 @@ from exceptions.response.exceptions import FileTooLargeException
 from api.file_service.dao.api import FileServiceDAO
 from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import (
-    FileCreateAndUploadRequest,
+    FileCreateRequest,
+    FileCreateResult,
+    FileMetaCreateRequest,
     FileUpdateRequest,
     FileUploadRequest,
-    FileUploadResult,
 )
 
 # TODO: Update this
@@ -38,17 +39,17 @@ class FileService:
 
     ## PUT/PATCH should check UpdateRequest object to see what fields are being updated. Should not use same request object as the POST request as then gets confusing as to which fields already exist vs which are ebing uploda
 
-    def create_file():
-        """Creates a file by storing is meta data in the database."""
-        ...
+    # def save_file_meta_data():
+    #     """Creates a file by storing is meta data in the database."""
+    #     ...
 
-    def upload_file_bytes():
-        """Once a file has been created, this function will upload the file bytes to the third party storage service provider."""
+    # def upload_file_bytes():
+    #     """Once a file has been created, this function will upload the file bytes to the third party storage service provider."""
 
-        ## Check file exists in db. If it does then upload bytes to s3 and get download url
-        ...
+    #     ## Check file exists in db. If it does then upload bytes to s3 and get download url
+    #     ...
 
-    def create_and_upload_file(self, request: FileCreateAndUploadRequest):
+    def create_file(self, request: FileCreateRequest) -> FileCreateResult:
         # Validate inputs
         if not isinstance(request.uuid, str) or len(request.uuid) == 0:
             raise InvalidArgumentException(
@@ -74,28 +75,29 @@ class FileService:
             )
 
         ## TODO: check if file uuid exists
-
         ## if self.file_service_dao.get_file_by_uuid(request.uuid):
         # raise Exception(f'Failed to create file with uuid {uuid} because it already exists')
 
-        ## create the file
-        file_create_request = FileCreateRequest(
-            uuid=request.uuid, file_size=request.file_size, mimetype=request.mime_type
+        ## store the file meta data in the db
+        file_meta_create_request = FileMetaCreateRequest(
+            uuid=request.uuid, mime_type=request.mime_type
         )
 
-        file = self.file_service_dao.create_file(file_create_request)
+        file = self.file_service_dao.create_file_meta(file_meta_create_request)
 
         ## upload to cloud storage provider
         file_upload_request = FileUploadRequest(
             id=file.id,
             uuid=file.uuid,
             mime_type=file.mime_type,
-            bytes=file.bytes,
+            file_size=request.file_size,
+            bytes=request.bytes,
         )
 
-        file = self.storage.upload_file(request)
+        ## Uploads file and returns a download url
+        file = self.storage.upload_file(file_upload_request)
 
-        return FileUploadResult(file)
+        return FileCreateResult(file)
 
     def update_file(self, request: FileUpdateRequest):
         """Used to update file fields e.g. the bytes field when a user tries to upload the actual file after its meta data has been saved."""

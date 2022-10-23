@@ -2,37 +2,22 @@ from test.integration import IntegrationTestCase
 from unittest.mock import Mock
 
 from api.file_service.api import AcceptedMimeTypes, FileService, Storage
-from api.file_service.typings.typings import FileUploadRequest
+from api.file_service.typings.typings import FileCreateRequest
 from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import FileUUIDNotUniqueException
 
 
 class FileUploadIntegrationTestCase(IntegrationTestCase):
-    def test_file_upload_with_meta_data(self):
+    def test_file_create(self):
         """Asserts that can succesfully upload file meta data, and no calls are made to try to store the file bytes given they do not exist."""
-
-        file_service = FileService(self.config)
-
-        test_uuid = "abcdefghikklmnop"
-        mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
-
-        request = FileUploadRequest(test_uuid, mime_type)
-
-        response = file_service.upload_file(request)
-        file_response = response.file
-
-        ## Assert meta data has been added to db correctly
-        assert file_response.uuid == test_uuid
-        assert file_response.mime_type == mime_type
-        assert file_response.download_url is None
-        assert file_response.file_size is None
-
-    def test_file_upload_with_file_data(self):
         mock_storage_imp = Mock()
         mock_storage_imp_save_request = Mock()  ## This method usually returns some sort of object
-        mock_storage_imp.save = Mock(return_value="www.s3.com/download/some-random-location")
+        mock_storage_imp.save = Mock()
         mock_storage_imp.process_upload_request = Mock(return_value=mock_storage_imp_save_request)
+        mock_storage_imp.get_file_download_url = Mock(
+            return_value="www.s3.com/download/some-random-location"
+        )
 
         storage = Storage(self.config, mock_storage_imp)
 
@@ -42,18 +27,22 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
         byte_message = bytes("message", "utf-8")
 
-        request = FileUploadRequest(test_uuid, mime_type, file_size=111, bytes=byte_message)
+        request = FileCreateRequest(uuid=test_uuid, mime_type=mime_type, bytes=byte_message)
 
-        response = file_service.upload_file(request)
+        response = file_service.create_file(request)
         file_response = response.file
 
         mock_storage_imp.process_upload_request.assert_called_once()
-        mock_storage_imp.save.assert_called_once_with(mock_storage_imp_save_request)
+        mock_storage_imp.save.assert_called_once()
 
+        ## Assert meta data has been added to db correctly
+        self.assertTrue(isinstance(file_response.id, int))
         assert file_response.uuid == test_uuid
         assert file_response.mime_type == mime_type
         assert file_response.download_url == "www.s3.com/download/some-random-location"
-        assert file_response.file_size == 111
+        assert file_response.file_size is None
+
+        ## TODO: Improve test by actually querying the db for the file and ensuring its been stored there correctly
 
     def test_file_upload_with_no_uuid(self):
 
@@ -63,10 +52,10 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
         byte_message = bytes("message", "utf-8")
 
-        request = FileUploadRequest(test_uuid, mime_type, file_size=100, bytes=byte_message)
+        request = FileCreateRequest(test_uuid, mime_type, file_size=100, bytes=byte_message)
 
         with self.assertRaises(InvalidArgumentException) as e:
-            file_service.upload_file(request)
+            file_service.create_file(request)
 
         self.assertEqual(
             e.exception.get_message(), "Failed to upload file because uuid is not valid"
@@ -80,17 +69,18 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
 
         test_uuid_one = "testuuidone1234"
         mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
+        byte_message = bytes("message", "utf-8")
 
-        request = FileUploadRequest(test_uuid_one, mime_type)
+        request = FileCreateRequest(uuid=test_uuid_one, mime_type=mime_type, bytes=byte_message)
 
-        first_file = file_service.upload_file(request).file
+        first_file = file_service.create_file(request).file
 
         test_uuid_two = test_uuid_one
 
-        request_two = FileUploadRequest(test_uuid_two, mime_type)
+        request_two = FileCreateRequest(uuid=test_uuid_two, mime_type=mime_type, bytes=byte_message)
 
         with self.assertRaises(DBDuplicateKeyException) as e:
-            file_service.upload_file(request_two)
+            file_service.create_file(request_two)
 
         self.assertEqual(
             e.exception.get_message(), "Duplicate entry 'testuuidone1234' for key 'files.uuid_idx'"

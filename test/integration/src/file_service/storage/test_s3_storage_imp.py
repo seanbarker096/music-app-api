@@ -14,21 +14,23 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         ## Clear aws
         return super().tearDown()
 
-    def test_file_upload(self):
+    def test_save(self):
         s3_storage_imp = S3StorageImp(self.config)
 
         with open(
             os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "../test_files/test_s3_upload.mp4"
+                os.path.dirname(os.path.realpath(__file__)),
+                "../../../../test_files/test_s3_upload.mp4",
             ),
             "rb",
         ) as bytes:
             byte_stream = bytes.read()
 
             request = FileUploadRequest(
+                id=1234,
+                mime_type="mp4",
                 uuid="atestfileuuid",
                 bytes=byte_stream,
-                mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
             )
             s3_upload_request = s3_storage_imp.process_upload_request(request)
             s3_storage_imp.save(s3_upload_request)
@@ -38,23 +40,24 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         file_bytes = s3_storage_imp.get_item(get_request)
 
         assert file_bytes.getvalue() == byte_stream
-        ## TODO: Assert that download url also returned
 
     def test_get_download_url(self):
         s3_storage_imp = S3StorageImp(self.config)
 
         with open(
             os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "../test_files/test_s3_upload.mp4"
+                os.path.dirname(os.path.realpath(__file__)),
+                "../../../../test_files/test_s3_upload.mp4",
             ),
             "rb",
         ) as bytes:
             byte_stream = bytes.read()
 
             request = FileUploadRequest(
+                id=1234,
                 uuid="atestfileuuid",
+                mime_type="mp4",
                 bytes=byte_stream,
-                mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
             )
             s3_upload_request = s3_storage_imp.process_upload_request(request)
             s3_storage_imp.save(s3_upload_request)

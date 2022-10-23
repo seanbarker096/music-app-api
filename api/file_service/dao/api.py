@@ -1,7 +1,7 @@
 from typing import Optional
 
 from api.db.db import DB
-from api.file_service.typings.typings import FileServiceFile, FileUploadRequest
+from api.file_service.typings.typings import FileMetaCreateRequest, FileServiceFile
 
 
 class FileServiceDAO:
@@ -9,18 +9,12 @@ class FileServiceDAO:
         ## Consider making this static, or maybe a flyweight or singleton
         self.db = DB(config)
 
-    """Download url is present if file was created in s3 before this"""
-    ## TODO: Update return type
-    def create_file(
-        self, request: FileUploadRequest, download_url: Optional[str] = None
-    ) -> FileServiceFile:
-
-        ## TODO: Handle case where download_url not being set (just uploading meta)
+    def create_file_meta(self, request: FileMetaCreateRequest) -> FileServiceFile:
         sql = """
         INSERT INTO files(uuid, file_size, mime_type, download_url) VALUES(%s, %s, %s, %s)
         """
 
-        binds = (request.uuid, request.file_size, request.mime_type, download_url)
+        binds = (request.uuid, None, request.mime_type, None)
 
         insert_id = self.db.run_query(sql, binds)
 
@@ -28,8 +22,7 @@ class FileServiceDAO:
             id=insert_id,
             uuid=request.uuid,
             mime_type=request.mime_type,
-            file_size=request.file_size,
-            download_url=download_url,
+            download_url=None,
         )
 
         return file

@@ -28,27 +28,21 @@ class StorageUnitTestCase(TestCase):
 
     def test_upload_file(self):
         file_upload_request = FileUploadRequest(
+            id=1234,
             uuid="fileuuid",
             bytes=b"makesomebytesbaby",
             mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
             file_size=222,
         )
 
-        returned_file = FileServiceFile(
-            id=1234,
-            uuid="fileuuid",
-            mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
-            file_size=222,
-            download_url="www.test.com/download/12345",
-        )
-        response = FileUploadResult(file=returned_file)
-
         mock_storage_imp = Mock()
 
-        mock_storage_imp.save = Mock(return_value=response)
+        mock_storage_imp.save = Mock()
         storage_imp_save_request = S3UploadRequest(bytes=b"makesomebytesbaby", key="fileuuid")
 
         mock_storage_imp.process_upload_request = Mock(return_value=storage_imp_save_request)
+
+        mock_storage_imp.get_file_download_url = Mock(return_value="www.test.com/download/12345")
 
         storage = Storage(config=self.config, storage_imp=mock_storage_imp)
 
@@ -56,10 +50,10 @@ class StorageUnitTestCase(TestCase):
 
         mock_storage_imp.save.assert_called_once_with(storage_imp_save_request)
 
-        self.assertEqual(result.file.download_url, "www.test.com/download/12345")
-        self.assertEqual(result.file.file_size, 222)
-        self.assertEqual(result.file.mime_type, AcceptedMimeTypes.APP_OCTET_STREAM.value)
-        self.assertEqual(result.file.id, 1234)
+        self.assertEqual(result.download_url, "www.test.com/download/12345")
+        self.assertEqual(result.file_size, 222)
+        self.assertEqual(result.mime_type, AcceptedMimeTypes.APP_OCTET_STREAM.value)
+        self.assertEqual(result.id, 1234)
 
     def test_get_file(self):
         ...

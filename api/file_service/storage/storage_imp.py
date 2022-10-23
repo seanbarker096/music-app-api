@@ -8,8 +8,8 @@ class StorageImp(ABC):
     """Abstract base class for various storage implementation classes built for a given paas e.g. Amazon s3."""
 
     @abstractmethod
-    def save(self, upload_request: object) -> str:
-        """Saves file to the storage service PaaS and returns the download url"""
+    def save(self, request: object) -> any:
+        """Saves file to the storage service PaaS"""
         ...
 
     @abstractmethod

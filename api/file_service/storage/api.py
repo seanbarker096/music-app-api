@@ -45,7 +45,8 @@ class Storage:
             id=request.id,
             uuid=request.uuid,
             file_size=request.file_size,
-            bytes=request.bytes,
+            mime_type=request.mime_type,
+            ## TODO: Consider whether we want to send back the bytes grabbed from s3 in case they are modified in some way
             download_url=download_url,
         )
 

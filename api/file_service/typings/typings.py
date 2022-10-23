@@ -54,15 +54,27 @@ class FileUploadRequest(object):
     ) -> None:
         self.id = id
         self.uuid = uuid
+        self.bytes = bytes
         self.mime_type = mime_type
         self.file_size = file_size
-        self.bytes = bytes
 
 
-class FileCreateAndUploadRequest(object):
+class FileMetaCreateRequest(object):
+    """Request to create the file in the database. This should not be used to upload files to the third party storage provider. See FileUploadRequest or FileCreateAndUploadRequest for this."""
+
+    uuid: str = ...
+    mime_type: str = ...
+
+    def __init__(self, uuid: str, mime_type: str) -> None:
+        self.uuid = uuid
+        self.mime_type = mime_type
+
+
+class FileCreateRequest(object):
     uuid: str = ...
     mime_type: str = ...
     bytes: bytes = ...
+    download_url: Optional[str] = None
     file_size: Optional[int] = None
 
     def __init__(
@@ -70,12 +82,21 @@ class FileCreateAndUploadRequest(object):
         uuid: str,
         mime_type: str,
         bytes: bytes,
+        download_url: Optional[str] = None,
         file_size: Optional[int] = None,
     ) -> None:
         self.uuid = uuid
         self.mime_type = mime_type
+        self.download_url = download_url
         self.file_size = file_size
         self.bytes = bytes
+
+
+class FileCreateResult(object):
+    file: FileServiceFile
+
+    def __init__(self, file: FileServiceFile) -> None:
+        self.file = file
 
 
 class FileUploadResult(object):
