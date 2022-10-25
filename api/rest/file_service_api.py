@@ -11,9 +11,6 @@ blueprint = flask.Blueprint("file_service", __name__)
 @blueprint.route("files/upload_file/", methods=["POST"])
 def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
-
-    print("form", flask.request.form)
-    print("files", flask.request.files)
     form_data = flask.request.form
     file = flask.request.files["file"]
     mime_type = flask.request.headers.get("Content-Type")
@@ -38,11 +35,12 @@ def upload_file():
     return response
 
 
-@blueprint.route("/files/<string:file_uuid>", methods=["GET"])
+@blueprint.route("/files/<string:file_uuid>/", methods=["GET"])
 def get_file(file_uuid: str):
     """Get file from the file service"""
     get_filter = FileGetFilter(uuid=file_uuid)
 
+    ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
 
     return flask.current_app.response_class(

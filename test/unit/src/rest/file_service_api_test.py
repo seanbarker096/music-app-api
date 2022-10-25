@@ -6,6 +6,7 @@ from api.file_service.api import AcceptedMimeTypes
 from api.file_service.typings.typings import (
     FileCreateRequest,
     FileCreateResult,
+    FileGetFilter,
     FileServiceFile,
 )
 
@@ -48,5 +49,24 @@ class FileServiceApiTest(FileServiceAPITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    ##def test_upload_file_bytes():
-    ##  ...
+    def test_file_get(self):
+        
+        expected_file_service_file = FileServiceFile(
+            id=1, 
+            uuid="12345abc", 
+            mime_type="image/png", 
+            file_size=None, 
+            download_url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param"
+        )
+
+        expected_file_get_response = FileGetResult(file=expected_file_service_file, file_bytes=)
+
+        self.app.conns.file_service = Mock()
+        self.app.conns.file_service.get_file() = Mock(return_value=)
+
+        response = self.test_client.get("/files/12345abc/")
+
+        file = response["file"]
+        bytes = response["file_bytes"]
+
+        self.assertEquals()
