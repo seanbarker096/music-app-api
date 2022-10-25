@@ -7,8 +7,6 @@ from api.file_service.typings.typings import (
     FileGetFilter,
     FileServiceFile,
     FileUploadRequest,
-    FileUploadResult,
-    StorageFileGetRequest,
 )
 
 

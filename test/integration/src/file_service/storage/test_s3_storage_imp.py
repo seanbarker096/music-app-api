@@ -6,7 +6,6 @@ from api.file_service.storage.s3_storage_imp import S3GetRequest, S3StorageImp
 from api.file_service.typings.typings import (
     FileDownloadURLGetRequest,
     FileUploadRequest,
-    StorageFileGetRequest,
 )
 
 
@@ -37,8 +36,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             s3_storage_imp.save(s3_upload_request)
 
         # Now fetch object and assert on properties. The uuid was stored as the s3 key earlier
-        get_request = StorageFileGetRequest(lookup_key="atestfileuuid")
-        file_bytes = s3_storage_imp.get_item(get_request)
+        file_bytes = s3_storage_imp.get_item(lookup_key="atestfileuuid")
 
         assert file_bytes.getvalue() == byte_stream
 

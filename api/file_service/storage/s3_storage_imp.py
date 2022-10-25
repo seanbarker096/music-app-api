@@ -6,10 +6,7 @@ from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import CreateFileDownloadURLFailedException
 
 from api.file_service.storage.storage_imp import StorageImp
-from api.file_service.typings.typings import (
-    FileDownloadURLGetRequest,
-    StorageFileGetRequest,
-)
+from api.file_service.typings.typings import FileDownloadURLGetRequest
 
 
 class S3UploadRequest(object):

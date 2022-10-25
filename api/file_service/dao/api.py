@@ -44,11 +44,15 @@ class FileServiceDAO:
         if len(result) > 1:
             raise Exception("More than one file returned")
 
+        row = result[0]
+
+        ## TODO: Maybe add a builder class to convert row to class
         file = FileServiceFile(
-            id=result["id"],
-            uuid=result["uuid"],
-            mime_type=result["mime_type"],
-            file_size=result["file_size"],
+            id=row["id"],
+            uuid=row["uuid"],
+            mime_type=row["mime_type"],
+            file_size=row["file_size"],
+            download_url=row["download_url"],
         )
 
         return file

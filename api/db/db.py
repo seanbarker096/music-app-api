@@ -1,6 +1,6 @@
 import json
 import traceback
-from typing import Dict
+from typing import Any, Dict
 
 import pymysql.cursors
 import pymysql.err
@@ -20,7 +20,7 @@ class DBResult(object):
     def get_last_row_id(self):
         return self._cursor.lastrowid
 
-    def get_rows(self):
+    def get_rows(self) -> tuple[dict[str, Any], ...]:
         return self._cursor.fetchall()
 
 

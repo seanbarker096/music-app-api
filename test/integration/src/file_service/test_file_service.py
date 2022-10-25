@@ -1,3 +1,4 @@
+import copy
 import io
 from test.integration import IntegrationTestCase
 from unittest.mock import Mock
@@ -84,7 +85,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             file_service.create_file(request_two)
 
         self.assertEqual(
-            e.exception.get_message(), "Duplicate entry 'testuuidone1234' for key 'files.uuid_id'"
+            e.exception.get_message(), "Duplicate entry 'testuuidone1234' for key 'files.uuid_idx'"
         )
 
     def test_file_upload_with_url_unsafe_uuid(self):
@@ -109,7 +110,8 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         file_buffer = io.BytesIO(b"some initial binary data")
 
         mock_storage_imp = Mock()
-        mock_storage_imp.get_file = Mock(return_value=file_buffer)
+        ## Need to copy the bytes as they are mutated when we call read() below
+        mock_storage_imp.get_item = Mock(return_value=copy.deepcopy(file_buffer))
 
         storage = Storage(self.config, mock_storage_imp)
 
@@ -134,13 +136,18 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         file_get_result = file_service.get_file(filter)
         file = file_get_result.file
 
+        mock_storage_imp.get_item.assert_called_once_with("abcdefghikklmnop")
+
         self.assertEquals(
-            file_get_result.bytes, file_buffer.read(), "Should return the correct file bytes"
+            file_get_result.file_bytes.read(),
+            file_buffer.read(),
+            "Should return the correct file bytes",
         )
         self.assertEquals(file.uuid, "abcdefghikklmnop", "Should return the correct file uuid")
+        self.assertEquals(file.mime_type, "image/png", "Should return the correct mime_type")
         self.assertEquals(
             file.download_url,
             "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
         )
-        self.assertEquals(file.mime_type, "image/png", "Should return the correct mime_type")
+
         self.assertEquals(file.id, file_id, "Should return the correct file id")
