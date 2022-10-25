@@ -108,4 +108,10 @@ class FileService:
         ...
 
     def get_file(self, filter: FileGetFilter) -> FileGetResult:
-        ...
+        # Check and get file from database. This is mostly the metadata
+        file = self.file_service_dao.get_file_by_uuid()
+
+        # Get file bytes from storage
+        bytes_object = self.storage.get_file(filter)
+
+        return FileGetResult(file=file, file_bytes=bytes_object)

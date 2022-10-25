@@ -127,7 +127,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
                 "image/png",
                 "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
             ),
-        )
+        ).get_last_row_id()
 
         filter = FileGetFilter(uuid="abcdefghikklmnop")
 

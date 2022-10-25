@@ -135,11 +135,3 @@ class FileGetResult(object):
     def __init__(self, file: FileServiceFile, file_bytes: bytes):
         self.file = file
         self.file_bytes = file_bytes
-
-
-## Storage
-class StorageFileGetRequest(object):
-    lookup_key: str = ...
-
-    def __init__(self, lookup_key: str) -> None:
-        self.lookup_key = lookup_key

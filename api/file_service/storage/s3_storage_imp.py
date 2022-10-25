@@ -48,12 +48,12 @@ class S3StorageImp(StorageImp):
 
         return s3_object
 
-    def get_item(self, request: StorageFileGetRequest) -> BytesIO:
+    def get_item(self, lookup_key: str) -> BytesIO:
         session = self._get_s3_connection()
         s3 = session.resource("s3")
 
         bytes_obj = BytesIO()
-        s3.Bucket(self._bucket).download_fileobj(Key=request.lookup_key, Fileobj=bytes_obj)
+        s3.Bucket(self._bucket).download_fileobj(Key=lookup_key, Fileobj=bytes_obj)
 
         return bytes_obj
 

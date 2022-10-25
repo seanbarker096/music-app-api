@@ -4,9 +4,11 @@ from api.file_service.storage.s3_storage_imp import S3StorageImp
 from api.file_service.storage.storage_imp import StorageImp
 from api.file_service.typings.typings import (
     FileDownloadURLGetRequest,
+    FileGetFilter,
     FileServiceFile,
     FileUploadRequest,
     FileUploadResult,
+    StorageFileGetRequest,
 )
 
 
@@ -55,3 +57,7 @@ class Storage:
     def get_file_download_url(self, request: FileDownloadURLGetRequest) -> str:
         print("teseest")
         return self.storage_imp.get_file_download_url(request)
+
+    def get_file(self, filter: FileGetFilter):
+        bytes_object = self.storage_imp.get_item(filter.uuid)
+        return bytes_object

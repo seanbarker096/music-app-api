@@ -22,7 +22,7 @@ class StorageImp(ABC):
         ...
 
     @abstractmethod
-    def get_item(self, request: StorageFileGetRequest) -> BytesIO:
+    def get_item(self, lookup_key: str) -> BytesIO:
         """Get an item from the storage service PaaS. Should return the raw bytes"""
         ...
 

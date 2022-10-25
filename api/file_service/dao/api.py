@@ -16,7 +16,7 @@ class FileServiceDAO:
 
         binds = (request.uuid, None, request.mime_type, None)
 
-        insert_id = self.db.run_query(sql, binds)
+        insert_id = self.db.run_query(sql, binds).get_last_row_id()
 
         file = FileServiceFile(
             id=insert_id,
@@ -29,3 +29,26 @@ class FileServiceDAO:
 
     def update_file(self):
         ...
+
+    def get_file_by_uuid(self, uuid: str) -> FileServiceFile:
+        sql = """
+        SELECT id, uuid, file_size, mime_type, download_url 
+        FROM files 
+        WHERE uuid = %s
+        """
+
+        binds = uuid
+
+        result = self.db.run_query(sql, binds).get_rows()
+
+        if len(result) > 1:
+            raise Exception("More than one file returned")
+
+        file = FileServiceFile(
+            id=result["id"],
+            uuid=result["uuid"],
+            mime_type=result["mime_type"],
+            file_size=result["file_size"],
+        )
+
+        return file
