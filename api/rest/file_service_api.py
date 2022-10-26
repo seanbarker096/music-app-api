@@ -1,3 +1,4 @@
+import io
 import json
 import os
 
@@ -8,7 +9,7 @@ blueprint = flask.Blueprint("file_service", __name__)
 
 # TODO: Limit file extensions accepted (see https://flask.palletsprojects.com/en/2.2.x/patterns/fileuploads/)
 # TODO: use secure_filename function from flask
-@blueprint.route("files/upload_file/", methods=["POST"])
+@blueprint.route("/files/upload_file/", methods=["POST"])
 def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
     form_data = flask.request.form
@@ -43,9 +44,7 @@ def get_file(file_uuid: str):
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
 
-    return flask.current_app.response_class(
-        response=get_result.file, mimetype=get_result.file.mime_type, status=200
-    )
+    return flask.send_file(get_result.bytes_file, mimetype="image/png")
 
 
 # @blueprint.route("/upload/<string:file_uuid>", methods=["PATCH"])
@@ -72,12 +71,12 @@ def get_file(file_uuid: str):
 #     )
 
 
-@blueprint.route("files/test/", methods=["GET"])
+@blueprint.route("/files/test/", methods=["GET"])
 def test():
 
-    file = open(
+    with open(
         os.path.dirname(os.path.realpath(__file__)) + "/../../test/test_files/nav-bar.png", "rb"
-    )
+    ) as f:
+        bytes = io.BytesIO(f.read())
 
-    response = flask.current_app.response_class(response=file, mimetype="image/png", status=200)
-    return response
+    return flask.send_file(bytes, mimetype="image/png")

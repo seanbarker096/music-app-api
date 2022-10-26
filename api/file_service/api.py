@@ -1,3 +1,5 @@
+import io
+from contextlib import contextmanager
 from enum import Enum
 from typing import Optional
 
@@ -22,6 +24,27 @@ from api.file_service.typings.typings import (
 class AcceptedMimeTypes(Enum):
     APP_OCTET_STREAM = "application/octet-stream"
     MULTIPART = "multipart/form-data"
+
+
+class FileWriter(object):
+    file: io.BufferedWriter
+
+    def __init__(self, filename):
+        self.file_name = filename
+
+    def __enter__(self):
+        try:
+            self.file = open(self.file_name, "wb")
+            return self.file
+        except IOError:
+            raise Exception(f"Failed when opening file {self.file_name}")
+
+    def __exit__(self, exception, exception_message, trace):
+        self.file.close()
+        if exception:
+            raise exception(
+                f"Failed when handling file {self.file_name} because: {exception_message}"
+            )
 
 
 ## These are responsible for create response objects whilst the inner layers can return reosurces e.g. FileServiceFile
@@ -111,7 +134,9 @@ class FileService:
         # Check and get file from database. This is mostly the metadata
         file = self.file_service_dao.get_file_by_uuid(filter.uuid)
 
-        # Get file bytes from storage
+        # Get file bytes from storage and write to a file
         bytes_object = self.storage.get_file(filter)
+        # with FileWriter("my_file.txt") as bytes_file:
+        #     bytes_file.write(bytes_object.getbuffer())
 
-        return FileGetResult(file=file, file_bytes=bytes_object)
+        return FileGetResult(file=file, bytes_file=bytes_object)

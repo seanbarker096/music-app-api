@@ -1,3 +1,4 @@
+from io import BytesIO
 from typing import Optional
 
 from api.file_service.storage.s3_storage_imp import S3StorageImp
@@ -56,6 +57,6 @@ class Storage:
         print("teseest")
         return self.storage_imp.get_file_download_url(request)
 
-    def get_file(self, filter: FileGetFilter):
+    def get_file(self, filter: FileGetFilter) -> BytesIO:
         bytes_object = self.storage_imp.get_item(filter.uuid)
         return bytes_object

@@ -1,3 +1,4 @@
+import copy
 import io
 import os
 from unittest.mock import Mock
@@ -7,6 +8,7 @@ from api.file_service.typings.typings import (
     FileCreateRequest,
     FileCreateResult,
     FileGetFilter,
+    FileGetResult,
     FileServiceFile,
 )
 
@@ -33,7 +35,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
             "file": open(self.test_files + "/nav-bar.png", "rb"),
         }
 
-        response = self.test_client.post("files/upload_file/", data=data)
+        response = self.test_client.post("/files/upload_file/", data=data)
 
         ## To do: create some sort of json -> dict encoder to avoid ahving to do this everytime
         expected_json_response = {}
@@ -50,23 +52,25 @@ class FileServiceApiTest(FileServiceAPITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_file_get(self):
-        
+
         expected_file_service_file = FileServiceFile(
-            id=1, 
-            uuid="12345abc", 
-            mime_type="image/png", 
-            file_size=None, 
-            download_url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param"
+            id=1,
+            uuid="12345abc",
+            mime_type="image/png",
+            file_size=None,
+            download_url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
         )
 
-        expected_file_get_response = FileGetResult(file=expected_file_service_file, file_bytes=)
+        bytes = io.BytesIO(b"some intial bytes")
+        expected_file_get_response = FileGetResult(
+            file=expected_file_service_file, bytes_file=copy.copy(bytes)
+        )
 
         self.app.conns.file_service = Mock()
-        self.app.conns.file_service.get_file() = Mock(return_value=)
+        self.app.conns.file_service.get_file = Mock(return_value=expected_file_get_response)
 
         response = self.test_client.get("/files/12345abc/")
 
-        file = response["file"]
-        bytes = response["file_bytes"]
+        bytes_response = response.data
 
-        self.assertEquals()
+        self.assertEqual(bytes.read(), bytes_response, "Should return the correct file byte stream")
