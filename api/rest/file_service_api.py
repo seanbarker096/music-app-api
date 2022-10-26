@@ -44,7 +44,23 @@ def get_file(file_uuid: str):
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
 
-    return flask.send_file(get_result.bytes_file, mimetype="image/png")
+    print(get_result.bytes_file)
+
+    # with open("test.png", "wb") as f:
+    #     f.write(get_result.bytes_file.getbuffer())
+
+    # with open("test.png", "rb") as f:
+    #     x = io.BytesIO(f.read())
+
+    # x = io.BufferedReader(get_result.bytes_file.getbuffer())
+
+    get_result.bytes_file.seek(0)  ## Needed for some reason otherwise image not sent correctly
+
+    return flask.current_app.response_class(
+        response=get_result.bytes_file, status=200, mimetype="image/png"
+    )
+
+    # return flask.send_file(get_result.bytes_file, mimetype="image/png")
 
 
 # @blueprint.route("/upload/<string:file_uuid>", methods=["PATCH"])
@@ -78,5 +94,7 @@ def test():
         os.path.dirname(os.path.realpath(__file__)) + "/../../test/test_files/nav-bar.png", "rb"
     ) as f:
         bytes = io.BytesIO(f.read())
+
+    print(bytes)
 
     return flask.send_file(bytes, mimetype="image/png")

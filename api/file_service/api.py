@@ -136,7 +136,9 @@ class FileService:
 
         # Get file bytes from storage and write to a file
         bytes_object = self.storage.get_file(filter)
-        # with FileWriter("my_file.txt") as bytes_file:
+        print("in file service")
+        print(bytes_object)
+        # with FileWriter("my_file.png") as bytes_file:
         #     bytes_file.write(bytes_object.getbuffer())
 
         return FileGetResult(file=file, bytes_file=bytes_object)
