@@ -44,20 +44,8 @@ def get_file(file_uuid: str):
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
 
-    print(get_result.bytes_file)
-
-    # with open("test.png", "wb") as f:
-    #     f.write(get_result.bytes_file.getbuffer())
-
-    # with open("test.png", "rb") as f:
-    #     x = io.BytesIO(f.read())
-
-    # x = io.BufferedReader(get_result.bytes_file.getbuffer())
-
-    get_result.bytes_file.seek(0)  ## Needed for some reason otherwise image not sent correctly
-
     return flask.current_app.response_class(
-        response=get_result.bytes_file, status=200, mimetype="image/png"
+        response=get_result.file_bytes, status=200, mimetype="image/png"
     )
 
     # return flask.send_file(get_result.bytes_file, mimetype="image/png")

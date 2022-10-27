@@ -134,22 +134,12 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         filter = FileGetFilter(uuid="abcdefghikklmnop")
 
         file_get_result = file_service.get_file(filter)
-        file = file_get_result.file
-        bytes_file = file_get_result.bytes_file
+        file_bytes = file_get_result.file_bytes
 
         mock_storage_imp.get_item.assert_called_once_with("abcdefghikklmnop")
 
         self.assertEqual(
-            bytes_file.read(),
+            file_bytes.read(),
             file_buffer.read(),
             "Should return the correct file bytes",
         )
-
-        self.assertEqual(file.uuid, "abcdefghikklmnop", "Should return the correct file uuid")
-        self.assertEqual(file.mime_type, "image/png", "Should return the correct mime_type")
-        self.assertEqual(
-            file.download_url,
-            "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
-        )
-
-        self.assertEqual(file.id, file_id, "Should return the correct file id")

@@ -129,19 +129,8 @@ class FileGetFilter(object):
         self.uuid = uuid
 
 
-# class FileGetResult(object):
-#     file: FileServiceFile
-#     bytes_file: io.BufferedWriter  ## The file holding the actual bytes
-
-#     def __init__(self, file: FileServiceFile, bytes_file: bytes):
-#         self.file = file
-#         self.bytes_file = bytes_file
-
-
 class FileGetResult(object):
-    file: FileServiceFile
-    bytes_file: io.BytesIO  ## The file holding the actual bytes
+    file_bytes: io.BytesIO  ## The file holding the actual bytes
 
-    def __init__(self, file: FileServiceFile, bytes_file: bytes):
-        self.file = file
-        self.bytes_file = bytes_file
+    def __init__(self, file_bytes: bytes):
+        self.file_bytes = file_bytes

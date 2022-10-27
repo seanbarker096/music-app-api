@@ -131,14 +131,13 @@ class FileService:
         ...
 
     def get_file(self, filter: FileGetFilter) -> FileGetResult:
-        # Check and get file from database. This is mostly the metadata
+        # Check the file exists in the database. This is mostly the metadata
         file = self.file_service_dao.get_file_by_uuid(filter.uuid)
+        if not file:
+            raise Exception(f"File with uuid {filter.uuid} does not exist")
 
-        # Get file bytes from storage and write to a file
         bytes_object = self.storage.get_file(filter)
-        print("in file service")
-        print(bytes_object)
-        # with FileWriter("my_file.png") as bytes_file:
-        #     bytes_file.write(bytes_object.getbuffer())
+        ## seek required for some reason otherwise image not returned from api correctly
+        bytes_object.seek(0)
 
-        return FileGetResult(file=file, bytes_file=bytes_object)
+        return FileGetResult(file_bytes=bytes_object)
