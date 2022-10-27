@@ -130,7 +130,9 @@ class FileGetFilter(object):
 
 
 class FileGetResult(object):
+    file: FileServiceFile
     file_bytes: io.BytesIO  ## The file holding the actual bytes
 
-    def __init__(self, file_bytes: bytes):
+    def __init__(self, file_bytes: bytes, file: FileServiceFile):
         self.file_bytes = file_bytes
+        self.file = file

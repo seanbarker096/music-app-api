@@ -14,7 +14,6 @@ def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
     form_data = flask.request.form
     file = flask.request.files["file"]
-    mime_type = flask.request.headers.get("Content-Type")
 
     if not file:
         raise Exception("No file provided")
@@ -22,7 +21,9 @@ def upload_file():
     byte_stream = file.read()
 
     # TODO: Validate the request
-    request = FileCreateRequest(uuid=form_data["uuid"], mime_type=mime_type, bytes=byte_stream)
+    request = FileCreateRequest(
+        uuid=form_data["uuid"], mime_type=form_data["mime_type"], bytes=byte_stream
+    )
 
     result = flask.current_app.conns.file_service.create_file(request=request)
 
@@ -45,7 +46,7 @@ def get_file(file_uuid: str):
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
 
     return flask.current_app.response_class(
-        response=get_result.file_bytes, status=200, mimetype="image/png"
+        response=get_result.file_bytes, status=200, mimetype=get_result.file.mime_type
     )
 
     # return flask.send_file(get_result.bytes_file, mimetype="image/png")

@@ -62,7 +62,9 @@ class FileServiceApiTest(FileServiceAPITestCase):
         )
 
         bytes = io.BytesIO(b"some intial bytes")
-        expected_file_get_response = FileGetResult(file_bytes=copy.copy(bytes))
+        expected_file_get_response = FileGetResult(
+            file=expected_file_service_file, file_bytes=copy.copy(bytes)
+        )
 
         self.app.conns.file_service = Mock()
         self.app.conns.file_service.get_file = Mock(return_value=expected_file_get_response)

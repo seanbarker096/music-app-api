@@ -140,4 +140,4 @@ class FileService:
         ## seek required for some reason otherwise image not returned from api correctly
         bytes_object.seek(0)
 
-        return FileGetResult(file_bytes=bytes_object)
+        return FileGetResult(file_bytes=bytes_object, file=file)
