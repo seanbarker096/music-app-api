@@ -12,6 +12,7 @@ blueprint = flask.Blueprint("file_service", __name__)
 @blueprint.route("/files/upload_file/", methods=["POST"])
 def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
+    print("test")
     form_data = flask.request.form
     file = flask.request.files["file"]
 
