@@ -23,7 +23,10 @@ def upload_file():
 
     # TODO: Validate the request
     request = FileCreateRequest(
-        uuid=form_data["uuid"], mime_type=form_data["mime_type"], bytes=byte_stream
+        uuid=form_data["uuid"],
+        file_name=form_data["file_name"],
+        mime_type=form_data["mime_type"],
+        bytes=byte_stream,
     )
 
     result = flask.current_app.conns.file_service.create_file(request=request)

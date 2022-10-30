@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS gigs.files;
 CREATE TABLE gigs.files (
     id int(10) unsigned auto_increment,
     uuid varchar(255) NOT NULL,
+    file_name varchar(255) NOT NULL,
     file_size int(10) NULL,
     mime_type varchar(255) NOT NULL,
     download_url varchar(255) NULL,

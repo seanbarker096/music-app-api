@@ -21,7 +21,10 @@ class FileServiceApiTest(FileServiceAPITestCase):
 
     def test_upload_file(self):
         file_response = FileServiceFile(
-            id=1, uuid="a-random-file-uuid", mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value
+            id=1,
+            uuid="a-random-file-uuid",
+            file_name="my-test-file.txt",
+            mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
         )
 
         expected_response = FileCreateResult(file=file_response)
@@ -32,6 +35,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
         data = {
             "uuid": "a-random-file-uuid",
             "mime_type": AcceptedMimeTypes.APP_OCTET_STREAM.value,
+            "file_name": "my-test-file.txt",
             "file": open(self.test_files + "/nav-bar.png", "rb"),
         }
 
@@ -46,7 +50,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
         self.assertEqual(
             response_body,
             expected_json_response,
-            "Should return the correct file uuid",
+            "Should return the correct response",
         )
 
         self.assertEqual(response.status_code, 200)
@@ -56,6 +60,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
         expected_file_service_file = FileServiceFile(
             id=1,
             uuid="12345abc",
+            file_name="my-test-file.png",
             mime_type="image/png",
             file_size=None,
             download_url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param",

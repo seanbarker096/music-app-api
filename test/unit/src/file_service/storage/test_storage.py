@@ -1,5 +1,6 @@
 from test.unit import TestCase
 from unittest.mock import Mock
+from urllib import request
 
 from api.file_service.api import AcceptedMimeTypes
 from api.file_service.storage.api import Storage
@@ -30,6 +31,7 @@ class StorageUnitTestCase(TestCase):
         file_upload_request = FileUploadRequest(
             id=1234,
             uuid="fileuuid",
+            file_name="my-test-file.txt",
             bytes=b"makesomebytesbaby",
             mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
             file_size=222,
@@ -54,6 +56,7 @@ class StorageUnitTestCase(TestCase):
         self.assertEqual(result.file_size, 222)
         self.assertEqual(result.mime_type, AcceptedMimeTypes.APP_OCTET_STREAM.value)
         self.assertEqual(result.id, 1234)
+        self.assertEqual(result.file_name, "my-test-file.txt")
 
     def test_get_file(self):
         ...

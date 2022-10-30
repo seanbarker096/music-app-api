@@ -105,7 +105,7 @@ class FileService:
 
         ## store the file meta data in the db first. This means if our db is down we aren't storing files in s3 without having any info in our db. Also means if s3 is down we have some information in db to try again later with
         file_meta_create_request = FileMetaCreateRequest(
-            uuid=request.uuid, mime_type=request.mime_type
+            uuid=request.uuid, mime_type=request.mime_type, file_name=request.file_name
         )
 
         file = self.file_service_dao.create_file_meta(file_meta_create_request)
@@ -113,6 +113,7 @@ class FileService:
         ## upload to cloud storage provider
         file_upload_request = FileUploadRequest(
             id=file.id,
+            file_name=file.file_name,
             uuid=file.uuid,
             mime_type=file.mime_type,
             file_size=request.file_size,

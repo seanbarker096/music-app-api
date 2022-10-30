@@ -28,6 +28,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
 
             request = FileUploadRequest(
                 id=1234,
+                file_name="my-test-file.mp4",
                 mime_type="mp4",
                 uuid="atestfileuuid",
                 bytes=byte_stream,
@@ -54,6 +55,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
 
             request = FileUploadRequest(
                 id=1234,
+                file_name="my-test-file.mp4",
                 uuid="atestfileuuid",
                 mime_type="mp4",
                 bytes=byte_stream,

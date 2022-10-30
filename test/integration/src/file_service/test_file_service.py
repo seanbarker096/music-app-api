@@ -26,10 +26,12 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         file_service = FileService(config=self.config, storage=storage)
 
         test_uuid = "abcdefghikklmnop"
-        mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
+        mime_type = "image/png"
         byte_message = bytes("message", "utf-8")
 
-        request = FileCreateRequest(uuid=test_uuid, mime_type=mime_type, bytes=byte_message)
+        request = FileCreateRequest(
+            uuid=test_uuid, file_name="my-test-file.png", mime_type=mime_type, bytes=byte_message
+        )
 
         response = file_service.create_file(request)
         file_response = response.file
@@ -51,10 +53,12 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         file_service = FileService(config=self.config)
 
         test_uuid = None
-        mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
+        mime_type = "image/png"
         byte_message = bytes("message", "utf-8")
 
-        request = FileCreateRequest(test_uuid, mime_type, file_size=100, bytes=byte_message)
+        request = FileCreateRequest(
+            test_uuid, "my-test-file.png", mime_type, file_size=100, bytes=byte_message
+        )
 
         with self.assertRaises(InvalidArgumentException) as e:
             file_service.create_file(request)
@@ -70,16 +74,26 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         file_service = FileService(self.config)
 
         test_uuid_one = "testuuidone1234"
-        mime_type = AcceptedMimeTypes.APP_OCTET_STREAM.value
+        mime_type = "image/png"
         byte_message = bytes("message", "utf-8")
 
-        request = FileCreateRequest(uuid=test_uuid_one, mime_type=mime_type, bytes=byte_message)
+        request = FileCreateRequest(
+            uuid=test_uuid_one,
+            file_name="my-test-file.png",
+            mime_type=mime_type,
+            bytes=byte_message,
+        )
 
         first_file = file_service.create_file(request).file
 
         test_uuid_two = test_uuid_one
 
-        request_two = FileCreateRequest(uuid=test_uuid_two, mime_type=mime_type, bytes=byte_message)
+        request_two = FileCreateRequest(
+            uuid=test_uuid_two,
+            file_name="my-second-test-file.png",
+            mime_type=mime_type,
+            bytes=byte_message,
+        )
 
         with self.assertRaises(DBDuplicateKeyException) as e:
             file_service.create_file(request_two)
@@ -121,11 +135,12 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         ## TODO: Create fixtures to avoid doing this directly in the test
         file_id = self.db.run_query(
             """
-        INSERT INTO files(uuid, file_size, mime_type, download_url) VALUES(%s, %s, %s, %s)
+        INSERT INTO files(uuid, file_size, file_name, mime_type, download_url) VALUES(%s, %s, %s, %s, %s)
         """,
             (
                 "abcdefghikklmnop",
                 None,
+                "my-test-file.png",
                 "image/png",
                 "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
             ),
@@ -151,5 +166,6 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             file.download_url,
             "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
         )
+        self.assertEqual(file.file_name, "my-test-file.png")
 
         self.assertEqual(file.id, file_id, "Should return the correct file id")
