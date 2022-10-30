@@ -15,6 +15,7 @@ def upload_file():
     print("test")
     form_data = flask.request.form
     file = flask.request.files["file"]
+    print("file", file)
 
     if not file:
         raise Exception("No file provided")
@@ -57,11 +58,4 @@ def get_file(file_uuid: str):
 @blueprint.route("/files/test/", methods=["GET"])
 def test():
 
-    with open(
-        os.path.dirname(os.path.realpath(__file__)) + "/../../test/test_files/nav-bar.png", "rb"
-    ) as f:
-        bytes = io.BytesIO(f.read())
-
-    print(bytes)
-
-    return flask.send_file(bytes, mimetype="image/png")
+    return flask.current_app.response_class(response={test: "it worked!"}, status=200)
