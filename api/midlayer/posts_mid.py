@@ -1,0 +1,3 @@
+class PostsMidlayerMixin(object):
+    def post_create(self):
+        ...

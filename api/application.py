@@ -4,11 +4,13 @@ from typing import Dict
 from flask import Flask
 
 from api.file_service.api import FileService
+from api.midlayer.api import Midlayer
 
 
 class Connections:
     def __init__(self, config):
         self.file_service = FileService(config)
+        self.midlayer = Midlayer(config)
 
 
 class FlaskApp(Flask):

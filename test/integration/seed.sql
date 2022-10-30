@@ -6,7 +6,7 @@ CREATE TABLE gigs.post (
     attachment_type enum('video', 'image') NULL,
     attachment_uuid varchar(255) NULL,
     owner_id int(10) unsigned NOT NULL,
-    body_text text NULL,
+    content text NULL,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;

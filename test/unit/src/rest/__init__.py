@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import flask
 from api.application import FlaskApp
-from api.rest import file_service_api
+from api.rest import file_service_api, posts_api
 
 
 class APITestCase(TestCase):
@@ -36,3 +36,7 @@ class FileServiceAPITestCase(APITestCase):
 
     def setUp(self):
         super().setUp()
+
+
+class PostAPITestCase(APITestCase):
+    BLUEPRINT = posts_api.blueprint
