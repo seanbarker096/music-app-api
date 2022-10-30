@@ -50,32 +50,6 @@ def get_file(file_uuid: str):
         response=get_result.file_bytes, status=200, mimetype=get_result.file.mime_type
     )
 
-    # return flask.send_file(get_result.bytes_file, mimetype="image/png")
-
-
-# @blueprint.route("/upload/<string:file_uuid>", methods=["PATCH"])
-# def upload_file_bytes(file_uuid: str):
-#     """Upload the file and create the download url."""
-#     ## TODO: BUild the request using file_uuid and bytes we receive
-
-#     mime_type = flask.request.headers.get("Content-Type")
-#     file = flask.request.files["file"]
-
-#     if not file:
-#         raise Exception("No file provided")
-
-#     byte_stream = file.read()
-
-#     file_upload_request = FileUploadRequest(uuid=file_uuid, bytes=byte_stream, mime_type=mime_type)
-
-#     upload_file_result = flask.current_app.conns.file_service.upload_file(
-#         request=file_upload_request
-#     )
-
-#     return flask.current_app.response_class(
-#         response=json.dumps(upload_file_result), status=200, mimetype="application/json"
-#     )
-
 
 @blueprint.route("/files/test/", methods=["GET"])
 def test():
