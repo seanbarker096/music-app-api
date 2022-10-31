@@ -2,6 +2,7 @@ from typing import Optional
 
 
 class Post(object):
+    id: int = ...
     owner_id: int = ...
     content: str = ...
     create_time: int = ...
@@ -10,12 +11,14 @@ class Post(object):
 
     def __init__(
         self,
+        id: int,
         owner_id: int,
         content: str,
         create_time: int,
         update_time: Optional[int],
         attachment_id: Optional[int],
     ):
+        self.id = id
         self.owner_id = owner_id
         self.content = content
         self.create_time = create_time

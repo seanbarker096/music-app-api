@@ -40,3 +40,6 @@ class FileServiceAPITestCase(APITestCase):
 
 class PostAPITestCase(APITestCase):
     BLUEPRINT = posts_api.blueprint
+
+    def setUp(self):
+        super().setUp()

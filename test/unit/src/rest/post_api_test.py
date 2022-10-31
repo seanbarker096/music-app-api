@@ -1,36 +1,64 @@
 import time
 from unittest.mock import Mock
 
-from api.rest import PostAPITestCase
-from api.typings.posts import Post, PostCreateResult
+from api.typings.posts import Post, PostCreateRequest, PostCreateResult
+
+from rest import PostAPITestCase
 
 
 class PostApiTest(PostAPITestCase):
     def test_post_create(self):
-
         now = time.time()
 
-        data = {
+        json = {
             "content": "This is a test post!",
         }
 
-        post = Post(id=123, attachment_id=None, create_time=now, update_time=None, owner_id=555)
-
-        post_create_result = PostCreateResult(post=post)
-
-        self.conns.posts_midlayer = Mock()
-        self.conns.posts_midlayer.post_create = Mock(return_value=post_create_result)
-
-        post_response = self.test_client.post("/posts/", data=data).post
-
-        self.assertEqual(post_response.id, 123, "Should return the correct post id")
-        self.assertEqual(post_response.owner_id, 555, "Should return the correct owner id")
-        self.assertEqual(post_response.create_time, now, "Should return the correct create time")
-        self.assertEqual(post_response.update_time, now, "Should return the correct update time")
-        self.assertEqual(post_response.attachment_id, None, "Should not contain an attachment")
-        self.assertEqual(
-            post_response.content, "This is a test post!", "Should return the correct post content"
+        post = Post(
+            id=123,
+            attachment_id=None,
+            create_time=now,
+            update_time=None,
+            owner_id=555,
+            content="This is a test post!",
         )
 
+        expected_response = PostCreateResult(post=post)
+
+        self.app.conns.midlayer = Mock()
+        self.app.conns.midlayer.post_create = Mock(return_value=expected_response)
+
+        response = self.test_client.post("/posts/", json=json)
+
+        response_dict = {}
+        response_dict["post"] = vars(expected_response.post)
+
+        self.assertEqual(response.status_code, 200, "Should return 200 status code")
+        self.assertEqual(response.json, response_dict, "Should return the correct post")
+
     def test_post_create_with_attachment(self):
-        ...
+        now = time.time()
+
+        json = {"content": "This is a test post!", "attachment_id": "1111"}
+
+        post = Post(
+            id=123,
+            create_time=now,
+            update_time=None,
+            owner_id=555,
+            content="This is a test post!",
+            attachment_id=1111,
+        )
+
+        expected_response = PostCreateResult(post=post)
+
+        self.app.conns.midlayer = Mock()
+        self.app.conns.midlayer.post_create = Mock(return_value=expected_response)
+
+        response = self.test_client.post("/posts/", json=json)
+
+        response_dict = {}
+        response_dict["post"] = vars(expected_response.post)
+
+        self.assertEqual(response.status_code, 200, "Should return 200 status code")
+        self.assertEqual(response.json, response_dict, "Should return the correct post")
