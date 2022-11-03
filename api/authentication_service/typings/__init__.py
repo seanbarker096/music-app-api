@@ -1,10 +1,17 @@
 from enum import Enum
 from typing import Iterable, Optional
 
+from jwt import PyJWT
+
 
 class AuthUserRole(Enum):
     USER = 1
     ADMIN = 2
+
+
+class TokenType(Enum):
+    ACCESS = 1
+    REFRESH = 2
 
 
 class AuthUser:
@@ -20,9 +27,24 @@ class AuthUser:
         self.permissions = permissions
 
 
+class AuthStates(Enum):
+    AUTHENTICATED = 1
+    UNAUTHENTICATED = 2
+
+
 class AuthState:
     auth_user: AuthUser = ...
-    verifier: JWT = ...
+    access_token: PyJWT = ...
+    refresh_token: Optional[PyJWT] = ...
+    state: AuthStates
+
+    def __init__(
+        self, auth_user: AuthUser, access_token: PyJWT, refresh_token: PyJWT, state: AuthStates
+    ):
+        self.auth_user = auth_user
+        self.access_token = access_token
+        self.refresh_token = refresh_token
+        self.state = state
 
 
 class AuthStateCreateRequest:
@@ -37,3 +59,12 @@ class AuthStateCreateResult:
 
     def __init__(self, auth_state: AuthState):
         self.auth_state = auth_state
+
+
+class TokenCreateRequest:
+    token: str
+    owner_id: int
+
+    def __init(self, token: str, owner_id: int):
+        self.token = token
+        self.owner_id = owner_id

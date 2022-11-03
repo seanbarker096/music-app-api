@@ -32,3 +32,10 @@ CREATE TABLE gigs.files (
     UNIQUE INDEX uuid_idx(uuid)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
+
+DROP TABLE IF EXISTS gigs.auth_tokens;
+CREATE TABLE gigs.auth_tokens(
+  id int(10) unsigned auto_increment
+  encoded_token varchar(255) NOT NULL,
+  owner_id int NOT NULL
+)

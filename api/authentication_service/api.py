@@ -1,80 +1,141 @@
+import time
 from abc import ABC
+
+import jwt
+from dao.api import AuthTokenServiceDAO
+from typings import (
+    AuthState,
+    AuthStateCreateRequest,
+    AuthStates,
+    AuthUser,
+    AuthUserRole,
+    TokenType,
+)
 
 
 class TokenAuthService(ABC):
-    def __init__(self):
-        self.auth_state_handler = AuthStateHandler()
-        self.admin_auth_state_handler = AdminAuthStateHandler()
-
-
-    def create_auth_state():
+    def create_auth_state(self, user_id: int):
         ...
 
-    def authenticate():
-        """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
-        ...
+        # def authenticate():
+        #     """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
+        #     ...
 
+        # # def process_header():
+        # #     ...
 
-    def process_header():
-        ...
+        # # def process_cookie():
+        # #     ...
 
-    def process_cookie():
-        ...
-        
-    def validate():
-        ...
+        # # def validate():
+        # #     ...
 
-    def invalidate():
-        """Removes or invalidates the auth state"""
-        ...
+        # # def invalidate():
+        # #     """Removes or invalidates the auth state"""
+        # #     ...
 
-    def refresh():
-        ...
+        # # def refresh():
+        # #     ...
 
-    """these probably should be in auth state handler"""
+        # # """these probably should be in auth state handler"""
 
-    def update_auth_state():
-        ...
+        # # def update_auth_state():
+        # #     ...
 
-    def delete_auth_state():
+        # # def delete_auth_state():
         ...
 
 
 class JWTTokenAuthService(TokenAuthService):
-    def __init__(self):
-        self.auth_state_handler = AuthStateHandler()
-        self.admin_auth_state_handler = AdminAuthStateHandler()
+    ACCESS_TOKEN_TTL = 60 * 60 * 1  # Valid for 1 hours
+    REFRESH_TOKEN_TTL = 60 * 60 * 14  # Valid for 14 days
 
+    def __init__(self, config, auth_dao=None):
+        # self.auth_state_handler = AuthStateHandler()
+        # self.admin_auth_state_handler = AdminAuthStateHandler()
+        self.auth_dao = auth_dao if auth_dao else AuthTokenServiceDAO(config)
+        self.signing_secret = self.config["config_file"]["auth"].get("signing-secret")
 
-    def create_auth_state():
-        
+    def create_auth_state(self, request: AuthStateCreateRequest) -> AuthState:
+        user_id = request.auth_user.user_id
+        # Check if we have a refresh token already for this user
+        token = self.auth_dao.get_token_by_user_id(user_id)
 
-    def authenticate():
-        """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
+        if token is not None:
+            raise Exception(
+                f"Failed to create new auth state. A auth token already exists for user with id {user_id}"
+            )
 
+        access_token = self.generate_token(user_id, TokenType.ACCESS.value)
+        refresh_token = self.generate_token(user_id, TokenType.REFRESH.value)
 
-    def process_header():
+        try:
+            self.auth_dao.token_create(token=refresh_token, user_id=user_id)
+        except:
+            ## TODO: Improve by providing more info based on error type and cause
+            raise Exception(f"Failed to save refresh token to database")
 
-    def process_cookie():
+        return AuthState(
+            auth_user=request.auth_user,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            state=AuthStates.AUTHENTICATED,
+        )
 
-
-    def validate():
+    def create_admin_auth_state(self, user_id: int) -> AuthState:
         ...
 
-    def invalidate():
-        """Removes or invalidates the auth state"""
+    def generate_token(self, user_id: int, token_type: TokenType):
+        token_ttl = (
+            self.ACCESS_TOKEN_TTL
+            if token_type is TokenType.ACCESS.value
+            else self.REFRESH_TOKEN_TTL
+        )
+
+        payload = {"exp": int(time.time()) + token_ttl, "user_id": user_id, "type": token_type}
+        new_token = jwt.encode(payload, self.signing_secret, algorithm="HS256")
+
+        return new_token
+
+    def get_auth_state(self):
+        """Given various tokens etc. works out if user is authenticated"""
+        ## Shouldn't deal with refresh tokens
         ...
 
-    def refresh():
+    def update_auth_state(self):
         ...
 
-    """these probably should be in auth state handler"""
-
-    def update_auth_state():
+    def delete_auth_state(self):
+        "e.g. when logging out"
         ...
 
-    def delete_auth_state():
-        ...
+    # def authenticate():
+    #     """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
+    #     ...
+
+    # def process_header():
+    #     ...
+
+    # def process_cookie():
+    #     ...
+
+    # def _validate():
+    #     ...
+
+    # def _invalidate():
+    #     """Removes or invalidates the auth state"""
+    #     ...
+
+    # def refresh():
+    #     ...
+
+    # """these probably should be in auth state handler"""
+
+    # def update_auth_state():
+    #     ...
+
+    # def delete_auth_state():
+    #     ...
 
     # What we want the service to do:
 
