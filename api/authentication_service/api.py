@@ -7,8 +7,7 @@ from typings import (
     AuthState,
     AuthStateCreateRequest,
     AuthStates,
-    AuthUser,
-    AuthUserRole,
+    TokenCreateRequest,
     TokenType,
 )
 
@@ -70,7 +69,10 @@ class JWTTokenAuthService(TokenAuthService):
         refresh_token = self.generate_token(user_id, TokenType.REFRESH.value)
 
         try:
-            self.auth_dao.token_create(token=refresh_token, user_id=user_id)
+            create_request = TokenCreateRequest(token=refresh_token, owner_id=user_id)
+            row_id = self.auth_dao.token_create(request=create_request)
+            if row_id is None:
+                raise Exception("Failed to create token. Failed to store token in databse")
         except:
             ## TODO: Improve by providing more info based on error type and cause
             raise Exception(f"Failed to save refresh token to database")

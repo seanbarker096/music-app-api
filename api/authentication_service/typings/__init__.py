@@ -65,6 +65,6 @@ class TokenCreateRequest:
     token: str
     owner_id: int
 
-    def __init(self, token: str, owner_id: int):
+    def __init__(self, token: str, owner_id: int):
         self.token = token
         self.owner_id = owner_id

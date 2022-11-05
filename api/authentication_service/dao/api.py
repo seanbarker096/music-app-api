@@ -25,4 +25,30 @@ class AuthTokenServiceDAO:
         return result.get_last_row_id()
 
     def get_token_by_user_id(self, user_id: int) -> str:
-        ...
+
+        if not isinstance(user_id, int):
+            raise Exception(f"Failed to get auth token. Invalid value {user_id} for field user_id.")
+
+        sql = """
+            SELECT id, token, owner_id FROM auth_tokens 
+                WHERE user_id = %s
+        """
+
+        binds = user_id
+
+        result = self.db.run_query(sql, binds)
+
+        rows = result.get_rows()
+
+        if not rows or len(rows):
+            raise Exception(f"Failed to find token for user with id {user_id}")
+
+        if len(rows) > 1:
+            raise Exception(f"More than one token found for user with id {user_id}")
+
+        encoded_token = rows["token"]
+
+        if not isinstance(encoded_token) or len(encoded_token) == 0:
+            raise Exception(f"Invalid token returned for user with id {user_id}")
+
+        return encoded_token

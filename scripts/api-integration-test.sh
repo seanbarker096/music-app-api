@@ -24,14 +24,29 @@ echo "Wait for docker mysql container to be running..."
 # build the container. TODO: Remove --build if dont want to rebuild every time
 docker compose -f ../test/integration/docker-compose.yml up integration-test-mysql -d 
 
+is_container_up=true
 until [[ "`docker inspect -f {{.State.Health.Status}} $MY_SQL_CONTAINER_NAME`"  == "healthy" ]];
-do
+do  
+    if [[ "`docker inspect -f {{.State.Health.Status}} $MY_SQL_CONTAINER_NAME`"  == "unhealthy" ]]; then
+        is_container_up=false
+        break
+    fi
     sleep 0.1
+
 done
-echo "container is up"
+
+if [[ $is_container_up == true ]];then
+    echo "Container is up"
+else 
+    echo "Failed to start up mysql container"
+    exit 1
+
+fi
 
 # Need to active pyenv environment befor running this script. Also cd out into parent dir so that All our different python packages can access eachother
 
 cd ../
 
 python -m pytest
+
+exit 0

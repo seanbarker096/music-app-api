@@ -17,12 +17,13 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
     @patch("time.time")
     def test_create_auth_state(self, time):
         time.return_value = 12345
+        user_id = 12345
         secret = self.config["config_file"]["auth"].get("signing-secret")
 
-        expected_access_token_payload = {"user_id": 123456, "type": TokenType.ACCESS.value}
-        expected_refresh_token_payload = {"user_id": 123456, "type": TokenType.REFRESH.value}
+        expected_access_token_payload = {"user_id": user_id, "type": TokenType.ACCESS.value}
+        expected_refresh_token_payload = {"user_id": user_id, "type": TokenType.REFRESH.value}
 
-        auth_user = AuthUser(id=123456, role=AuthUserRole.USER.value, permissions=None)
+        auth_user = AuthUser(id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
         request = AuthStateCreateRequest(auth_user=auth_user)
 
@@ -79,7 +80,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         )
 
         ## check that refresh token added to db correctly
-        db_refresh_token = authentication_service.dao.get_refresh_token()
+        db_refresh_token = authentication_service.auth_dao.get_token_by_user_id(user_id)
 
         self.assertEqual(
             result.refresh_token,
