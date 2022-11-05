@@ -32,7 +32,6 @@ class FileServiceDAO:
         ...
 
     def get_file_by_uuid(self, uuid: str) -> FileServiceFile:
-        print(uuid)
         sql = """
         SELECT id, uuid, file_size, file_name, mime_type, download_url 
         FROM files 

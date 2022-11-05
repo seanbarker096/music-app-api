@@ -1,4 +1,5 @@
 import os
+import time
 import unittest
 from configparser import ConfigParser
 
@@ -22,6 +23,8 @@ class IntegrationTestCase(unittest.TestCase):
         self.config = {}
         self.config["config_file"] = config
         self.db = DB(self.config)
+        ## Allows us to access the actual time in tests when we mock time.time()
+        self.current_time = int(time.time())
 
     def tearDown(self):
         self.truncate_db()

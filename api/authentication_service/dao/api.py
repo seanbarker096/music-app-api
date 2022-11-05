@@ -1,5 +1,6 @@
-from typings import TokenCreateRequest
+import json
 
+from api.authentication_service.typings import TokenCreateRequest
 from api.db.db import DB
 
 
@@ -15,7 +16,7 @@ class AuthTokenServiceDAO:
             raise Exception("Failed to create token. Token must be a valid string")
 
         sql = """
-            INSERT INTO tokens(encoded_token, owner_id) VALUES (%s, %s)
+            INSERT INTO auth_tokens(token, owner_id) VALUES (%s, %s)
         """
 
         binds = (request.token, request.owner_id)
@@ -31,24 +32,26 @@ class AuthTokenServiceDAO:
 
         sql = """
             SELECT id, token, owner_id FROM auth_tokens 
-                WHERE user_id = %s
+                WHERE owner_id = %s
         """
 
-        binds = user_id
+        binds = (user_id,)
 
         result = self.db.run_query(sql, binds)
 
         rows = result.get_rows()
 
-        if not rows or len(rows):
+        print(json.dumps(rows))
+
+        if not rows or len(rows) == 0:
             raise Exception(f"Failed to find token for user with id {user_id}")
 
         if len(rows) > 1:
             raise Exception(f"More than one token found for user with id {user_id}")
 
-        encoded_token = rows["token"]
+        encoded_token = rows[0]["token"]
 
-        if not isinstance(encoded_token) or len(encoded_token) == 0:
+        if not isinstance(encoded_token, str) or len(encoded_token) == 0:
             raise Exception(f"Invalid token returned for user with id {user_id}")
 
         return encoded_token

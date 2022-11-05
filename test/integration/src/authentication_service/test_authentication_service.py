@@ -16,18 +16,20 @@ from api.authentication_service.typings import (
 class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
     @patch("time.time")
     def test_create_auth_state(self, time):
-        time.return_value = 12345
+        ## This just ensures the time remains fixed so we can assert on it
+        time.return_value = self.current_time
+
         user_id = 12345
         secret = self.config["config_file"]["auth"].get("signing-secret")
 
         expected_access_token_payload = {"user_id": user_id, "type": TokenType.ACCESS.value}
         expected_refresh_token_payload = {"user_id": user_id, "type": TokenType.REFRESH.value}
 
-        auth_user = AuthUser(id=user_id, role=AuthUserRole.USER.value, permissions=None)
+        auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
         request = AuthStateCreateRequest(auth_user=auth_user)
 
-        authentication_service = JWTTokenAuthService()
+        authentication_service = JWTTokenAuthService(config=self.config)
 
         result = authentication_service.create_auth_state(request)
 
@@ -51,19 +53,19 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         self.assertEqual(
             access_token_payload["exp"],
-            time.time + authentication_service.ACCESS_TOKEN_TTL,
+            time.return_value + authentication_service.ACCESS_TOKEN_TTL,
             "Should return the correct access token expiration time",
         )
 
         self.assertEqual(
             access_token_payload["type"],
             TokenType.ACCESS.value,
-            "Should return the correct token type",
+            "Should return the correct token type for the access token",
         )
 
         self.assertEquals(
             refresh_token_payload["exp"],
-            time.time + authentication_service.REFRESH_TOKEN_TTL,
+            time.return_value + authentication_service.REFRESH_TOKEN_TTL,
             "Should return the correct refresh token expiration type",
         )
 
@@ -74,9 +76,9 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         )
 
         self.assertEqual(
-            access_token_payload["type"],
+            refresh_token_payload["type"],
             TokenType.REFRESH.value,
-            "Should return the correct token type",
+            "Should return the correct token type for the refresh token",
         )
 
         ## check that refresh token added to db correctly

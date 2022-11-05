@@ -2,8 +2,9 @@ import time
 from abc import ABC
 
 import jwt
-from dao.api import AuthTokenServiceDAO
-from typings import (
+
+from api.authentication_service.dao.api import AuthTokenServiceDAO
+from api.authentication_service.typings import (
     AuthState,
     AuthStateCreateRequest,
     AuthStates,
@@ -53,12 +54,23 @@ class JWTTokenAuthService(TokenAuthService):
         # self.auth_state_handler = AuthStateHandler()
         # self.admin_auth_state_handler = AdminAuthStateHandler()
         self.auth_dao = auth_dao if auth_dao else AuthTokenServiceDAO(config)
-        self.signing_secret = self.config["config_file"]["auth"].get("signing-secret")
+        self.signing_secret = config["config_file"]["auth"].get("signing-secret")
 
     def create_auth_state(self, request: AuthStateCreateRequest) -> AuthState:
         user_id = request.auth_user.user_id
         # Check if we have a refresh token already for this user
-        token = self.auth_dao.get_token_by_user_id(user_id)
+        token_exists = False
+        token = None
+        try:
+            token = self.auth_dao.get_token_by_user_id(user_id)
+            if isinstance(token, str):
+                token_exists = True
+        except:
+            ## get token by id will throw if no token found
+            pass
+
+        if token_exists:
+            raise Exception(f"Token already exists for user with id {user_id}")
 
         if token is not None:
             raise Exception(
@@ -71,10 +83,11 @@ class JWTTokenAuthService(TokenAuthService):
         try:
             create_request = TokenCreateRequest(token=refresh_token, owner_id=user_id)
             row_id = self.auth_dao.token_create(request=create_request)
+            print(f"row id: {row_id}")
             if row_id is None:
                 raise Exception("Failed to create token. Failed to store token in databse")
         except:
-            ## TODO: Improve by providing more info based on error type and cause
+            ## This didn't seem to be
             raise Exception(f"Failed to save refresh token to database")
 
         return AuthState(
@@ -87,7 +100,7 @@ class JWTTokenAuthService(TokenAuthService):
     def create_admin_auth_state(self, user_id: int) -> AuthState:
         ...
 
-    def generate_token(self, user_id: int, token_type: TokenType):
+    def generate_token(self, user_id: int, token_type: TokenType) -> str:
         token_ttl = (
             self.ACCESS_TOKEN_TTL
             if token_type is TokenType.ACCESS.value

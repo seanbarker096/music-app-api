@@ -17,12 +17,12 @@ class TokenType(Enum):
 class AuthUser:
     """User class specifically for the AuthenticationService. This does not map directly to the main User data model"""
 
-    id: int = ...
+    user_id: int = ...
     role: AuthUserRole = ...
     permissions: Optional[Iterable] = ...
 
-    def __init__(self, id: int, role: AuthUserRole, permissions: Optional[Iterable] = None):
-        self.id = id
+    def __init__(self, user_id: int, role: AuthUserRole, permissions: Optional[Iterable] = None):
+        self.user_id = user_id
         self.role = role
         self.permissions = permissions
 
