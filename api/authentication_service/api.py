@@ -1,7 +1,7 @@
 import logging
 import time
 from abc import ABC
-from typing import Dict
+from typing import Dict, Optional
 
 import jwt
 
@@ -65,49 +65,65 @@ class JWTTokenAuthService(TokenAuthService):
         self.signing_secret = config["config_file"]["auth"].get("signing-secret")
 
     def create_auth_state(self, request: AuthStateCreateRequest) -> AuthState:
-        user_id = request.auth_user.user_id
-        role = request.auth_user.role
-        # Check if we have a refresh token already for this user
-        token_exists = False
-        token = None
         try:
-            token = self.auth_dao.get_token_by_user_id(user_id)
-            if isinstance(token, str):
-                token_exists = True
-        except:
-            ## get token by id will throw if no token found
-            pass
-
-        if token_exists:
-            raise Exception(f"Token already exists for user with id {user_id}")
-
-        if token is not None:
-            raise Exception(
-                f"Failed to create new auth state. A auth token already exists for user with id {user_id}"
+            refresh_token = self.create_token(request.auth_user, token_type=TokenType.REFRESH.value)
+            access_token = self.create_token(
+                request.auth_user, TokenType.ACCESS.value, refresh_token=refresh_token
             )
 
-        access_token = self._generate_token(user_id, TokenType.ACCESS.value, role)
-        refresh_token = self._generate_token(user_id, TokenType.REFRESH.value, role)
+            return AuthState(
+                auth_user=request.auth_user,
+                access_token=access_token,
+                refresh_token=refresh_token,
+                status=AuthStatus.AUTHENTICATED.value,
+            )
 
-        try:
-            create_request = TokenCreateRequest(token=refresh_token, owner_id=user_id)
-            row_id = self.auth_dao.token_create(request=create_request)
-            print(f"row id: {row_id}")
-            if row_id is None:
-                raise Exception("Failed to create token. Failed to store token in databse")
-        except:
-            ## This didn't seem to be
-            raise Exception(f"Failed to save refresh token to database")
-
-        return AuthState(
-            auth_user=request.auth_user,
-            access_token=access_token,
-            refresh_token=refresh_token,
-            status=AuthStatus.AUTHENTICATED.value,
-        )
+        except Exception:
+            raise Exception(f"Failed to create auth state for user with id {request.auth_user}")
 
     def create_admin_auth_state(self, user_id: int) -> AuthState:
         ...
+
+    def create_token(
+        self, auth_user: AuthUser, token_type=TokenType, refresh_token: Optional[str] = None
+    ) -> str:
+        user_id = auth_user.user_id
+
+        if token_type == TokenType.ACCESS and not refresh_token:
+            raise Exception("Must provide a refresh token to create an access token")
+
+        if token_type == TokenType.ACCESS.value:
+            ## Validate refresh token
+            self._validate_token(refresh_token)
+            return self._generate_token(user_id, TokenType.ACCESS.value, auth_user.role)
+
+        if token_type == TokenType.REFRESH.value:
+            token_exists = False
+            try:
+                token = self.auth_dao.get_token_by_user_id(user_id)
+                if isinstance(token, str):
+                    token_exists = True
+            except:
+                ## get token by id will throw if no token found
+                pass
+
+            if token_exists:
+                raise Exception(
+                    f"Token of type {token_type} already exists for user with id {user_id}"
+                )
+
+            token = self._generate_token(user_id, TokenType.REFRESH.value, auth_user.role)
+            self._persist_token(token, owner_id=user_id)
+
+            return token
+
+        raise Exception(f"Cannot create token of invalid type {TokenType(token_type).name}")
+
+    def _validate_token(self, token: str) -> Dict[str, any]:
+        """Validate token allowing for 10 second leway."""
+        return jwt.decode(
+            token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
+        )
 
     def _generate_token(self, user_id: int, token_type: TokenType, role: AuthUserRole) -> str:
         token_ttl = (
@@ -125,6 +141,14 @@ class JWTTokenAuthService(TokenAuthService):
         new_token = jwt.encode(payload, self.signing_secret, algorithm=self.SIGNING_ALGORITHM)
 
         return new_token
+
+    def _persist_token(self, token: str, owner_id: int) -> int:
+        create_request = TokenCreateRequest(token=token, owner_id=owner_id)
+        row_id = self.auth_dao.token_create(request=create_request)
+        if row_id is None:
+            raise Exception(f"Failed to persist token for user with id {owner_id}")
+
+        return row_id
 
     def get_auth_state(self):
         """Given various tokens etc. works out if user is authenticated"""
@@ -169,12 +193,6 @@ class JWTTokenAuthService(TokenAuthService):
         )
 
         return auth_state
-
-    def _validate_token(self, token: str) -> Dict[str, any]:
-        """Validate token allowing for 10 second leway."""
-        return jwt.decode(
-            token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
-        )
 
     # def process_header():
     #     ...

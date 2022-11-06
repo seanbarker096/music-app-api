@@ -302,5 +302,49 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         """i.e. when resetting password"""
         ...
 
-    def test_refresh_auth_state(self):
+    @patch("time.time")
+    def test_create_access_token(self, time):
         """using refresh token to create new access token"""
+        ## Tests that there is a bit of leway
+        time.return_value = self.current_time
+
+        user_id = 12345
+
+        auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
+
+        create_auth_state_request = AuthStateCreateRequest(auth_user=auth_user)
+
+        authentication_service = JWTTokenAuthService(config=self.config)
+
+        ## First generate a refresh token
+        refresh_token = authentication_service.create_auth_state(
+            request=create_auth_state_request
+        ).refresh_token
+
+        new_acess_token = authentication_service.create_token(
+            auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=refresh_token
+        )
+
+        ## Check new token is valid
+        authenticate_result = authentication_service.authenticate(
+            request=AuthenticateRequest(token=new_acess_token)
+        )
+
+        self.assertEquals(
+            authenticate_result.status,
+            AuthStatus.AUTHENTICATED.value,
+            "Should return a valid access token which can be used to authenticate the user",
+        )
+
+    def test_create_access_token_without_refresh_token(self):
+        user_id = 12345
+        auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
+
+        authentication_service = JWTTokenAuthService(config=self.config)
+
+        with self.assertRaises(
+            Exception, msg="Must provide a refresh token to create an access token"
+        ):
+            authentication_service.create_token(
+                auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=None
+            )
