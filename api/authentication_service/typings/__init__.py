@@ -27,24 +27,29 @@ class AuthUser:
         self.permissions = permissions
 
 
-class AuthStates(Enum):
+class AuthStatus(Enum):
     AUTHENTICATED = 1
     UNAUTHENTICATED = 2
 
 
 class AuthState:
-    auth_user: AuthUser = ...
+    # Information about the authenticated user. This is None if the user is unauthenticated
+    auth_user: Optional[AuthUser] = ...
     access_token: PyJWT = ...
     refresh_token: Optional[PyJWT] = ...
-    state: AuthStates
+    status: AuthStatus
 
     def __init__(
-        self, auth_user: AuthUser, access_token: PyJWT, refresh_token: PyJWT, state: AuthStates
+        self,
+        auth_user: Optional[AuthUser],
+        access_token: PyJWT,
+        refresh_token: PyJWT,
+        status: AuthStatus,
     ):
         self.auth_user = auth_user
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.state = state
+        self.status = status
 
 
 class AuthStateCreateRequest:
@@ -68,3 +73,10 @@ class TokenCreateRequest:
     def __init__(self, token: str, owner_id: int):
         self.token = token
         self.owner_id = owner_id
+
+
+class AuthenticateRequest:
+    token: str
+
+    def __init__(self, token: str):
+        self.token = token

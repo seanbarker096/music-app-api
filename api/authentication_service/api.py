@@ -1,13 +1,18 @@
+import logging
 import time
 from abc import ABC
+from typing import Dict
 
 import jwt
 
 from api.authentication_service.dao.api import AuthTokenServiceDAO
 from api.authentication_service.typings import (
+    AuthenticateRequest,
     AuthState,
     AuthStateCreateRequest,
-    AuthStates,
+    AuthStatus,
+    AuthUser,
+    AuthUserRole,
     TokenCreateRequest,
     TokenType,
 )
@@ -46,9 +51,12 @@ class TokenAuthService(ABC):
         ...
 
 
+## TODO: Create getters and setters for these TTL, leways etc.
 class JWTTokenAuthService(TokenAuthService):
-    ACCESS_TOKEN_TTL = 60 * 60 * 1  # Valid for 1 hours
-    REFRESH_TOKEN_TTL = 60 * 60 * 14  # Valid for 14 days
+    _ACCESS_TOKEN_TTL = 60 * 60 * 1  # Valid for 1 hours
+    _REFRESH_TOKEN_TTL = 60 * 60 * 14  # Valid for 14 days
+    _LEWAY = 10
+    SIGNING_ALGORITHM = "HS256"
 
     def __init__(self, config, auth_dao=None):
         # self.auth_state_handler = AuthStateHandler()
@@ -58,6 +66,7 @@ class JWTTokenAuthService(TokenAuthService):
 
     def create_auth_state(self, request: AuthStateCreateRequest) -> AuthState:
         user_id = request.auth_user.user_id
+        role = request.auth_user.role
         # Check if we have a refresh token already for this user
         token_exists = False
         token = None
@@ -77,8 +86,8 @@ class JWTTokenAuthService(TokenAuthService):
                 f"Failed to create new auth state. A auth token already exists for user with id {user_id}"
             )
 
-        access_token = self.generate_token(user_id, TokenType.ACCESS.value)
-        refresh_token = self.generate_token(user_id, TokenType.REFRESH.value)
+        access_token = self._generate_token(user_id, TokenType.ACCESS.value, role)
+        refresh_token = self._generate_token(user_id, TokenType.REFRESH.value, role)
 
         try:
             create_request = TokenCreateRequest(token=refresh_token, owner_id=user_id)
@@ -94,21 +103,26 @@ class JWTTokenAuthService(TokenAuthService):
             auth_user=request.auth_user,
             access_token=access_token,
             refresh_token=refresh_token,
-            state=AuthStates.AUTHENTICATED,
+            status=AuthStatus.AUTHENTICATED.value,
         )
 
     def create_admin_auth_state(self, user_id: int) -> AuthState:
         ...
 
-    def generate_token(self, user_id: int, token_type: TokenType) -> str:
+    def _generate_token(self, user_id: int, token_type: TokenType, role: AuthUserRole) -> str:
         token_ttl = (
-            self.ACCESS_TOKEN_TTL
+            self._ACCESS_TOKEN_TTL
             if token_type is TokenType.ACCESS.value
-            else self.REFRESH_TOKEN_TTL
+            else self._REFRESH_TOKEN_TTL
         )
 
-        payload = {"exp": int(time.time()) + token_ttl, "user_id": user_id, "type": token_type}
-        new_token = jwt.encode(payload, self.signing_secret, algorithm="HS256")
+        payload = {
+            "exp": int(time.time()) + token_ttl,
+            "user_id": user_id,
+            "type": token_type,
+            "role": role,
+        }
+        new_token = jwt.encode(payload, self.signing_secret, algorithm=self.SIGNING_ALGORITHM)
 
         return new_token
 
@@ -124,9 +138,43 @@ class JWTTokenAuthService(TokenAuthService):
         "e.g. when logging out"
         ...
 
-    # def authenticate():
-    #     """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
-    #     ...
+    def authenticate(self, request: AuthenticateRequest) -> AuthState:
+        """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
+        if not isinstance(request.token, str) or len(request.token) == 0:
+            raise Exception(f"Invalid token {request.token} provided")
+
+        payload = None
+        try:
+            payload = self._validate_token(request.token)
+            auth_status = AuthStatus.AUTHENTICATED.value
+
+            if payload["type"] == TokenType.REFRESH:
+                raise Exception(
+                    f"Invalid token receieved of type {payload['type']}. Authenticate should only be used with access tokens"
+                )
+
+            auth_user = AuthUser(user_id=payload["user_id"], role=payload["role"], permissions=[])
+
+        except Exception:
+            # Log cause of failed validation
+            logging.exception("message")
+            auth_status = AuthStatus.UNAUTHENTICATED.value
+            auth_user = None
+
+        auth_state = AuthState(
+            auth_user=auth_user,
+            access_token=request.token,
+            refresh_token=None,
+            status=auth_status,
+        )
+
+        return auth_state
+
+    def _validate_token(self, token: str) -> Dict[str, any]:
+        """Validate token allowing for 10 second leway."""
+        return jwt.decode(
+            token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
+        )
 
     # def process_header():
     #     ...
