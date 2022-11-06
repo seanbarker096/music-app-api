@@ -330,7 +330,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             request=AuthenticateRequest(token=new_acess_token)
         )
 
-        self.assertEquals(
+        self.assertEqual(
             authenticate_result.status,
             AuthStatus.AUTHENTICATED.value,
             "Should return a valid access token which can be used to authenticate the user",
@@ -348,3 +348,63 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             authentication_service.create_token(
                 auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=None
             )
+
+    @patch("time.time")
+    def test_create_refresh_token(self, time):
+        """using refresh token to create new access token"""
+        ## Tests that there is a bit of leway
+        time.return_value = self.current_time
+
+        user_id = 12345
+
+        auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
+
+        authentication_service = JWTTokenAuthService(config=self.config)
+
+        new_refresh_token = authentication_service.create_token(
+            auth_user=auth_user, token_type=TokenType.REFRESH.value, refresh_token=None
+        )
+
+        ## Should be able to use the refresh token to create a new access token and authenticate with it
+        new_acess_token = authentication_service.create_token(
+            auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=new_refresh_token
+        )
+
+        ## Check new token is valid
+        authenticate_result = authentication_service.authenticate(
+            request=AuthenticateRequest(token=new_acess_token)
+        )
+
+        self.assertEqual(
+            authenticate_result.status,
+            AuthStatus.AUTHENTICATED.value,
+            "Should return a refresh token which can be used to return a valid access token, which can be used to authenticate the user",
+        )
+
+        ## Inspect token itself
+        secret = self.config["config_file"]["auth"].get("signing-secret")
+        payload = jwt.decode(
+            jwt=new_refresh_token, key=secret, algorithms=authentication_service.SIGNING_ALGORITHM
+        )
+
+        self.assertEqual(
+            payload["user_id"],
+            user_id,
+            "Should return the correct user id in the refresh token payload",
+        )
+
+        self.assertEqual(
+            payload["exp"],
+            time() + authentication_service._REFRESH_TOKEN_TTL,
+            "Should return the correct expiry time in the refresh token payload",
+        )
+
+        self.assertEqual(
+            payload["type"], TokenType.REFRESH.value, "Should return a token of the correct type"
+        )
+
+        self.assertEqual(
+            payload["role"],
+            AuthUserRole.USER.value,
+            "Should return a token with the correct user role",
+        )

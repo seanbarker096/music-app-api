@@ -95,6 +95,7 @@ class JWTTokenAuthService(TokenAuthService):
         if token_type == TokenType.ACCESS.value:
             ## Validate refresh token
             self._validate_token(refresh_token)
+            ## TODO: Check the token payload matches that of the auth_user in request
             return self._generate_token(user_id, TokenType.ACCESS.value, auth_user.role)
 
         if token_type == TokenType.REFRESH.value:
@@ -132,6 +133,7 @@ class JWTTokenAuthService(TokenAuthService):
             else self._REFRESH_TOKEN_TTL
         )
 
+        ## Todo: make a type for this
         payload = {
             "exp": int(time.time()) + token_ttl,
             "user_id": user_id,
