@@ -8,7 +8,6 @@ class User:
     create_time: int
     is_deleted: bool
     email: str
-    password_hash: str
     last_login_date: Optional[str]
     language_id: Optional[str]
     timezone: Optional[int]
@@ -21,7 +20,6 @@ class User:
         create_time: int,
         is_deleted: bool,
         email: str,
-        password_hash: str,
         last_login_date: Optional[str],
         language_id: Optional[str],
         timezone: Optional[str],
@@ -32,7 +30,6 @@ class User:
         self.create_time = create_time
         self.is_deleted = is_deleted
         self.email = email
-        self.password_hash = password_hash
         self.last_login_date = last_login_date
         self.language_id = language_id
         self.timezone = timezone
@@ -48,7 +45,7 @@ class UsersGetFilter:
 
 
 class UsersGetResult:
-    user: User
+    users: list[User]
 
-    def __init__(self, user: User):
-        self.user = user
+    def __init__(self, users: list[User]):
+        self.users = users

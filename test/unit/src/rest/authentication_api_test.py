@@ -7,7 +7,7 @@ class AuthApiTest(AuthAPITestCase):
 
         user_id = 12345
 
-        json = {"username": "testUser123", "password": "testPassword1"}
+        json = {"username": "testUser12345", "password": "testPassword1"}
 
         response = self.test_client.post("/login/", json=json)
 
@@ -21,12 +21,12 @@ class AuthApiTest(AuthAPITestCase):
 
         self.assertRegex(jwt, r"^(?:[\w-]*\.){2}[\w-]*$", "Should set the bearer token to be a jwt")
 
-        self.assertEqual(jwt, response["token"], "Should return the jwt in the response")
+        self.assertEqual(jwt, response["token"], "Should also return the jwt in the response")
 
         self.assertRegex(
             response["r_token"],
             r"^(?:[\w-]*\.){2}[\w-]*$",
-            "Should set the refresh token to be a jwt",
+            "Should set the refresh token to be a jwt and return in the response",
         )
 
         self.assertEqual(response["user_id"], user_id, "Should return the correct user id")

@@ -31,12 +31,7 @@ def login(self):
         raise Exception("Invalid argument username. Username must be a valid string")
 
     filter = UsersGetFilter(password=request["password"], username=request["username"])
-    users_get_response = flask.current_app.conns.midlayer.get_user_by_password_and_username(filter)
-
-    user = users_get_response.user
-
-    if not user:
-        raise Exception(f"Failed to find user with username {username}")
+    user = flask.current_app.conns.midlayer.get_user_by_username_and_password(filter)
 
     auth_state_request = AuthStateCreateRequest(
         auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER)
@@ -63,9 +58,3 @@ def login(self):
     response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
 
     return response
-
-    ## check user exists
-
-    ## check password is correct
-
-    ## if they do then authenticate via auth service
