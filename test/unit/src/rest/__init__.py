@@ -4,8 +4,9 @@ from test.unit import TestCase
 from unittest.mock import Mock
 
 import flask
+
 from api.application import FlaskApp
-from api.rest import file_service_api, posts_api
+from api.rest import auth_api, file_service_api, posts_api
 
 
 class APITestCase(TestCase):
@@ -40,6 +41,13 @@ class FileServiceAPITestCase(APITestCase):
 
 class PostAPITestCase(APITestCase):
     BLUEPRINT = posts_api.blueprint
+
+    def setUp(self):
+        super().setUp()
+
+
+class AuthAPITestCase(APITestCase):
+    BLUEPRINT = auth_api.blueprint
 
     def setUp(self):
         super().setUp()

@@ -1,0 +1,3 @@
+class UsersMidlayerMixin(object):
+    def user_get(self):
+        ...

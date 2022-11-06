@@ -292,16 +292,6 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             "Should not return refresh token if one wasn/'t provided in request",
         )
 
-    def test_validate_token_with_duplicate(self):
-        ...
-
-    def test_invalidate_token(self):
-        ...
-
-    def test_invalidate_and_create(self):
-        """i.e. when resetting password"""
-        ...
-
     @patch("time.time")
     def test_create_access_token(self, time):
         """using refresh token to create new access token"""
@@ -408,3 +398,13 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             AuthUserRole.USER.value,
             "Should return a token with the correct user role",
         )
+
+    def test_validate_token_with_duplicate(self):
+        ...
+
+    def test_invalidate_token(self):
+        ...
+
+    def test_invalidate_and_create(self):
+        """i.e. when resetting password"""
+        ...

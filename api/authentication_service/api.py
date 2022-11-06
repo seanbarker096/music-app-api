@@ -10,6 +10,7 @@ from api.authentication_service.typings import (
     AuthenticateRequest,
     AuthState,
     AuthStateCreateRequest,
+    AuthStateCreateResult,
     AuthStatus,
     AuthUser,
     AuthUserRole,
@@ -64,19 +65,21 @@ class JWTTokenAuthService(TokenAuthService):
         self.auth_dao = auth_dao if auth_dao else AuthTokenServiceDAO(config)
         self.signing_secret = config["config_file"]["auth"].get("signing-secret")
 
-    def create_auth_state(self, request: AuthStateCreateRequest) -> AuthState:
+    def create_auth_state(self, request: AuthStateCreateRequest) -> AuthStateCreateResult:
         try:
             refresh_token = self.create_token(request.auth_user, token_type=TokenType.REFRESH.value)
             access_token = self.create_token(
                 request.auth_user, TokenType.ACCESS.value, refresh_token=refresh_token
             )
 
-            return AuthState(
+            auth_state = AuthState(
                 auth_user=request.auth_user,
                 access_token=access_token,
                 refresh_token=refresh_token,
                 status=AuthStatus.AUTHENTICATED.value,
             )
+
+            return AuthStateCreateResult(auth_state=auth_state)
 
         except Exception:
             raise Exception(f"Failed to create auth state for user with id {request.auth_user}")

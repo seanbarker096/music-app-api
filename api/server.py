@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 from api.application import FlaskApp
 from api.debugger import initialize_flask_server_debugger_if_needed
-from api.rest import file_service_api, posts_api
+from api.rest import auth_api, file_service_api, posts_api
 
 initialize_flask_server_debugger_if_needed()
 
@@ -27,6 +27,7 @@ CORS(app, origins=[origin])
 
 app.register_blueprint(file_service_api.blueprint, url_prefix="/api/fileservice/0.1")
 app.register_blueprint(posts_api.blueprint, url_prefix="/api/posts/0.1")
+app.register_blueprint(auth_api.blueprint, url_prefix="/api/auth/0.1")
 
 if __name__ == "__main__":
     app.run()
