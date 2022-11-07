@@ -2,6 +2,7 @@ from typing import Optional
 
 
 class User:
+    id: int
     username: str
     first_name: str
     second_name: str
@@ -14,6 +15,7 @@ class User:
 
     def __init__(
         self,
+        id: int,
         username: str,
         first_name: str,
         second_name: str,
@@ -24,6 +26,7 @@ class User:
         language_id: Optional[str],
         timezone: Optional[str],
     ):
+        self.id = id
         self.username = username
         self.first_name = first_name
         self.second_name = second_name
