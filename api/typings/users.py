@@ -38,6 +38,27 @@ class User:
         self.timezone = timezone
 
 
+class UserWithPassword:
+    user: User
+    password_hash: str
+    salt: str
+
+    def __init__(self, user: User, password_hash: str, salt: str):
+        self.id = user.id
+        self.username = user.username
+        self.first_name = user.first_name
+        self.second_name = user.second_name
+        self.create_time = user.create_time
+        self.is_deleted = user.is_deleted
+        self.email = user.email
+        self.last_login_date = user.last_login_date
+        self.language_id = user.language_id
+        self.timezone = user.timezone
+
+        self.password_hash = password_hash
+        self.salt = salt
+
+
 class UsersGetFilter:
     username: Optional[str]
     password: Optional[str]

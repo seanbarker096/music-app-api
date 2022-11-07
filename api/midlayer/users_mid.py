@@ -19,23 +19,22 @@ class UsersMidlayerMixin(object):
         if not filter.username or not isinstance(filter.username, str):
             raise Exception(f"Invalid value {filter.username} for filter argument username")
 
-        try:
-            users = self.users_dao.get_user_by_username(username=filter.username)
+        user_with_password = self.users_dao.get_user_by_username(
+            username=filter.username, include_password=True
+        )
 
-        ## TODO: Keep code checking length here and place DBException as Exception type
-        except:
-            raise Exception(f"Failed to get user with username {filter.username}")
-
-        if len(users) == 0:
+        if not self._is_correct_password(
+            filter.password, user_with_password.password_hash, user_with_password.salt
+        ):
             raise Exception(
-                f"Failed to find user with username {filter.username} because they do not exist"
+                f"Cannot get user with username {filter.username}. Incorrect password provided"
             )
 
-        return users[0]
+        return self.users_dao.strip_users_password(user_with_password)
 
-    def _check_password(self, user: User, password: str):
+    def _is_correct_password(self, password: str, hashed_password: str, salt: str) -> bool:
         bytes_password = password.encode("utf8")
 
-        salt = bcrypt.gensalt()
+        hash = bcrypt.hashpw(bytes_password, salt)
 
-        hashed_password = bcrypt.hashpw(bytes_password, salt)
+        return hashed_password == hash

@@ -4,7 +4,7 @@ import bcrypt
 
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists
-from api.midlayer.users_mid import User, UsersGetFilter
+from api.midlayer.users_mid import User, UsersGetFilter, UserWithPassword
 
 
 class UserDBAlias:
@@ -18,6 +18,7 @@ class UserDBAlias:
     USER_LAST_LOGIN_DATE = "user_last_login_date"
     USER_LANGUAGE_ID = "user_language_id"
     USER_TIMEZONE = "user_timezone"
+    USER_PASSWORD_HASH = "user_password_hash"
 
 
 class UsersDAO(object):
@@ -36,15 +37,21 @@ class UsersDAO(object):
         "timezone as " + UserDBAlias.USER_TIMEZONE,
     ]
 
+    USER_SELECTS_WITH_PASSWORD = [*USER_SELECTS, "password as " + UserDBAlias.USER_PASSWORD_HASH]
+
     def __init__(self, config, db: Optional[DB] = None) -> None:
         self.db = db if db else DB(config)
 
     def users_get(self, filter: UsersGetFilter):
         ...
 
-    def get_user_by_username(self, username: str) -> User:
+    def get_user_by_username(
+        self, username: str, include_password=False
+    ) -> User | UserWithPassword:
+
+        selects = self.USER_SELECTS_WITH_PASSWORD if include_password else self.USER_SELECTS
         sql = f"""
-            SELECT {', '.join(self.USER_SELECTS)}
+            SELECT {', '.join(selects)}
             FROM users
             WHERE username = %s
         """
@@ -66,7 +73,11 @@ class UsersDAO(object):
         if len(rows) > 1:
             raise Exception(f"Found more than one user with username {username}")
 
-        user = self._build_user_from_db_row(rows[0])
+        user = (
+            self._build_user_with_password_from_db_row(db_row=rows[0])
+            if include_password
+            else self._build_user_from_db_row(db_row=rows[0])
+        )
 
         return user
 
@@ -117,4 +128,41 @@ class UsersDAO(object):
             last_login_date=last_login_date,
             language_id=language_id,
             timezone=timezone,
+        )
+
+    def _build_user_with_password_from_db_row(self, db_row: Dict[str, any]) -> UserWithPassword:
+
+        user = self._build_user_from_db_row(
+            db_row=db_row,
+        )
+
+        assert_row_key_exists(db_row, UserDBAlias.USER_PASSWORD_HASH)
+        password_hash = db_row[UserDBAlias.USER_PASSWORD_HASH]
+
+        assert_row_key_exists(db_row, UserDBAlias.USER_SALT)
+        salt = db_row[UserDBAlias.USER_SALT]
+
+        return UserWithPassword(
+            user=user,
+            password_hash=password_hash,
+            salt=salt,
+        )
+
+    def strip_users_password(self, user_with_password: UserWithPassword) -> User:
+        if not isinstance(user_with_password, UserWithPassword):
+            raise Exception(
+                "Invalid argument user_with_password provided. Must provide user of type UserWithPassword"
+            )
+
+        return User(
+            user_id=user_with_password.user_id,
+            username=user_with_password.username,
+            first_name=user_with_password.first_name,
+            second_name=user_with_password.second_name,
+            create_time=user_with_password.create_time,
+            is_deleted=user_with_password.is_deleted,
+            email=user_with_password.email,
+            last_login_date=user_with_password.last_login_date,
+            language_id=user_with_password.language_id,
+            timezone=user_with_password.timezone,
         )
