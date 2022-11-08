@@ -47,8 +47,15 @@ DROP TABLE IF EXISTS gigs.users;
 CREATE TABLE gigs.users (
   id int(10) unsigned auto_increment,
   username varchar(16) NOT NULL,
-  first_name varchar(255) NOT NULL,
-  second_name varchar(255) NOT NULL,
-  create_time datetime DEFAULT '0000-00-00 00:00:00',
-  is_deleted tinyint(1) NOT NULL DEFAULT '0'
-)
+  first_name varchar(128) NOT NULL,
+  second_name varchar(128) NOT NULL,
+  create_time datetime NOT NULL,
+  is_deleted tinyint(1) NOT NULL DEFAULT '0',
+  email varchar(100) NOT NULL,
+  last_login_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  language_id int(10) unsigned NOT NULL,
+  timezone_id int(10) unsigned NOT NULL, 
+  password_hash varchar(32) NOT NULL,
+  salt varchar(16) NOT NULL,
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;

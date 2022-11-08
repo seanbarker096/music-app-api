@@ -1,4 +1,4 @@
-import bcrypt
+from api_utils import hash_password
 
 from api.dao.users_dao import UsersDAO
 from api.typings.users import User, UsersGetFilter
@@ -33,8 +33,6 @@ class UsersMidlayer(object):
         return self.users_dao.strip_users_password(user_with_password)
 
     def _is_correct_password(self, password: str, hashed_password: str, salt: str) -> bool:
-        bytes_password = password.encode("utf8")
-
-        hash = bcrypt.hashpw(bytes_password, salt)
+        hash = hash_password(password=password, salt=salt)
 
         return hashed_password == hash
