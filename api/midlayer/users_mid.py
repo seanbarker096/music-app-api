@@ -4,7 +4,7 @@ from api.dao.users_dao import UsersDAO
 from api.typings.users import User, UsersGetFilter
 
 
-class UsersMidlayerMixin(object):
+class UsersMidlayer(object):
     def __init__(self, config, users_dao: UsersDAO = None):
         self.users_dao = users_dao if users_dao else UsersDAO(config)
 
