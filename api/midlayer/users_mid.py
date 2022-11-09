@@ -1,5 +1,4 @@
-from api_utils import hash_password
-
+from api.api_utils import hash_password, verify_hash
 from api.dao.users_dao import UsersDAO
 from api.typings.users import User, UsersGetFilter
 
@@ -23,16 +22,12 @@ class UsersMidlayer(object):
             username=filter.username, include_password=True
         )
 
-        if not self._is_correct_password(
-            filter.password, user_with_password.password_hash, user_with_password.salt
-        ):
+        if not self._is_correct_password(filter.password, user_with_password.password_hash):
             raise Exception(
                 f"Cannot get user with username {filter.username}. Incorrect password provided"
             )
 
         return self.users_dao.strip_users_password(user_with_password)
 
-    def _is_correct_password(self, password: str, hashed_password: str, salt: str) -> bool:
-        hash = hash_password(password=password, salt=salt)
-
-        return hashed_password == hash
+    def _is_correct_password(self, password: str, hashed_password: str) -> bool:
+        return verify_hash(hashed_password, password)

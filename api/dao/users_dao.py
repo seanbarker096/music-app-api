@@ -1,10 +1,9 @@
 from typing import Dict, Optional
 
-import bcrypt
-
+from api.api_utils import date_time_to_unix_time
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists
-from api.midlayer.users_mid import User, UsersGetFilter, UserWithPassword
+from api.typings.users import User, UsersGetFilter, UserWithPassword
 
 
 class UserDBAlias:
@@ -17,8 +16,9 @@ class UserDBAlias:
     USER_EMAIL = "user_email"
     USER_LAST_LOGIN_DATE = "user_last_login_date"
     USER_LANGUAGE_ID = "user_language_id"
-    USER_TIMEZONE = "user_timezone"
+    USER_TIMEZONE_ID = "USER_TIMEZONE_ID"
     USER_PASSWORD_HASH = "user_password_hash"
+    USER_SALT = "user_salt"
 
 
 class UsersDAO(object):
@@ -34,10 +34,14 @@ class UsersDAO(object):
         "email as " + UserDBAlias.USER_EMAIL,
         "last_login_date as " + UserDBAlias.USER_LAST_LOGIN_DATE,
         "language_id as " + UserDBAlias.USER_LANGUAGE_ID,
-        "timezone as " + UserDBAlias.USER_TIMEZONE,
+        "timezone_id as " + UserDBAlias.USER_TIMEZONE_ID,
     ]
 
-    USER_SELECTS_WITH_PASSWORD = [*USER_SELECTS, "password as " + UserDBAlias.USER_PASSWORD_HASH]
+    USER_SELECTS_WITH_PASSWORD = [
+        *USER_SELECTS,
+        "password_hash as " + UserDBAlias.USER_PASSWORD_HASH,
+        "salt as " + UserDBAlias.USER_SALT,
+    ]
 
     def __init__(self, config, db: Optional[DB] = None) -> None:
         self.db = db if db else DB(config)
@@ -96,7 +100,8 @@ class UsersDAO(object):
         second_name = db_row[UserDBAlias.USER_SECOND_NAME]
 
         assert_row_key_exists(db_row, UserDBAlias.USER_CREATE_TIME)
-        create_time = int(db_row[UserDBAlias.USER_CREATE_TIME])
+        create_unix_time = date_time_to_unix_time(db_row[UserDBAlias.USER_CREATE_TIME])
+        create_time = int(create_unix_time)
 
         assert_row_key_exists(db_row, UserDBAlias.USER_IS_DELETED)
         is_deleted = db_row[UserDBAlias.USER_IS_DELETED]
@@ -105,20 +110,20 @@ class UsersDAO(object):
         email = db_row[UserDBAlias.USER_EMAIL]
 
         assert_row_key_exists(db_row, UserDBAlias.USER_LAST_LOGIN_DATE)
-        last_login_date = (
-            int(db_row[UserDBAlias.USER_LAST_LOGIN_DATE])
-            if db_row[UserDBAlias.USER_LAST_LOGIN_DATE]
-            else None
-        )
+        if db_row[UserDBAlias.USER_LAST_LOGIN_DATE]:
+            last_login_unix_time = date_time_to_unix_time(db_row[UserDBAlias.USER_LAST_LOGIN_DATE])
+            last_login_date = int(last_login_unix_time)
+        else:
+            last_login_date = None
 
         assert_row_key_exists(db_row, UserDBAlias.USER_LANGUAGE_ID)
         language_id = db_row[UserDBAlias.USER_LANGUAGE_ID]
 
-        assert_row_key_exists(db_row, UserDBAlias.USER_TIMEZONE)
-        timezone = db_row[UserDBAlias.USER_TIMEZONE]
+        assert_row_key_exists(db_row, UserDBAlias.USER_TIMEZONE_ID)
+        timezone_id = db_row[UserDBAlias.USER_TIMEZONE_ID]
 
         return User(
-            user_id=user_id,
+            id=user_id,
             username=username,
             first_name=first_name,
             second_name=second_name,
@@ -127,7 +132,7 @@ class UsersDAO(object):
             email=email,
             last_login_date=last_login_date,
             language_id=language_id,
-            timezone=timezone,
+            timezone_id=timezone_id,
         )
 
     def _build_user_with_password_from_db_row(self, db_row: Dict[str, any]) -> UserWithPassword:
@@ -155,7 +160,7 @@ class UsersDAO(object):
             )
 
         return User(
-            user_id=user_with_password.user_id,
+            id=user_with_password.id,
             username=user_with_password.username,
             first_name=user_with_password.first_name,
             second_name=user_with_password.second_name,
@@ -164,5 +169,5 @@ class UsersDAO(object):
             email=user_with_password.email,
             last_login_date=user_with_password.last_login_date,
             language_id=user_with_password.language_id,
-            timezone=user_with_password.timezone,
+            timezone_id=user_with_password.timezone_id,
         )

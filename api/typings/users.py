@@ -11,7 +11,7 @@ class User:
     email: str
     last_login_date: Optional[str]
     language_id: Optional[str]
-    timezone: Optional[int]
+    timezone_id: Optional[int]
 
     def __init__(
         self,
@@ -24,7 +24,7 @@ class User:
         email: str,
         last_login_date: Optional[str],
         language_id: Optional[str],
-        timezone: Optional[str],
+        timezone_id: Optional[str],
     ):
         self.id = id
         self.username = username
@@ -35,7 +35,7 @@ class User:
         self.email = email
         self.last_login_date = last_login_date
         self.language_id = language_id
-        self.timezone = timezone
+        self.timezone_id = timezone_id
 
 
 class UserWithPassword:
@@ -53,7 +53,7 @@ class UserWithPassword:
         self.email = user.email
         self.last_login_date = user.last_login_date
         self.language_id = user.language_id
-        self.timezone = user.timezone
+        self.timezone_id = user.timezone_id
 
         self.password_hash = password_hash
         self.salt = salt

@@ -52,10 +52,13 @@ CREATE TABLE gigs.users (
   create_time datetime NOT NULL,
   is_deleted tinyint(1) NOT NULL DEFAULT '0',
   email varchar(100) NOT NULL,
-  last_login_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_login_date datetime NOT NULL,
   language_id int(10) unsigned NOT NULL,
   timezone_id int(10) unsigned NOT NULL, 
-  password_hash varchar(32) NOT NULL,
+  password_hash varchar(256) NOT NULL,
   salt varchar(16) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE INDEX username_idx(username),
+  UNIQUE INDEX email_idx(email)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
