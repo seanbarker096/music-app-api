@@ -16,6 +16,6 @@ class MidlayerConnections:
 
 
 class Midlayer(PostsMidlayerMixin, UsersMidlayerMixin):
-    def __init__(self, config, conns: MidlayerConnections = None):
+    def __init__(self, config, conns: Optional[MidlayerConnections] = None):
         connections = conns if conns else MidlayerConnections(config)
         super().__init__(config, connections)

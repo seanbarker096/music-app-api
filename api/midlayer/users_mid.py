@@ -2,7 +2,6 @@ from typing import Optional
 
 from api.api_utils import hash_password, verify_hash
 from api.dao.users_dao import UsersDAO
-from api.midlayer.api import MidlayerConnections
 from api.typings.users import User, UsersGetFilter
 
 
@@ -12,7 +11,7 @@ class UserMidlayerConnections:
 
 
 class UsersMidlayerMixin(object):
-    def __init__(self, config, conns: Optional[MidlayerConnections] = None):
+    def __init__(self, config, conns: Optional["MidlayerConnections"] = None):
         connections = (
             conns.user_mid_conns
             if conns and conns.user_mid_conns

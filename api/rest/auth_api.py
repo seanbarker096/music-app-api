@@ -11,11 +11,11 @@ from api.authentication_service.typings import (
 from api.typings.auth import LoginResult
 from api.typings.users import User, UsersGetFilter
 
-blueprint = flask.blueprint("auth", __name__)
+blueprint = flask.Blueprint("auth", __name__)
 
 
 @blueprint.route("/login/", methods=["POST"])
-def login(self):
+def login():
     request = flask.request.json
 
     password = request.get("password", None)
@@ -41,6 +41,8 @@ def login(self):
 
     auth_state = result.auth_state
 
+    print(auth_state.status)
+
     ## This shouldn't really happen. If auth failed an error should be thrown
     if auth_state.status != AuthStatus.AUTHENTICATED.value:
         raise Exception(f"Failed to authenticate user with id {user.id}")
@@ -56,5 +58,7 @@ def login(self):
     )
 
     response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
+
+    print(response.headers)
 
     return response

@@ -1,7 +1,6 @@
 from typing import Optional
 
 from api.dao.posts_dao import PostsDAO
-from api.midlayer.api import MidlayerConnections
 
 
 class PostMidlayerConnections:
@@ -10,7 +9,7 @@ class PostMidlayerConnections:
 
 
 class PostsMidlayerMixin(object):
-    def __init__(self, config, conns: Optional[MidlayerConnections] = None):
+    def __init__(self, config, conns: Optional["MidlayerConnections"] = None):
         connections = (
             conns.post_mid_conns
             if conns and conns.post_mid_conns

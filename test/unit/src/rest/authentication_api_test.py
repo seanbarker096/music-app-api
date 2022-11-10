@@ -4,11 +4,33 @@ import jwt
 from rest import AuthAPITestCase
 
 from api.authentication_service.api import JWTTokenAuthService
-from api.authentication_service.typings import AuthState, AuthStateCreateResult
+from api.authentication_service.typings import (
+    AuthState,
+    AuthStateCreateResult,
+    AuthStatus,
+    AuthUser,
+    AuthUserRole,
+)
 from api.midlayer.api import Midlayer
+from api.midlayer.users_mid import User
 
 
 class AuthApiTest(AuthAPITestCase):
+    def setUp(self):
+        self.test_user = User(
+            id=4444,
+            first_name="Bukayo",
+            second_name="Saka",
+            username="Saka7",
+            create_time=5555,
+            is_deleted=False,
+            email="saka7@gmail.com",
+            last_login_date=None,
+            language_id=None,
+            timezone_id=None,
+        )
+        super().setUp()
+
     def test_login_with_username_and_password(self):
 
         user_id = 12345
@@ -17,33 +39,46 @@ class AuthApiTest(AuthAPITestCase):
 
         self.app.conns.auth_service = Mock()
 
-        self.app.conns.midlayer = Midlayer(config=self.config, users_midlayer=Mock())
+        auth_user = AuthUser(user_id=12345, role=AuthUserRole.USER.value)
+        expected_auth_state = AuthState(
+            auth_user=auth_user,
+            access_token="a-mock-access-token",
+            refresh_token="a-mock-refresh-token",
+            status=AuthStatus.AUTHENTICATED.value,
+        )
 
-        self.app.conns.midlayer.users_midlayer.get_user_by_username_and_password = Mock()
+        create_auth_state_result = AuthStateCreateResult(auth_state=expected_auth_state)
+        self.app.conns.auth_service.create_auth_state = Mock(return_value=create_auth_state_result)
 
-        self.app.conns.auth_service.create_auth_state()
+        self.app.conns.midlayer = Mock()
+
+        self.app.conns.midlayer.get_user_by_username_and_password = Mock(
+            return_value=self.test_user
+        )
 
         response = self.test_client.post("/login/", json=json)
 
-        [bearer_str, jwt] = response.headers["Authorization"].split(" ")
+        response_body = response.json
 
-        self.assertEquals(response.status, 200, "Should return 200 status code")
+        [bearer_str, token] = response.headers["Authorization"].split(" ")
+
+        self.assertEqual(response.status_code, 200, "Should return 200 status code")
 
         self.assertEqual(bearer_str, "Bearer", "Should correctly format the Authorization header")
 
-        self.assertIsInstance(jwt, str, "Should return an access token")
+        self.assertIsInstance(token, str, "Should return an access token")
 
-        self.assertRegex(jwt, r"^(?:[\w-]*\.){2}[\w-]*$", "Should set the bearer token to be a jwt")
-
-        self.assertEqual(jwt, response["token"], "Should also return the jwt in the response")
-
-        self.assertRegex(
-            response["r_token"],
-            r"^(?:[\w-]*\.){2}[\w-]*$",
-            "Should set the refresh token to be a jwt and return in the response",
+        self.assertEqual(
+            token, response_body["token"], "Should also return the access token in the response"
         )
 
-        self.assertEqual(response["user_id"], user_id, "Should return the correct user id")
+        self.assertIsInstance(
+            response_body["r_token"],
+            str,
+            "Should return a refresh token in the response",
+        )
+
+        self.assertEqual(response_body["user_id"], user_id, "Should return the correct user id")
 
     def test_login_with_non_registered_user(self):
         ...
