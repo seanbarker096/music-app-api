@@ -73,3 +73,17 @@ class UsersGetResult:
 
     def __init__(self, users: list[User]):
         self.users = users
+
+
+class UserCreateRequest:
+    def __init__(
+        self,
+    ):
+        ...
+
+
+class UserCreateResponse:
+    def __init__(
+        self,
+    ):
+        ...
