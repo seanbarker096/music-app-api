@@ -32,7 +32,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         authentication_service = JWTTokenAuthService(config=self.config)
 
-        result = authentication_service.create_auth_state(request)
+        result = authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
@@ -105,7 +105,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         authentication_service = JWTTokenAuthService(config=self.config)
 
-        result = authentication_service.create_auth_state(request)
+        result = authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
@@ -161,7 +161,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         # Use this to simulate a recently expired token
         authentication_service._ACCESS_TOKEN_TTL = -100
 
-        result = authentication_service.create_auth_state(request)
+        result = authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
@@ -207,7 +207,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         # This simulates the token being expired, but its expiry time falling within the leway window
         authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 0.5
 
-        result = authentication_service.create_auth_state(request)
+        result = authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
@@ -263,7 +263,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         # This simulates the token being expired, but only just falling outside the leway window
         authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 1.1
 
-        result = authentication_service.create_auth_state(request)
+        result = authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
@@ -309,7 +309,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         ## First generate a refresh token
         refresh_token = authentication_service.create_auth_state(
             request=create_auth_state_request
-        ).refresh_token
+        ).auth_state.refresh_token
 
         new_acess_token = authentication_service.create_token(
             auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=refresh_token
