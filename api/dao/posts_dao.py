@@ -1,3 +1,6 @@
 class PostsDAO(object):
+    def __init__(self, config):
+        ...
+
     def post_create(self):
         ...

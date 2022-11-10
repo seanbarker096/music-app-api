@@ -1,5 +1,11 @@
+from unittest.mock import Mock
+
 import jwt
 from rest import AuthAPITestCase
+
+from api.authentication_service.api import JWTTokenAuthService
+from api.authentication_service.typings import AuthState, AuthStateCreateResult
+from api.midlayer.api import Midlayer
 
 
 class AuthApiTest(AuthAPITestCase):
@@ -8,6 +14,14 @@ class AuthApiTest(AuthAPITestCase):
         user_id = 12345
 
         json = {"username": "testUser12345", "password": "testPassword1"}
+
+        self.app.conns.auth_service = Mock()
+
+        self.app.conns.midlayer = Midlayer(config=self.config, users_midlayer=Mock())
+
+        self.app.conns.midlayer.users_midlayer.get_user_by_username_and_password = Mock()
+
+        self.app.conns.auth_service.create_auth_state()
 
         response = self.test_client.post("/login/", json=json)
 

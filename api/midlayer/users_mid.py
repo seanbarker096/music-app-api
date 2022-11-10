@@ -1,11 +1,27 @@
+from typing import Optional
+
 from api.api_utils import hash_password, verify_hash
 from api.dao.users_dao import UsersDAO
+from api.midlayer.api import MidlayerConnections
 from api.typings.users import User, UsersGetFilter
 
 
-class UsersMidlayer(object):
-    def __init__(self, config, users_dao: UsersDAO = None):
-        self.users_dao = users_dao if users_dao else UsersDAO(config)
+class UserMidlayerConnections:
+    def __init__(self, config, users_dao: Optional[UsersDAO] = None):
+        self.users_dao = users_dao if users_dao else UsersDAO(config=config)
+
+
+class UsersMidlayerMixin(object):
+    def __init__(self, config, conns: Optional[MidlayerConnections] = None):
+        connections = (
+            conns.user_mid_conns
+            if conns and conns.user_mid_conns
+            else UserMidlayerConnections(config)
+        )
+        self.users_dao = connections.users_dao
+
+        ## Call the next mixins constructor
+        self.super().__init__(config, conns)
 
     def users_get(self):
         ...
