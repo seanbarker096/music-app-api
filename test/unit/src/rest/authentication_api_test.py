@@ -13,6 +13,7 @@ from api.authentication_service.typings import (
 )
 from api.midlayer.api import Midlayer
 from api.midlayer.users_mid import User
+from exceptions.response.exceptions import UserAlreadyExistsException
 
 
 class AuthApiTest(AuthAPITestCase):
@@ -147,7 +148,36 @@ class AuthApiTest(AuthAPITestCase):
         ...
 
     def test_signup_with_duplicate_username(self):
-        ...
+        json = {
+            "username": "Saka7",
+            "password": "testPassword1",
+            "first_name": "Bukayo",
+            "second_name": "Saka",
+            "email": "saka7@gmail.com",
+        }
+
+        expected_exception = UserAlreadyExistsException(
+            "Cannot create user with username Saka7 because user already exists"
+        )
+
+        self.app.conns.midlayer = Mock()
+        self.app.conns.midlayer.user_create = Mock(side_effect=expected_exception)
+
+        response = self.test_client.post("/signup/", json=json)
+
+        response_body = response.json
+
+        self.assertEqual(400, response.status_code, "Should return 400 status code")
+        self.assertEqual(
+            expected_exception.get_code(),
+            response_body["error_code"],
+            "Should return the correct error code",
+        )
+        self.assertEqual(
+            "Cannot create user with username Saka7 because user already exists",
+            response_body["message"],
+            "Should return the correct error message",
+        )
 
     def test_signup_with_deleted_user(self):
         ...

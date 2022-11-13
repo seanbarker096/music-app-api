@@ -75,3 +75,13 @@ class CreateFileDownloadURLFailedException(ResponseBaseException):
 
     def __init__(self, message: str):
         super().__init__(message)
+
+
+class UserAlreadyExistsException(ResponseBaseException):
+    _http_code = 400
+    _name = "USER_ALREADY_EXISTS"
+    _code = ErrorCodes.USER_ALREADY_EXISTS.value
+    _detail = "Failed to create user as they already exist."
+
+    def __init__(self, message: str):
+        super().__init__(message=message)

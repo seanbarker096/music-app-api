@@ -1,6 +1,7 @@
 from typing import Optional
 
 from api.dao.users_dao import UsersDAO
+from api.db.db import DBDuplicateKeyException
 from api.midlayer import BaseMidlayerMixin
 from api.typings.users import (
     User,
@@ -11,6 +12,7 @@ from api.typings.users import (
     UserWithPassword,
 )
 from api.utils import hash_password, validate_password, verify_hash
+from exceptions.response.exceptions import UserAlreadyExistsException
 
 
 class UserMidlayerConnections:
@@ -72,6 +74,12 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
 
         password_hash = hash_password(request.password)
 
-        user = self.users_dao.user_create(request, password_hash=password_hash)
+        try:
+            user = self.users_dao.user_create(request, password_hash=password_hash)
+        ## TODO: Update to use our own duplicate key error
+        except DBDuplicateKeyException:
+            raise UserAlreadyExistsException(
+                f"Cannot create user with username {request.username} because user already exists"
+            )
 
         return UserCreateResult(user=user)

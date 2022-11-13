@@ -15,7 +15,8 @@ from api.typings.users import (
     UsersGetFilter,
     UsersGetProjection,
 )
-from api.utils.rest_utils import process_string_request_param
+from api.utils.rest_utils import build_api_error_repsonse, process_string_request_param
+from exceptions.response.exceptions import UserAlreadyExistsException
 
 blueprint = flask.Blueprint("auth", __name__)
 
@@ -90,7 +91,10 @@ def signup():
         email=email,
     )
 
-    user = flask.current_app.conns.midlayer.user_create(request=user_create_request).user
+    try:
+        user = flask.current_app.conns.midlayer.user_create(request=user_create_request).user
+    except UserAlreadyExistsException as e:
+        return build_api_error_repsonse(e, 400)
 
     ## now authenticate the new user
     auth_state_request = AuthStateCreateRequest(

@@ -1,4 +1,9 @@
+import json
 from typing import Dict
+
+import flask
+
+from exceptions.response.exceptions import ResponseBaseException
 
 
 def process_string_request_param(request_body: Dict[str, any], parameter_name: str) -> str:
@@ -12,3 +17,15 @@ def process_string_request_param(request_body: Dict[str, any], parameter_name: s
         raise Exception(f"Invalid value {parameter} for parameter '{parameter_name}'")
 
     return parameter
+
+
+def build_api_error_repsonse(e: ResponseBaseException, http_status_code: int):
+    response = {
+        "status": "error",
+        "message": e.get_message(),
+        "error_code": e.get_code(),
+        "detail": e.get_detail(),
+    }
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=http_status_code, mimetype="application/json"
+    )
