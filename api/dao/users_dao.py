@@ -1,10 +1,10 @@
 import time
 from typing import Dict, Optional
 
-from api.api_utils import date_time_to_unix_time, hash_password
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists
 from api.typings.users import User, UserCreateRequest, UsersGetFilter, UserWithPassword
+from api.utils import date_time_to_unix_time, hash_password
 
 
 class UserDBAlias:

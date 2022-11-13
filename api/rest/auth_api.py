@@ -9,7 +9,13 @@ from api.authentication_service.typings import (
     AuthUserRole,
 )
 from api.typings.auth import LoginResult
-from api.typings.users import User, UsersGetFilter, UsersGetProjection
+from api.typings.users import (
+    User,
+    UserCreateRequest,
+    UsersGetFilter,
+    UsersGetProjection,
+)
+from api.utils.rest_utils import process_string_request_param
 
 blueprint = flask.Blueprint("auth", __name__)
 
@@ -62,5 +68,53 @@ def login():
     response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
 
     print(response.headers)
+
+    return response
+
+
+@blueprint.route("/signup/", methods=["POST"])
+def signup():
+    request = flask.request.json
+
+    password = process_string_request_param(request_body=request, parameter_name="password")
+    username = process_string_request_param(request_body=request, parameter_name="username")
+    first_name = process_string_request_param(request_body=request, parameter_name="first_name")
+    second_name = process_string_request_param(request_body=request, parameter_name="second_name")
+    email = process_string_request_param(request_body=request, parameter_name="email")
+
+    user_create_request = UserCreateRequest(
+        username=username,
+        password=password,
+        first_name=first_name,
+        second_name=second_name,
+        email=email,
+    )
+
+    user = flask.current_app.conns.midlayer.user_create(request=user_create_request).user
+
+    ## now authenticate the new user
+    auth_state_request = AuthStateCreateRequest(
+        auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER)
+    )
+
+    result = flask.current_app.conns.auth_service.create_auth_state(request=auth_state_request)
+
+    auth_state = result.auth_state
+
+    ## This shouldn't really happen. If auth failed an error should be thrown
+    if auth_state.status != AuthStatus.AUTHENTICATED.value:
+        raise Exception(f"Failed to authenticate user with id {user.id}")
+
+    response = {
+        "user_id": auth_state.auth_user.user_id,
+        "token": auth_state.access_token,
+        "r_token": auth_state.refresh_token,
+    }
+
+    response = flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+    response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
 
     return response

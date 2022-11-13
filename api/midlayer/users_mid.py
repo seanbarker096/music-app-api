@@ -1,6 +1,5 @@
 from typing import Optional
 
-from api.api_utils import hash_password, validate_password, verify_hash
 from api.dao.users_dao import UsersDAO
 from api.midlayer import BaseMidlayerMixin
 from api.typings.users import (
@@ -11,6 +10,7 @@ from api.typings.users import (
     UsersGetProjection,
     UserWithPassword,
 )
+from api.utils import hash_password, validate_password, verify_hash
 
 
 class UserMidlayerConnections:
