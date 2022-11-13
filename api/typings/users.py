@@ -6,10 +6,10 @@ class User:
     username: str
     first_name: str
     second_name: str
-    create_time: int
+    create_time: float
     is_deleted: bool
     email: str
-    last_login_date: Optional[str]
+    last_login_date: float
     language_id: Optional[str]
     timezone_id: Optional[int]
 
@@ -22,7 +22,7 @@ class User:
         create_time: int,
         is_deleted: bool,
         email: str,
-        last_login_date: Optional[str],
+        last_login_date: float,
         language_id: Optional[str],
         timezone_id: Optional[str],
     ):
@@ -68,6 +68,13 @@ class UsersGetFilter:
         self.password = password
 
 
+class UsersGetProjection:
+    password: bool = ...
+
+    def __init__(self, password: bool = False):
+        self.password = password
+
+
 class UsersGetResult:
     users: list[User]
 
@@ -76,14 +83,29 @@ class UsersGetResult:
 
 
 class UserCreateRequest:
+    username: str
+    first_name: str
+    second_name: str
+    email: str
+    password: str
+
     def __init__(
         self,
+        username: str,
+        first_name: str,
+        second_name: str,
+        email: str,
+        password: str,
     ):
-        ...
+        self.username = username
+        self.first_name = first_name
+        self.second_name = second_name
+        self.email = email
+        self.password = password
 
 
-class UserCreateResponse:
-    def __init__(
-        self,
-    ):
-        ...
+class UserCreateResult:
+    user: User
+
+    def __init__(self, user: User):
+        self.user = user

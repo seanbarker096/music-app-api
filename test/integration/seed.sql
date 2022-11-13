@@ -56,7 +56,7 @@ CREATE TABLE gigs.users (
   language_id int(10) unsigned NOT NULL,
   timezone_id int(10) unsigned NOT NULL, 
   password_hash varchar(256) NOT NULL,
-  salt varchar(16) NOT NULL,
+  salt varchar(16) NULL,
   PRIMARY KEY (id),
   UNIQUE INDEX username_idx(username),
   UNIQUE INDEX email_idx(email)

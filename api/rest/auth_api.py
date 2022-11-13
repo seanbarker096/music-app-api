@@ -9,7 +9,7 @@ from api.authentication_service.typings import (
     AuthUserRole,
 )
 from api.typings.auth import LoginResult
-from api.typings.users import User, UsersGetFilter
+from api.typings.users import User, UsersGetFilter, UsersGetProjection
 
 blueprint = flask.Blueprint("auth", __name__)
 
@@ -31,7 +31,9 @@ def login():
         raise Exception("Invalid argument username. Username must be a valid string")
 
     filter = UsersGetFilter(password=request["password"], username=request["username"])
-    user = flask.current_app.conns.midlayer.get_user_by_username_and_password(filter)
+    user = flask.current_app.conns.midlayer.get_user_by_username_and_password(
+        filter, projection=UsersGetProjection()
+    )
 
     auth_state_request = AuthStateCreateRequest(
         auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER)

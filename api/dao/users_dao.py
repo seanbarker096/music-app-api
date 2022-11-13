@@ -1,9 +1,10 @@
+import time
 from typing import Dict, Optional
 
-from api.api_utils import date_time_to_unix_time
+from api.api_utils import date_time_to_unix_time, hash_password
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists
-from api.typings.users import User, UsersGetFilter, UserWithPassword
+from api.typings.users import User, UserCreateRequest, UsersGetFilter, UserWithPassword
 
 
 class UserDBAlias:
@@ -85,6 +86,51 @@ class UsersDAO(object):
 
         return user
 
+    def user_create(self, request: UserCreateRequest, password_hash: str) -> User:
+
+        sql = """
+            INSERT INTO users(username, first_name, second_name, create_time, is_deleted, email, last_login_date, language_id, timezone_id, password_hash, salt)
+            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
+        """
+
+        now = time.time()
+
+        hash_password(request.password)
+
+        binds = (
+            request.username,
+            request.first_name,
+            request.second_name,
+            now,
+            False,
+            request.email,
+            now,
+            1,
+            1,
+            password_hash,
+            None,  ## Current implementation for passwords doesn't require us to store a salt
+        )
+
+        try:
+            db_result = self.db.run_query(sql, binds)
+
+            user_id = db_result.get_last_row_id()
+
+            return User(
+                id=user_id,
+                username=request.username,
+                first_name=request.first_name,
+                second_name=request.second_name,
+                create_time=now,
+                is_deleted=False,
+                email=request.email,
+                last_login_date=now,
+                language_id=1,
+                timezone_id=1,
+            )
+        except:
+            raise Exception(f"Failed to create user with username {request.username}")
+
     def _build_user_from_db_row(self, db_row: Dict[str, any]) -> User:
 
         assert_row_key_exists(db_row, UserDBAlias.USER_ID)
@@ -100,8 +146,7 @@ class UsersDAO(object):
         second_name = db_row[UserDBAlias.USER_SECOND_NAME]
 
         assert_row_key_exists(db_row, UserDBAlias.USER_CREATE_TIME)
-        create_unix_time = date_time_to_unix_time(db_row[UserDBAlias.USER_CREATE_TIME])
-        create_time = int(create_unix_time)
+        create_unix_time = float(date_time_to_unix_time(db_row[UserDBAlias.USER_CREATE_TIME]))
 
         assert_row_key_exists(db_row, UserDBAlias.USER_IS_DELETED)
         is_deleted = db_row[UserDBAlias.USER_IS_DELETED]
@@ -110,11 +155,9 @@ class UsersDAO(object):
         email = db_row[UserDBAlias.USER_EMAIL]
 
         assert_row_key_exists(db_row, UserDBAlias.USER_LAST_LOGIN_DATE)
-        if db_row[UserDBAlias.USER_LAST_LOGIN_DATE]:
-            last_login_unix_time = date_time_to_unix_time(db_row[UserDBAlias.USER_LAST_LOGIN_DATE])
-            last_login_date = int(last_login_unix_time)
-        else:
-            last_login_date = None
+        last_login_unix_time = float(
+            date_time_to_unix_time(db_row[UserDBAlias.USER_LAST_LOGIN_DATE])
+        )
 
         assert_row_key_exists(db_row, UserDBAlias.USER_LANGUAGE_ID)
         language_id = db_row[UserDBAlias.USER_LANGUAGE_ID]
@@ -127,10 +170,10 @@ class UsersDAO(object):
             username=username,
             first_name=first_name,
             second_name=second_name,
-            create_time=create_time,
+            create_time=create_unix_time,
             is_deleted=is_deleted,
             email=email,
-            last_login_date=last_login_date,
+            last_login_date=last_login_unix_time,
             language_id=language_id,
             timezone_id=timezone_id,
         )

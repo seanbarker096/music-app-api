@@ -21,5 +21,10 @@ def verify_hash(hash: str, password: str):
     return ph.verify(hash, password)
 
 
+## TODO: Complete this
+def validate_password(password: str):
+    return True
+
+
 def date_time_to_unix_time(datetime: datetime.datetime):
     return time.mktime(datetime.timetuple())

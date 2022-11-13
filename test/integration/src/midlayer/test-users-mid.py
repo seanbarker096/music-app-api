@@ -1,10 +1,16 @@
 import time
 from test.integration import IntegrationTestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from api.api_utils import generate_salt, hash_password
-from api.midlayer.users_mid import UsersMidlayer
-from api.typings.users import User, UsersGetFilter, UserWithPassword
+from api.midlayer.users_mid import UsersMidlayerMixin
+from api.typings.users import (
+    User,
+    UserCreateRequest,
+    UsersGetFilter,
+    UsersGetProjection,
+    UserWithPassword,
+)
 
 
 class UsersMidIntegrationTestCase(IntegrationTestCase):
@@ -43,13 +49,59 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         binds = binds[1:]  ## Ignore the id
         self.db.run_query(sql, binds)
 
+    @patch("time.time")
+    def test_user_create(self, time):
+        time.return_value = self.current_time
+
+        users_mid = UsersMidlayerMixin(config=self.config)
+
+        request = UserCreateRequest(
+            username="testUser123",
+            first_name="Gabriel",
+            second_name="Martinelli",
+            email="gMartinelli@gmail.com",
+            password="testPassword",
+        )
+
+        result = users_mid.user_create(request)
+
+        user = result.user
+
+        self.assertIsInstance(user.id, int, "Should return valid user id")
+        self.assertEqual(request.email, user.email, "Should return the new users email address")
+        self.assertEqual(request.first_name, user.first_name, "Should return the users firstname")
+        self.assertFalse(user.is_deleted, "Should not mark the user as deleted")
+        self.assertEqual(
+            request.second_name, user.second_name, "Should return the users second name"
+        )
+        self.assertEqual(
+            self.current_time, user.create_time, "Should return the correct created time"
+        )
+        self.assertEqual(
+            self.current_time,
+            user.last_login_date,
+            "Should set the last login date to be the datetime at when the user was created",
+        )
+        self.assertEqual(1, user.language_id, "Should return the correct language id")
+        self.assertEqual(1, user.timezone_id, "Should return the correct timezone id")
+
+        ## Assert password stored correctly
+        filter = UsersGetFilter(username="testUser123", password="testPassword")
+        user_with_password = users_mid.get_user_by_username_and_password(
+            filter=filter, projection=UsersGetProjection(password=True)
+        )
+        self.assertIsInstance(user_with_password.password_hash, str)
+        self.assertTrue(len(user_with_password.password_hash))
+
     def test_get_user_by_username_and_password(self):
         self._seed_user()
 
-        users_mid = UsersMidlayer(self.config)
+        users_mid = UsersMidlayerMixin(self.config)
 
         filter = UsersGetFilter(username="testUser123", password="password1")
-        user_result = users_mid.get_user_by_username_and_password(filter=filter)
+        user_result = users_mid.get_user_by_username_and_password(
+            filter=filter, projection=UsersGetProjection()
+        )
 
         user_result_dict = vars(user_result)
 
@@ -71,7 +123,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
     def test_get_user_by_username_and_incorrect_password(self):
         self._seed_user()
 
-        users_mid = UsersMidlayer(self.config)
+        users_mid = UsersMidlayerMixin(self.config)
 
         filter = UsersGetFilter(username="testUser123", password="thisPasswordIsWrong")
 
@@ -80,4 +132,6 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             msg=f"Cannot get user with username {filter.username}. Incorrect password provided",
         ):
 
-            users_mid.get_user_by_username_and_password(filter=filter)
+            users_mid.get_user_by_username_and_password(
+                filter=filter, projection=UsersGetProjection()
+            )
