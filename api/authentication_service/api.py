@@ -138,7 +138,7 @@ class JWTTokenAuthService(TokenAuthService):
 
         ## Todo: make a type for this
         payload = {
-            "exp": int(time.time()) + token_ttl,
+            "exp": time.time() + token_ttl,
             "user_id": user_id,
             "type": token_type,
             "role": role,
