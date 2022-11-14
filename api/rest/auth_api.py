@@ -43,7 +43,7 @@ def login():
     )
 
     auth_state_request = AuthStateCreateRequest(
-        auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER)
+        auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER.value)
     )
 
     result = flask.current_app.conns.auth_service.create_auth_state(request=auth_state_request)
@@ -98,7 +98,7 @@ def signup():
 
     ## now authenticate the new user
     auth_state_request = AuthStateCreateRequest(
-        auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER)
+        auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER.value)
     )
 
     result = flask.current_app.conns.auth_service.create_auth_state(request=auth_state_request)

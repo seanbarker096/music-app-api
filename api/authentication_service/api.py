@@ -82,7 +82,9 @@ class JWTTokenAuthService(TokenAuthService):
             return AuthStateCreateResult(auth_state=auth_state)
 
         except Exception:
-            raise Exception(f"Failed to create auth state for user with id {request.auth_user}")
+            raise Exception(
+                f"Failed to create auth state for user with id {request.auth_user.user_id}"
+            )
 
     def create_admin_auth_state(self, user_id: int) -> AuthState:
         ...
