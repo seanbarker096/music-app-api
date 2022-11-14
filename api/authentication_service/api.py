@@ -92,7 +92,7 @@ class JWTTokenAuthService(TokenAuthService):
     ) -> str:
         user_id = auth_user.user_id
 
-        if token_type == TokenType.ACCESS and not refresh_token:
+        if token_type == TokenType.ACCESS.value and not refresh_token:
             raise Exception("Must provide a refresh token to create an access token")
 
         if token_type == TokenType.ACCESS.value:

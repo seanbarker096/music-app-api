@@ -5,6 +5,7 @@ from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists
 from api.typings.users import User, UserCreateRequest, UsersGetFilter, UserWithPassword
 from api.utils import date_time_to_unix_time, hash_password
+from exceptions.db.exceptions import DBDuplicateKeyException
 
 
 class UserDBAlias:
@@ -128,8 +129,12 @@ class UsersDAO(object):
                 language_id=1,
                 timezone_id=1,
             )
-        except:
-            raise Exception(f"Failed to create user with username {request.username}")
+        except DBDuplicateKeyException as e:
+            raise e
+        except Exception:
+            raise Exception(
+                f"Failed to create user with username {request.username} and email {request.email}"
+            )
 
     def _build_user_from_db_row(self, db_row: Dict[str, any]) -> User:
 

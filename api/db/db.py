@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 import pymysql.cursors
 import pymysql.err
+
 from api.db.config import DBConfig
 from exceptions.db.exceptions import DBDuplicateKeyException
 
@@ -69,4 +70,5 @@ class DB:
                 cursor.execute(sql, binds)
             return DBResult(cursor=cursor)
         except pymysql.err.IntegrityError as e:
+            print(e)
             raise DBDuplicateKeyException(e.args[1])

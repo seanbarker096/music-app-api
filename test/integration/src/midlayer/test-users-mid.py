@@ -1,8 +1,8 @@
+import copy
 import time
 from test.integration import IntegrationTestCase
 from unittest.mock import Mock, patch
 
-from api.api_utils import generate_salt, hash_password
 from api.midlayer.users_mid import UsersMidlayerMixin
 from api.typings.users import (
     User,
@@ -11,6 +11,8 @@ from api.typings.users import (
     UsersGetProjection,
     UserWithPassword,
 )
+from api.utils import generate_salt, hash_password
+from exceptions.response.exceptions import UserAlreadyExistsException
 
 
 class UsersMidIntegrationTestCase(IntegrationTestCase):
@@ -93,6 +95,52 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         self.assertIsInstance(user_with_password.password_hash, str)
         self.assertTrue(len(user_with_password.password_hash))
 
+    def test_user_create_with_duplicate_username(self):
+
+        request = UserCreateRequest(
+            username="testUser123",
+            first_name="Gabriel",
+            second_name="Martinelli",
+            email="gMartinelli@gmail.com",
+            password="testPassword",
+        )
+
+        users_mid = UsersMidlayerMixin(config=self.config)
+
+        users_mid.user_create(request)
+
+        with self.assertRaisesRegex(
+            UserAlreadyExistsException,
+            expected_regex=f"Cannot create user. User with username testUser123 already exists.",
+            msg="Should raise correct exception if username is a duplicate",
+        ):
+            new_request = copy.copy(request)
+            new_request.email = "gMartinelli2@gmail.com"
+            users_mid.user_create(new_request)
+
+    def test_user_create_with_duplicate_email(self):
+
+        request = UserCreateRequest(
+            username="testUser123",
+            first_name="Gabriel",
+            second_name="Martinelli",
+            email="gMartinelli@gmail.com",
+            password="testPassword",
+        )
+
+        users_mid = UsersMidlayerMixin(config=self.config)
+
+        users_mid.user_create(request)
+
+        with self.assertRaisesRegex(
+            UserAlreadyExistsException,
+            expected_regex=f"Cannot create user. User with email gMartinelli@gmail.com already exists.",
+            msg="Should raise correct exception if email is a duplicate",
+        ):
+            new_request = copy.copy(request)
+            new_request.username = "testUser888"
+            users_mid.user_create(new_request)
+
     def test_get_user_by_username_and_password(self):
         self._seed_user()
 
@@ -127,11 +175,11 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
 
         filter = UsersGetFilter(username="testUser123", password="thisPasswordIsWrong")
 
-        with self.assertRaises(
+        with self.assertRaisesRegex(
             Exception,
-            msg=f"Cannot get user with username {filter.username}. Incorrect password provided",
+            expected_regex=f"Cannot get user with username {filter.username}. Incorrect password provided",
+            msg="Should raise exception with correct error message",
         ):
-
             users_mid.get_user_by_username_and_password(
                 filter=filter, projection=UsersGetProjection()
             )

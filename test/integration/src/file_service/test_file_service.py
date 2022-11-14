@@ -63,11 +63,11 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         with self.assertRaises(InvalidArgumentException) as e:
             file_service.create_file(request)
 
-        self.assertEqual(
-            e.exception.get_message(), "Failed to upload file because uuid is not valid"
-        )
+            self.assertEqual(
+                e.exception.get_message(), "Failed to upload file because uuid is not valid"
+            )
 
-        self.assertEqual(e.exception.get_source(), "uuid")
+            self.assertEqual(e.exception.get_source(), "uuid")
 
     def test_file_upload_with_duplicate_uuid(self):
         ## Create first file
@@ -98,9 +98,10 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         with self.assertRaises(DBDuplicateKeyException) as e:
             file_service.create_file(request_two)
 
-        self.assertEqual(
-            e.exception.get_message(), "Duplicate entry 'testuuidone1234' for key 'files.uuid_idx'"
-        )
+            self.assertEqual(
+                e.exception.get_message(),
+                "Duplicate entry 'testuuidone1234' for key 'files.uuid_idx'",
+            )
 
     def test_file_upload_with_url_unsafe_uuid(self):
         """Tests file create with url unsafe uuid"""

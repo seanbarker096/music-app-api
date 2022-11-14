@@ -332,8 +332,10 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         authentication_service = JWTTokenAuthService(config=self.config)
 
-        with self.assertRaises(
-            Exception, msg="Must provide a refresh token to create an access token"
+        with self.assertRaisesRegex(
+            Exception,
+            expected_regex="Must provide a refresh token to create an access token",
+            msg="Should throw error with correct exception message",
         ):
             authentication_service.create_token(
                 auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=None

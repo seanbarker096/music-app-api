@@ -77,9 +77,12 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         try:
             user = self.users_dao.user_create(request, password_hash=password_hash)
         ## TODO: Update to use our own duplicate key error
-        except DBDuplicateKeyException:
+        except DBDuplicateKeyException as e:
+            duplicate_key = e.get_column()
+            duplicate_value = request.username if duplicate_key == "username" else request.email
+            print(duplicate_key)
             raise UserAlreadyExistsException(
-                f"Cannot create user with username {request.username} because user already exists"
+                f"Cannot create user. User with {duplicate_key} {duplicate_value} already exists."
             )
 
         return UserCreateResult(user=user)
