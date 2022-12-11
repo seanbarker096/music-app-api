@@ -10,6 +10,7 @@ from api.authentication_service.typings import (
     AuthStatus,
     AuthUser,
     AuthUserRole,
+    TokenType,
 )
 from api.midlayer.api import Midlayer
 from api.midlayer.users_mid import User
@@ -199,11 +200,90 @@ class AuthApiTest(AuthAPITestCase):
         """Tests that error is thrown if we try to invalidate a token that does not exist"""
         ...
 
-    def test_authorize_request_with_valid_auth_token(self):
-        ...
+    def test_auth_check_with_valid_auth_token(self):
+
+        auth_token_payload = {
+            "user_id": 1234,
+            "type": TokenType.ACCESS.value,
+            "role": AuthUserRole.USER.value,
+            "session_id": "safdksdfasdf",
+        }
+
+        ## Ensure validate token does not throw to immitate a valid auth token
+        self.app.conns.auth_service.validate_token = Mock(return_value=auth_token_payload)
+
+        response = self.test_client.get("/validate/", headers={"Authorization": "an_auth_jwt"})
+
+        self.assertEquals(
+            response.headers.get("Authorization"),
+            "an_auth_jwt",
+            "Should not change auth header if request authenticated successfully",
+        )
+
+        self.assertEquals(
+            response.status_code, 200, "Should authorize request for valid auth token"
+        )
 
     def test_authorize_request_with_invalid_auth_token_but_valid_refresh_token(self):
-        ...
+        refresh_token_payload = {
+            "user_id": 1234,
+            "type": TokenType.REFRESH.value,
+            "role": AuthUserRole.USER.value,
+            "session_id": "safdksdfasdf",
+        }
+
+        ## Get validation to throw
+        self.app.conns.auth_service.validate_token = Mock()
+        self.app.conns.auth_service.validate_token.side_effect = [
+            Exception(),
+            refresh_token_payload,
+        ]
+
+        self.app.conns.auth_service.create_token = Mock(return_value="new_auth_jwt")
+
+        response = self.test_client.get(
+            "/validate/",
+            headers={"Authorization": "invalid_auth_jwt", "Refresh Token": "refresh_jwt"},
+        )
+
+        self.assertEquals(
+            response.status_code,
+            200,
+            "Should authorize request for invalid auth token but valid refresh token",
+        )
+
+        self.assertEquals(
+            response.headers.get("Authorization"),
+            "new_auth_jwt",
+            "Should update Authorization header with new auth token if refresh token was valid",
+        )
+
+        self.assertEquals(
+            response.headers.get("Refresh Token"),
+            "refresh_jwt",
+            "Should leave refresh token header unchanged",
+        )
 
     def test_authorize_request_with_invalid_auth_and_refresh_tokens(self):
-        ...
+        ## Get validation to throw
+        self.app.conns.auth_service.validate_token = Mock()
+        self.app.conns.auth_service.validate_token.side_effect = [
+            Exception(),
+            Exception(),
+        ]
+
+        self.app.conns.auth_service.create_token = Mock(return_value="new_auth_jwt")
+
+        with self.assertRaises(Exception) as e:
+            response = self.test_client.get(
+                "/validate/",
+                headers={
+                    "Authorization": "invalid_auth_jwt",
+                    "Refresh Token": "invalid_refresh_jwt",
+                },
+            )
+
+            self.assertEqual(
+                e.exception.get_message(),
+                "Authorization of the request failed. Please try logging out and in again to revalidate your session",
+            )

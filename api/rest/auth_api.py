@@ -15,7 +15,11 @@ from api.typings.users import (
     UsersGetFilter,
     UsersGetProjection,
 )
-from api.utils.rest_utils import build_api_error_repsonse, process_string_request_param
+from api.utils.rest_utils import (
+    auth,
+    build_api_error_repsonse,
+    process_string_request_param,
+)
 from exceptions.response.exceptions import UserAlreadyExistsException
 
 blueprint = flask.Blueprint("auth", __name__)
@@ -122,3 +126,9 @@ def signup():
     response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
 
     return response
+
+
+@auth
+@blueprint.route("/validate/", methods=["GET"])
+def validate():
+    return flask.current_app.response_class(response="{}", status=200, mimetype="application/json")

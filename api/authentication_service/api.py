@@ -109,7 +109,7 @@ class JWTTokenAuthService(TokenAuthService):
 
         if token_type == TokenType.ACCESS.value:
             ## Validate refresh token
-            self._validate_token(refresh_token)
+            self.validate_token(refresh_token)
             ## TODO: Check the token payload matches that of the auth_user in request
             return self._generate_token(payload, TokenType.ACCESS.value, auth_user.role)
 
@@ -121,7 +121,7 @@ class JWTTokenAuthService(TokenAuthService):
 
         raise Exception(f"Cannot create token of invalid type {TokenType(token_type).name}")
 
-    def _validate_token(self, token: str) -> Dict[str, any]:
+    def validate_token(self, token: str) -> Dict[str, any]:
         """Validate token allowing for 10 second leway."""
         return jwt.decode(
             token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
@@ -170,7 +170,7 @@ class JWTTokenAuthService(TokenAuthService):
 
         payload = None
         try:
-            payload = self._validate_token(request.token)
+            payload = self.validate_token(request.token)
             auth_status = AuthStatus.AUTHENTICATED.value
 
             if payload["type"] == TokenType.REFRESH:
