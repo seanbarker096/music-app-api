@@ -24,6 +24,9 @@ class DBResult(object):
     def get_rows(self) -> tuple[dict[str, Any], ...]:
         return self._cursor.fetchall()
 
+    def get_row_count(self) -> int:
+        return self._cursor.rowcount
+
 
 class DB:
     def __init__(self, config: Dict[str, str]):

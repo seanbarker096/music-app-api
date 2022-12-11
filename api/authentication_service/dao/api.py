@@ -55,3 +55,22 @@ class AuthTokenServiceDAO:
             raise Exception(f"Invalid token returned for user with id {user_id}")
 
         return encoded_token
+
+    def token_delete(self, token: str) -> int:
+        sql = f"""
+            DELETE FROM auth_tokens WHERE token = %s
+        """
+        binds = (token,)
+
+        result = self.db.run_query(sql, binds)
+
+        row_count = result.get_row_count()
+
+        if row_count == 0:
+            raise Exception(f"Failed to remove token {token} from the database")
+
+        if row_count > 1:
+            ## TODO: Log warning here as token should be unique
+            ...
+
+        return row_count

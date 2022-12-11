@@ -66,6 +66,13 @@ class AuthStateCreateResult:
         self.auth_state = auth_state
 
 
+class AuthStateDeleteRequest:
+    refresh_token: str = ...
+
+    def __init__(self, refresh_token: str):
+        self.refresh_token = refresh_token
+
+
 class TokenCreateRequest:
     token: str
     owner_id: int

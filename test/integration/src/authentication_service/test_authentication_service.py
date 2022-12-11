@@ -7,6 +7,7 @@ from api.authentication_service.api import JWTTokenAuthService
 from api.authentication_service.typings import (
     AuthenticateRequest,
     AuthStateCreateRequest,
+    AuthStateDeleteRequest,
     AuthStatus,
     AuthUser,
     AuthUserRole,
@@ -94,55 +95,55 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
     def get_auth_state_with_invalid_access_token(self):
         ...
 
-    def test_authenticate_with_valid_token(self):
-        # time.return_value = self.current_time
+    # def test_authenticate_with_valid_token(self):
+    #     # time.return_value = self.current_time
 
-        user_id = 12345
+    #     user_id = 12345
 
-        auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
+    #     auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
-        request = AuthStateCreateRequest(auth_user=auth_user)
+    #     request = AuthStateCreateRequest(auth_user=auth_user)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
+    #     authentication_service = JWTTokenAuthService(config=self.config)
 
-        result = authentication_service.create_auth_state(request).auth_state
+    #     result = authentication_service.create_auth_state(request).auth_state
 
-        access_token = result.access_token
+    #     access_token = result.access_token
 
-        authenticate_request = AuthenticateRequest(token=access_token)
+    #     authenticate_request = AuthenticateRequest(token=access_token)
 
-        result = authentication_service.authenticate(request=authenticate_request)
+    #     result = authentication_service.authenticate(request=authenticate_request)
 
-        self.assertEqual(
-            result.status,
-            AuthStatus.AUTHENTICATED.value,
-            "Should authenticate user if token is valid",
-        )
+    #     self.assertEqual(
+    #         result.status,
+    #         AuthStatus.AUTHENTICATED.value,
+    #         "Should authenticate user if token is valid",
+    #     )
 
-        self.assertEqual(
-            result.access_token,
-            access_token,
-            "Should return the access token used to authenticate the user",
-        )
+    #     self.assertEqual(
+    #         result.access_token,
+    #         access_token,
+    #         "Should return the access token used to authenticate the user",
+    #     )
 
-        self.assertEqual(
-            result.auth_user.user_id, user_id, "Should store the correct user id in the auth state"
-        )
+    #     self.assertEqual(
+    #         result.auth_user.user_id, user_id, "Should store the correct user id in the auth state"
+    #     )
 
-        self.assertEqual(
-            result.auth_user.role,
-            AuthUserRole.USER.value,
-            "Should store the correct users role in the auth state",
-        )
+    #     self.assertEqual(
+    #         result.auth_user.role,
+    #         AuthUserRole.USER.value,
+    #         "Should store the correct users role in the auth state",
+    #     )
 
-        self.assertListEqual(
-            result.auth_user.permissions, [], "Should return empty permissions array for auth user"
-        )
+    #     self.assertListEqual(
+    #         result.auth_user.permissions, [], "Should return empty permissions array for auth user"
+    #     )
 
-        self.assertIsNone(
-            result.refresh_token,
-            "Should not return refresh token if one wasn/'t provided in request",
-        )
+    #     self.assertIsNone(
+    #         result.refresh_token,
+    #         "Should not return refresh token if one wasn/'t provided in request",
+    #     )
 
     def test_authenticate_with_refresh_token(self):
         ...
@@ -165,37 +166,16 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         access_token = result.access_token
 
-        authenticate_request = AuthenticateRequest(token=access_token)
+        with self.assertRaisesRegex(
+            Exception,
+            expected_regex=f"Failed to validate token {access_token} because it has expired",
+            msg="Should throw error with correct exception message",
+        ):
+            authentication_service.validate_token(token=access_token)
 
-        result = authentication_service.authenticate(request=authenticate_request)
-
-        self.assertEqual(
-            result.status,
-            AuthStatus.UNAUTHENTICATED.value,
-            "Should not authenticate user if token is expired",
-        )
-
-        self.assertIsNone(
-            result.auth_user, "Should not return an auth user if the user is unauthenticated"
-        )
-
-        self.assertEqual(
-            result.access_token,
-            access_token,
-            "Should return the access token used to authenticate the user",
-        )
-
-        self.assertIsNone(
-            result.refresh_token,
-            "Should not return refresh token if one wasn/'t provided in request",
-        )
-
-    @patch("time.time")
-    def test_authenticate_with_recently_expired_token(self, time):
-        ## Tests that there is a bit of leway
-        time.return_value = self.current_time
-
+    def test_validate_with_valid_token(self):
         user_id = 12345
+        session_id = "random_uuid"
 
         auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
@@ -203,94 +183,123 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         authentication_service = JWTTokenAuthService(config=self.config)
 
-        ## TODO: Use getters and setters to configure these fields
-        # This simulates the token being expired, but its expiry time falling within the leway window
-        authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 0.5
-
         result = authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
-        authenticate_request = AuthenticateRequest(token=access_token)
-
-        result = authentication_service.authenticate(request=authenticate_request)
+        result = authentication_service.validate_token(token=access_token)
 
         self.assertEqual(
-            result.status,
-            AuthStatus.AUTHENTICATED.value,
-            "Should authenticate user if token is expired but inside the leway window",
+            result["user_id"], 12345, "Should return the user_id in the decoded token payload"
         )
 
         self.assertEqual(
-            result.access_token,
-            access_token,
-            "Should return the access token used to authenticate the user",
+            result["session_id"],
+            "random_uuid",
+            "Should return the session_id in the decoded payload",
         )
 
-        self.assertEqual(
-            result.auth_user.user_id, user_id, "Should store the correct user id in the auth state"
-        )
+    # @patch("time.time")
+    # def test_authenticate_with_recently_expired_token(self, time):
+    #     ## Tests that there is a bit of leway
+    #     time.return_value = self.current_time
 
-        self.assertEqual(
-            result.auth_user.role,
-            AuthUserRole.USER.value,
-            "Should store the correct users role in the auth state",
-        )
+    #     user_id = 12345
 
-        self.assertListEqual(
-            result.auth_user.permissions, [], "Should return empty permissions array for auth user"
-        )
+    #     auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
-        self.assertIsNone(
-            result.refresh_token,
-            "Should not return refresh token if one wasn/'t provided in request",
-        )
+    #     request = AuthStateCreateRequest(auth_user=auth_user)
 
-    @patch("time.time")
-    def test_authenticate_with_almost_expired_token(self, time):
-        ## Tests that there is a bit of leway
-        time.return_value = self.current_time
+    #     authentication_service = JWTTokenAuthService(config=self.config)
 
-        user_id = 12345
+    #     ## TODO: Use getters and setters to configure these fields
+    #     # This simulates the token being expired, but its expiry time falling within the leway window
+    #     authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 0.5
 
-        auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
+    #     result = authentication_service.create_auth_state(request).auth_state
 
-        request = AuthStateCreateRequest(auth_user=auth_user)
+    #     access_token = result.access_token
 
-        authentication_service = JWTTokenAuthService(config=self.config)
+    #     authenticate_request = AuthenticateRequest(token=access_token)
 
-        ## TODO: Use getters and setters to configure these fields
-        # This simulates the token being expired, but only just falling outside the leway window
-        authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 1.1
+    #     result = authentication_service.authenticate(request=authenticate_request)
 
-        result = authentication_service.create_auth_state(request).auth_state
+    #     self.assertEqual(
+    #         result.status,
+    #         AuthStatus.AUTHENTICATED.value,
+    #         "Should authenticate user if token is expired but inside the leway window",
+    #     )
 
-        access_token = result.access_token
+    #     self.assertEqual(
+    #         result.access_token,
+    #         access_token,
+    #         "Should return the access token used to authenticate the user",
+    #     )
 
-        authenticate_request = AuthenticateRequest(token=access_token)
+    #     self.assertEqual(
+    #         result.auth_user.user_id, user_id, "Should store the correct user id in the auth state"
+    #     )
 
-        result = authentication_service.authenticate(request=authenticate_request)
+    #     self.assertEqual(
+    #         result.auth_user.role,
+    #         AuthUserRole.USER.value,
+    #         "Should store the correct users role in the auth state",
+    #     )
 
-        self.assertEqual(
-            result.status,
-            AuthStatus.UNAUTHENTICATED.value,
-            "Should authenticate user if token is expired but inside the leway window",
-        )
+    #     self.assertListEqual(
+    #         result.auth_user.permissions, [], "Should return empty permissions array for auth user"
+    #     )
 
-        self.assertIsNone(
-            result.auth_user, "Should not return an auth user if the user is unauthenticated"
-        )
+    #     self.assertIsNone(
+    #         result.refresh_token,
+    #         "Should not return refresh token if one wasn/'t provided in request",
+    #     )
 
-        self.assertEqual(
-            result.access_token,
-            access_token,
-            "Should return the access token used to authenticate the user",
-        )
+    # @patch("time.time")
+    # def test_authenticate_with_almost_expired_token(self, time):
+    #     ## Tests that there is a bit of leway
+    #     time.return_value = self.current_time
 
-        self.assertIsNone(
-            result.refresh_token,
-            "Should not return refresh token if one wasn/'t provided in request",
-        )
+    #     user_id = 12345
+
+    #     auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
+
+    #     request = AuthStateCreateRequest(auth_user=auth_user)
+
+    #     authentication_service = JWTTokenAuthService(config=self.config)
+
+    #     ## TODO: Use getters and setters to configure these fields
+    #     # This simulates the token being expired, but only just falling outside the leway window
+    #     authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 1.1
+
+    #     result = authentication_service.create_auth_state(request).auth_state
+
+    #     access_token = result.access_token
+
+    #     authenticate_request = AuthenticateRequest(token=access_token)
+
+    #     result = authentication_service.authenticate(request=authenticate_request)
+
+    #     self.assertEqual(
+    #         result.status,
+    #         AuthStatus.UNAUTHENTICATED.value,
+    #         "Should authenticate user if token is expired but inside the leway window",
+    #     )
+
+    #     self.assertIsNone(
+    #         result.auth_user, "Should not return an auth user if the user is unauthenticated"
+    #     )
+
+    #     self.assertEqual(
+    #         result.access_token,
+    #         access_token,
+    #         "Should return the access token used to authenticate the user",
+    #     )
+
+    #     self.assertIsNone(
+    #         result.refresh_token,
+    #         "Should not return refresh token if one wasn/'t provided in request",
+    #     )
 
     @patch("time.time")
     def test_create_access_token(self, time):
@@ -316,14 +325,12 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         )
 
         ## Check new token is valid
-        authenticate_result = authentication_service.authenticate(
-            request=AuthenticateRequest(token=new_acess_token)
-        )
+        token_payload = authentication_service.validate_token(token=new_acess_token)
 
         self.assertEqual(
-            authenticate_result.status,
-            AuthStatus.AUTHENTICATED.value,
-            "Should return a valid access token which can be used to authenticate the user",
+            token_payload["user_id"],
+            12345,
+            "Should return the decoded token payload with the correct fields",
         )
 
     def test_create_access_token_without_refresh_token(self):
@@ -363,20 +370,17 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         )
 
         ## Check new token is valid
-        authenticate_result = authentication_service.authenticate(
-            request=AuthenticateRequest(token=new_acess_token)
-        )
+        token_payload = authentication_service.validate_token(token=new_acess_token)
 
         self.assertEqual(
-            authenticate_result.status,
-            AuthStatus.AUTHENTICATED.value,
-            "Should return a refresh token which can be used to return a valid access token, which can be used to authenticate the user",
+            token_payload["user_id"],
+            12345,
+            "Should return the decoded token payload with the correct fields",
         )
 
-        ## Inspect token itself
-        secret = self.config["config_file"]["auth"].get("signing-secret")
-        payload = jwt.decode(
-            jwt=new_refresh_token, key=secret, algorithms=authentication_service.SIGNING_ALGORITHM
+        ## Inspect refresh token
+        payload = authentication_service.validate_token(
+            token=new_refresh_token, token_type=TokenType.REFRESH.value
         )
 
         self.assertEqual(
@@ -404,9 +408,34 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
     def test_validate_token_with_duplicate(self):
         ...
 
-    def test_invalidate_token(self):
-        ...
-
     def test_invalidate_and_create(self):
         """i.e. when resetting password"""
         ...
+
+    def test_delete_auth_state(self):
+        user_id = 12345
+
+        auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
+
+        create_auth_state_request = AuthStateCreateRequest(auth_user=auth_user)
+
+        authentication_service = JWTTokenAuthService(config=self.config)
+
+        ## First generate a refresh token
+        refresh_token = authentication_service.create_auth_state(
+            request=create_auth_state_request
+        ).auth_state.refresh_token
+
+        authentication_service.delete_auth_state(
+            request=AuthStateDeleteRequest(refresh_token=refresh_token)
+        )
+
+        ## Validation of invalidated token should fail
+        with self.assertRaisesRegex(
+            Exception,
+            expected_regex=f"Failed to validate token {refresh_token} of type {TokenType.REFRESH.value} because it has been deleted and is therefore invalid",
+            msg="Should throw error with correct exception message",
+        ):
+            authentication_service.validate_token(
+                token=refresh_token, token_type=TokenType.REFRESH.value
+            )

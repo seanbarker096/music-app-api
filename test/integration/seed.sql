@@ -36,7 +36,7 @@ CREATE TABLE gigs.files (
 DROP TABLE IF EXISTS gigs.auth_tokens;
 CREATE TABLE gigs.auth_tokens (
   id int(10) unsigned auto_increment,
-  token varchar(255) NOT NULL,
+  token varchar(255) NOT NULL UNIQUE,
   owner_id int NOT NULL UNIQUE,
   PRIMARY KEY (id),
   UNIQUE INDEX owner_id_idx(owner_id)

@@ -65,9 +65,11 @@ def auth(func):
                 token_type=TokenType.ACCESS.value,
                 refresh_token=refresh_token,
             )
-            ## If generation of new auth_token succeeds then set it as a global so we can add to the response header later
-            flask.g.new_auth_token = new_auth_token
-            print("reached")
+
+            ## Updated auth tokens for all routes other than /logout. This is a authed route but we want to invalidate auth tokens here
+            if func.__name__ != "logout":
+                ## If generation of new auth_token succeeds then set it as a global so we can add to the response header later
+                flask.g.new_auth_token = new_auth_token
 
         except Exception:
             print("exception 2")

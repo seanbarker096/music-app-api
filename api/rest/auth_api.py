@@ -4,9 +4,11 @@ import flask
 
 from api.authentication_service.typings import (
     AuthStateCreateRequest,
+    AuthStateDeleteRequest,
     AuthStatus,
     AuthUser,
     AuthUserRole,
+    TokenType,
 )
 from api.typings.auth import LoginResult
 from api.typings.users import (
@@ -128,7 +130,16 @@ def signup():
     return response
 
 
+@blueprint.route("/logout/", methods=["POST"])
+@auth
+def logout():
+    request = AuthStateDeleteRequest(refresh_token=flask.request.headers.get("Refresh-Token", None))
+    flask.current_app.conns.auth_service.delete_auth_state(request)
+
+    return flask.current_app.response_class(status=200, mimetype="application/json")
+
+
 @blueprint.route("/validate/", methods=["GET"])
 @auth
 def validate():
-    return flask.current_app.response_class(response="{}", status=200, mimetype="application/json")
+    return flask.current_app.response_class(status=200, mimetype="application/json")

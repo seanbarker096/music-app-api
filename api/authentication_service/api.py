@@ -12,12 +12,14 @@ from api.authentication_service.typings import (
     AuthState,
     AuthStateCreateRequest,
     AuthStateCreateResult,
+    AuthStateDeleteRequest,
     AuthStatus,
     AuthUser,
     AuthUserRole,
     TokenCreateRequest,
     TokenType,
 )
+from exceptions.exceptions import InvalidArgumentException
 
 
 class TokenAuthService(ABC):
@@ -121,8 +123,12 @@ class JWTTokenAuthService(TokenAuthService):
 
         raise Exception(f"Cannot create token of invalid type {TokenType(token_type).name}")
 
-    def validate_token(self, token: str) -> Dict[str, any]:
+    def validate_token(self, token: str, token_type: Optional[TokenType] = None) -> Dict[str, any]:
         """Validate token allowing for 10 second leway."""
+
+        ## We also need to check the REFRESH token is saved in the db for this session
+        if token_type == TokenType.REFRESH.value:
+            self.auth_dao.get_token_by_user_and_session_id()
 
         ## Handle tokens in Authorization header format ("Bearer the_actual_token")
         strings = token.split("Bearer ")
@@ -130,9 +136,12 @@ class JWTTokenAuthService(TokenAuthService):
         if len(strings) == 2 and strings[0] == "":
             token = strings[1]
 
-        return jwt.decode(
-            token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
-        )
+        try:
+            return jwt.decode(
+                token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
+            )
+        except jwt.ExpiredSignatureError:
+            raise Exception(f"Failed to validate token {token} because it has expired")
 
     def _generate_token(
         self, payload: Dict[str, int | str], token_type: TokenType, role: AuthUserRole
@@ -166,41 +175,45 @@ class JWTTokenAuthService(TokenAuthService):
     def update_auth_state(self):
         ...
 
-    def delete_auth_state(self):
-        "e.g. when logging out"
-        ...
+    def delete_auth_state(self, request: AuthStateDeleteRequest) -> None:
+        if not request.refresh_token or len(request.refresh_token) == 0:
+            raise InvalidArgumentException(
+                message=f"Invalid argument {request.refresh_token}", source="refresh_token"
+            )
 
-    def authenticate(self, request: AuthenticateRequest) -> AuthState:
-        """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
-        if not isinstance(request.token, str) or len(request.token) == 0:
-            raise Exception(f"Invalid token {request.token} provided")
+        self.auth_dao.token_delete(request.refresh_token)
 
-        payload = None
-        try:
-            payload = self.validate_token(request.token)
-            auth_status = AuthStatus.AUTHENTICATED.value
+    # def authenticate(self, request: AuthenticateRequest) -> AuthState:
+    #     """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
+    #     if not isinstance(request.token, str) or len(request.token) == 0:
+    #         raise Exception(f"Invalid token {request.token} provided")
 
-            if payload["type"] == TokenType.REFRESH:
-                raise Exception(
-                    f"Invalid token receieved of type {payload['type']}. Authenticate should only be used with access tokens"
-                )
+    #     payload = None
+    #     try:
+    #         payload = self.validate_token(request.token)
+    #         auth_status = AuthStatus.AUTHENTICATED.value
 
-            auth_user = AuthUser(user_id=payload["user_id"], role=payload["role"], permissions=[])
+    #         if payload["type"] == TokenType.REFRESH:
+    #             raise Exception(
+    #                 f"Invalid token receieved of type {payload['type']}. Authenticate should only be used with access tokens"
+    #             )
 
-        except Exception:
-            # Log cause of failed validation
-            logging.exception("message")
-            auth_status = AuthStatus.UNAUTHENTICATED.value
-            auth_user = None
+    #         auth_user = AuthUser(user_id=payload["user_id"], role=payload["role"], permissions=[])
 
-        auth_state = AuthState(
-            auth_user=auth_user,
-            access_token=request.token,
-            refresh_token=None,
-            status=auth_status,
-        )
+    #     except Exception:
+    #         # Log cause of failed validation
+    #         logging.exception("message")
+    #         auth_status = AuthStatus.UNAUTHENTICATED.value
+    #         auth_user = None
 
-        return auth_state
+    #     auth_state = AuthState(
+    #         auth_user=auth_user,
+    #         access_token=request.token,
+    #         refresh_token=None,
+    #         status=auth_status,
+    #     )
+
+    #     return auth_state
 
     # def process_header():
     #     ...
