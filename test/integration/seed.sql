@@ -37,9 +37,10 @@ DROP TABLE IF EXISTS gigs.auth_tokens;
 CREATE TABLE gigs.auth_tokens (
   id int(10) unsigned auto_increment,
   token varchar(255) NOT NULL UNIQUE,
-  owner_id int NOT NULL UNIQUE,
+  owner_id int NOT NULL,
+  session_id varchar(128) NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX owner_id_idx(owner_id)
+  UNIQUE INDEX owner_id_session_id_idx(owner_id, session_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 

@@ -74,12 +74,14 @@ class AuthStateDeleteRequest:
 
 
 class TokenCreateRequest:
-    token: str
-    owner_id: int
+    token: str = ...
+    owner_id: int = ...
+    session_id: str = ...
 
-    def __init__(self, token: str, owner_id: int):
+    def __init__(self, token: str, owner_id: int, session_id: str):
         self.token = token
         self.owner_id = owner_id
+        self.session_id = session_id
 
 
 class AuthenticateRequest:

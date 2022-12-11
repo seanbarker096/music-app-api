@@ -65,6 +65,8 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             "Should return the correct token type for the access token",
         )
 
+        self.assertIsInstance(access_token_payload["session_id"], str)
+
         self.assertEqual(
             refresh_token_payload["exp"],
             time.return_value + authentication_service._REFRESH_TOKEN_TTL,
@@ -83,8 +85,12 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             "Should return the correct token type for the refresh token",
         )
 
+        self.assertIsInstance(refresh_token_payload["session_id"], str)
+
         ## check that refresh token added to db correctly
-        db_refresh_token = authentication_service.auth_dao.get_token_by_user_id(user_id)
+        db_refresh_token = authentication_service.auth_dao.get_token_by_user_id_and_session_id(
+            user_id, refresh_token_payload["session_id"]
+        )
 
         self.assertEqual(
             result.refresh_token,
@@ -175,7 +181,6 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
     def test_validate_with_valid_token(self):
         user_id = 12345
-        session_id = "random_uuid"
 
         auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
@@ -193,10 +198,13 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             result["user_id"], 12345, "Should return the user_id in the decoded token payload"
         )
 
-        self.assertEqual(
+        self.assertIsInstance(
             result["session_id"],
-            "random_uuid",
-            "Should return the session_id in the decoded payload",
+            str,
+        )
+
+        self.assertTrue(
+            len(result["session_id"]) > 0,
         )
 
     # @patch("time.time")
@@ -433,7 +441,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         ## Validation of invalidated token should fail
         with self.assertRaisesRegex(
             Exception,
-            expected_regex=f"Failed to validate token {refresh_token} of type {TokenType.REFRESH.value} because it has been deleted and is therefore invalid",
+            expected_regex=f"Failed to validate token {refresh_token} of type {TokenType.REFRESH.value} as it could not be found. It may have been deleted and is therefore no longer valid",
             msg="Should throw error with correct exception message",
         ):
             authentication_service.validate_token(

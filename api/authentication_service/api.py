@@ -117,7 +117,7 @@ class JWTTokenAuthService(TokenAuthService):
 
         if token_type == TokenType.REFRESH.value:
             token = self._generate_token(payload, TokenType.REFRESH.value, auth_user.role)
-            self._persist_token(token, owner_id=user_id)
+            self._persist_token(token, owner_id=user_id, session_id=session_id)
 
             return token
 
@@ -125,11 +125,6 @@ class JWTTokenAuthService(TokenAuthService):
 
     def validate_token(self, token: str, token_type: Optional[TokenType] = None) -> Dict[str, any]:
         """Validate token allowing for 10 second leway."""
-
-        ## We also need to check the REFRESH token is saved in the db for this session
-        if token_type == TokenType.REFRESH.value:
-            self.auth_dao.get_token_by_user_and_session_id()
-
         ## Handle tokens in Authorization header format ("Bearer the_actual_token")
         strings = token.split("Bearer ")
 
@@ -137,11 +132,23 @@ class JWTTokenAuthService(TokenAuthService):
             token = strings[1]
 
         try:
-            return jwt.decode(
+            decoded_token = jwt.decode(
                 token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
             )
         except jwt.ExpiredSignatureError:
             raise Exception(f"Failed to validate token {token} because it has expired")
+
+        if token_type == TokenType.REFRESH.value:
+            try:
+                ## We also need to check the REFRESH token is saved in the db for this session
+                self.auth_dao.get_token_by_user_id_and_session_id(
+                    user_id=decoded_token["user_id"], session_id=decoded_token["session_id"]
+                )
+            except:
+                raise Exception(
+                    f"Failed to validate token {token} of type {TokenType.REFRESH.value} as it could not be found. It may have been deleted and is therefore no longer valid"
+                )
+        return decoded_token
 
     def _generate_token(
         self, payload: Dict[str, int | str], token_type: TokenType, role: AuthUserRole
@@ -159,8 +166,8 @@ class JWTTokenAuthService(TokenAuthService):
 
         return new_token
 
-    def _persist_token(self, token: str, owner_id: int) -> int:
-        create_request = TokenCreateRequest(token=token, owner_id=owner_id)
+    def _persist_token(self, token: str, owner_id: int, session_id: str) -> int:
+        create_request = TokenCreateRequest(token=token, owner_id=owner_id, session_id=session_id)
         row_id = self.auth_dao.token_create(request=create_request)
         if row_id is None:
             raise Exception(f"Failed to persist token for user with id {owner_id}")
