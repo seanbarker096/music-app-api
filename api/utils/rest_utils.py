@@ -35,7 +35,7 @@ def build_api_error_repsonse(e: ResponseBaseException, http_status_code: int):
 
 def auth(func):
     @functools.wraps(func)
-    def wrapped_f():
+    def wrapped_f(*args, **kwargs):
         auth_token = flask.request.headers.get("Authorization")
         flask.g.new_auth_token = None
 
@@ -43,14 +43,15 @@ def auth(func):
             try:
                 flask.current_app.conns.auth_service.validate_token(auth_token)
                 ## If auth token valid return
-                return
+                return func(*args, **kwargs)
             except:
                 ## Otherwise try generating a new one using refresh token
                 pass
 
-        refresh_token = flask.request.headers.get("RefreshToken")
+        refresh_token = flask.request.headers.get("Refresh-Token")
 
         if not refresh_token:
+            print("exception 1")
             raise Exception(
                 "Authorization of the request failed. Please try logging out and in again to revalidate your session"
             )
@@ -66,12 +67,21 @@ def auth(func):
             )
             ## If generation of new auth_token succeeds then set it as a global so we can add to the response header later
             flask.g.new_auth_token = new_auth_token
+            print("reached")
 
         except Exception:
+            print("exception 2")
             raise Exception(
                 "Authorization of the request failed. Please try logging out and in again to revalidate your session"
             )
 
-        return func
+        return func(*args, **kwargs)
 
     return wrapped_f
+
+
+def add_token_headers(response):
+    """If a new auth token was generated during any given request (e.g. if it expired and refresh token used to generate new one), add it to the response header"""
+    if flask.g.get("new_auth_token", None):
+        response.headers["Authorization"] = f"Bearer {flask.g.new_auth_token}"
+    return response

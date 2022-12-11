@@ -214,15 +214,13 @@ class AuthApiTest(AuthAPITestCase):
 
         response = self.test_client.get("/validate/", headers={"Authorization": "an_auth_jwt"})
 
-        self.assertEquals(
+        self.assertEqual(
             response.headers.get("Authorization"),
-            "an_auth_jwt",
-            "Should not change auth header if request authenticated successfully",
+            None,
+            "Should not set auth header if request authenticated successfully",
         )
 
-        self.assertEquals(
-            response.status_code, 200, "Should authorize request for valid auth token"
-        )
+        self.assertEqual(response.status_code, 200, "Should authorize request for valid auth token")
 
     def test_authorize_request_with_invalid_auth_token_but_valid_refresh_token(self):
         refresh_token_payload = {
@@ -243,25 +241,19 @@ class AuthApiTest(AuthAPITestCase):
 
         response = self.test_client.get(
             "/validate/",
-            headers={"Authorization": "invalid_auth_jwt", "Refresh Token": "refresh_jwt"},
+            headers={"Authorization": "invalid_auth_jwt", "Refresh-Token": "refresh_jwt"},
         )
 
-        self.assertEquals(
+        self.assertEqual(
             response.status_code,
             200,
             "Should authorize request for invalid auth token but valid refresh token",
         )
 
-        self.assertEquals(
+        self.assertEqual(
             response.headers.get("Authorization"),
-            "new_auth_jwt",
+            "Bearer new_auth_jwt",
             "Should update Authorization header with new auth token if refresh token was valid",
-        )
-
-        self.assertEquals(
-            response.headers.get("Refresh Token"),
-            "refresh_jwt",
-            "Should leave refresh token header unchanged",
         )
 
     def test_authorize_request_with_invalid_auth_and_refresh_tokens(self):

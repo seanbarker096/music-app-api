@@ -128,7 +128,7 @@ def signup():
     return response
 
 
-@auth
 @blueprint.route("/validate/", methods=["GET"])
+@auth
 def validate():
     return flask.current_app.response_class(response="{}", status=200, mimetype="application/json")

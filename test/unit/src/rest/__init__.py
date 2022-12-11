@@ -7,6 +7,7 @@ import flask
 
 from api.application import FlaskApp
 from api.rest import auth_api, file_service_api, posts_api
+from api.server import after_request_setup
 
 
 class APITestCase(TestCase):
@@ -23,10 +24,18 @@ class APITestCase(TestCase):
         config.read(filename)
 
         mock_conns = Mock()
-        self.app = FlaskApp(config=config, conns=mock_conns)
+        app = FlaskApp(config=config, conns=mock_conns)
 
         ## Dont bother with full url for testing
-        self.app.register_blueprint(self.BLUEPRINT)
+        app.register_blueprint(self.BLUEPRINT)
+
+        @app.after_request
+        def after_request(response):
+            after_request_setup(response)
+            return response
+
+        self.app = app
+
         self.test_client = self.app.test_client()
 
         super().setUp()
