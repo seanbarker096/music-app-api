@@ -87,6 +87,10 @@ class AuthApiTest(AuthAPITestCase):
     def test_login_with_email_and_password(self):
         ...
 
+    def test_login_with_duplicate_user_agent(self):
+        """Tests that you can only have 1 refresh token per user and user agent combo"""
+        ...
+
     def test_signup(self):
         expected_user = self.test_user
 
@@ -185,4 +189,21 @@ class AuthApiTest(AuthAPITestCase):
 
     def test_signup_with_authed_user(self):
         ## Test signup with a user who was deleted but has auth token stored
+        ...
+
+    def test_signout(self):
+        """Test that signing out invalidates all tokens for that users session"""
+        ...
+
+    def test_signout_with_token_that_does_not_exist(self):
+        """Tests that error is thrown if we try to invalidate a token that does not exist"""
+        ...
+
+    def test_authorize_request_with_valid_auth_token(self):
+        ...
+
+    def test_authorize_request_with_invalid_auth_token_but_valid_refresh_token(self):
+        ...
+
+    def test_authorize_request_with_invalid_auth_and_refresh_tokens(self):
         ...

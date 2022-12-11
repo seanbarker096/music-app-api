@@ -1,4 +1,5 @@
 import logging
+import secrets
 import time
 from abc import ABC
 from typing import Dict, Optional
@@ -97,28 +98,23 @@ class JWTTokenAuthService(TokenAuthService):
         if token_type == TokenType.ACCESS.value and not refresh_token:
             raise Exception("Must provide a refresh token to create an access token")
 
+        session_id = secrets.token_urlsafe(16)
+
+        payload = {
+            "user_id": user_id,
+            "type": token_type,
+            "role": auth_user.role,
+            "session_id": session_id,
+        }
+
         if token_type == TokenType.ACCESS.value:
             ## Validate refresh token
             self._validate_token(refresh_token)
             ## TODO: Check the token payload matches that of the auth_user in request
-            return self._generate_token(user_id, TokenType.ACCESS.value, auth_user.role)
+            return self._generate_token(payload, TokenType.ACCESS.value, auth_user.role)
 
         if token_type == TokenType.REFRESH.value:
-            token_exists = False
-            try:
-                token = self.auth_dao.get_token_by_user_id(user_id)
-                if isinstance(token, str):
-                    token_exists = True
-            except:
-                ## get token by id will throw if no token found
-                pass
-
-            if token_exists:
-                raise Exception(
-                    f"Token of type {token_type} already exists for user with id {user_id}"
-                )
-
-            token = self._generate_token(user_id, TokenType.REFRESH.value, auth_user.role)
+            token = self._generate_token(payload, TokenType.REFRESH.value, auth_user.role)
             self._persist_token(token, owner_id=user_id)
 
             return token
@@ -131,7 +127,9 @@ class JWTTokenAuthService(TokenAuthService):
             token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
         )
 
-    def _generate_token(self, user_id: int, token_type: TokenType, role: AuthUserRole) -> str:
+    def _generate_token(
+        self, payload: Dict[str, int | str], token_type: TokenType, role: AuthUserRole
+    ) -> str:
         token_ttl = (
             self._ACCESS_TOKEN_TTL
             if token_type is TokenType.ACCESS.value
@@ -139,12 +137,8 @@ class JWTTokenAuthService(TokenAuthService):
         )
 
         ## Todo: make a type for this
-        payload = {
-            "exp": time.time() + token_ttl,
-            "user_id": user_id,
-            "type": token_type,
-            "role": role,
-        }
+        payload["exp"] = time.time() + token_ttl
+
         new_token = jwt.encode(payload, self.signing_secret, algorithm=self.SIGNING_ALGORITHM)
 
         return new_token

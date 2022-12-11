@@ -22,12 +22,19 @@ config.read(filename)
 app = FlaskApp(config)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1000 * 1000
 origin = config.get("cors", "origin")
-print(origin)
 CORS(app, origins=[origin])
 
 app.register_blueprint(file_service_api.blueprint, url_prefix="/api/fileservice/0.1")
 app.register_blueprint(posts_api.blueprint, url_prefix="/api/posts/0.1")
 app.register_blueprint(auth_api.blueprint, url_prefix="/api/auth/0.1")
+
+
+@app.after_request
+def add_new_auth_token(response):
+    """If a new auth token was generated during any given request (e.g. if it expired and refresh token used to generate new one), add it to the response header"""
+    if flask.g.new_auth_token:
+        response.headers["Authorization"] = f"Bearer {flask.g.new_auth_token}"
+
 
 if __name__ == "__main__":
     app.run()

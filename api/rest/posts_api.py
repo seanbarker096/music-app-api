@@ -1,11 +1,16 @@
 import json
 
 import flask
+
 from api.typings.posts import PostCreateRequest
+from api.utils import rest_utils
 
 blueprint = flask.Blueprint("posts", __name__)
 
+auth = rest_utils.auth
 
+
+@auth
 @blueprint.route("/posts/", methods=["POST"])
 def post_create():
     data = flask.request.json
