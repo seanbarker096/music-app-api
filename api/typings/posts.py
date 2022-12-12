@@ -42,3 +42,18 @@ class PostCreateResult(object):
 
     def __init__(self, post: Post):
         self.post = post
+
+
+class PostAttachment(object):
+    id: int = ...
+    post_id: int = ...
+    file_uuid: int = ...
+
+
+class PostAttachmentsCreateRequest(object):
+    post_id: int = ...
+    attachment_file_ids: tuple[int] = ...
+
+
+class PostAttachmentsCreateResult(object):
+    post_attachments: tuple[PostAttachment]

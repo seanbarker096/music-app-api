@@ -37,3 +37,13 @@ class PostsDAO(object):
             create_time=now,
             update_time=None,
         )
+
+
+class PostAttachmentsDAO(object):
+    db: DB
+
+    def __init__(self, config, db: Optional[DB] = None):
+        self.db = db if db else DB(config)
+
+    def post_attachment_create(self, post_id: int, attachment_file_id: int):
+        ...

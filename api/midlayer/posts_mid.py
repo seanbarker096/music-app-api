@@ -1,8 +1,13 @@
 from typing import Optional
 
-from api.dao.posts_dao import PostsDAO
+from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
 from api.midlayer import BaseMidlayerMixin
-from api.typings.posts import PostCreateRequest, PostCreateResult
+from api.typings.posts import (
+    PostAttachmentsCreateRequest,
+    PostAttachmentsCreateResult,
+    PostCreateRequest,
+    PostCreateResult,
+)
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -43,3 +48,50 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to create post with content {request.content} for user with id {request.owner_id}"
             )
+
+
+class PostAttachmentsMidlayerConnections:
+    def __init__(self, config, post_attachments_dao: Optional[PostsDAO] = None):
+        self.post_attachments_dao = (
+            post_attachments_dao if post_attachments_dao else PostAttachmentsDAO(config)
+        )
+
+
+class PostAttachmentsMixin(BaseMidlayerMixin):
+    def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
+
+        connections = (
+            conns.post_mid_conns
+            if conns and conns.post_mid_connsPostAttachmentsCreateRequest
+            else PostAttachmentsMidlayerConnections(config)
+        )
+        self.posts_attachments_dao = connections.post_attachments_dao
+
+        ## Call the next mixins constructor
+        super().__init__(config, conns)
+
+    def post_attachments_create(
+        self, request: PostAttachmentsCreateRequest
+    ) -> PostAttachmentsCreateResult:
+
+        if not isinstance(request.post_id, int):
+            raise InvalidArgumentException(
+                f"Invalid value {request.post_id} for field post_id. Must provide a valid integer to create post attachments.",
+                "post_id",
+            )
+
+        attachment_file_ids = request.attachment_file_ids
+
+        if not isinstance(attachment_file_ids, tuple):
+            raise InvalidArgumentException(
+                f"Invalid value {attachment_file_ids} for field attachment_file_ids. Field must be iterable",
+                "attachment_file_ids",
+            )
+
+        try:
+            for attachment_file_id in attachment_file_ids:
+                self.posts_attachments_dao.post_attachment_create(
+                    post_id=request.post_id, attachment_file_id=attachment_file_id
+                )
+        except:
+            ...

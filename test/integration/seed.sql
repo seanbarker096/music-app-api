@@ -15,7 +15,7 @@ CREATE TABLE gigs.post (
 DROP TABLE IF EXISTS gigs.post_attachments;
 CREATE TABLE gigs.post_attachments (
     id int(10) unsigned auto_increment,
-    attachment_uuid varchar(255) NOT NULL,
+    file_uuid varchar(255) NOT NULL,
     post_id int(10) unsigned NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB
