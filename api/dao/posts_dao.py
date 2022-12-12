@@ -3,7 +3,6 @@ from typing import Optional
 
 from api.db.db import DB
 from api.typings.posts import Post, PostCreateRequest
-from exceptions.db.exceptions import DBDuplicateKeyException
 
 
 class PostsDAO(object):
@@ -14,13 +13,12 @@ class PostsDAO(object):
 
     def post_create(self, request: PostCreateRequest) -> Post:
         sql = """
-            INSERT INTO post(attachment_uuid, owner_id, content, create_time, updated_time, is_deleted)
-            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
+            INSERT INTO post(owner_id, content, create_time, updated_time, is_deleted)
+            VALUES(%s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
         """
         now = time.time()
 
         binds = (
-            request.attachment_id,
             request.owner_id,
             request.content,
             now,
@@ -38,5 +36,4 @@ class PostsDAO(object):
             content=request.content,
             create_time=now,
             update_time=None,
-            attachment_id=request.attachment_id,
         )

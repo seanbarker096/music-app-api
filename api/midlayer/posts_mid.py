@@ -35,11 +35,6 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 f"Invalid value {request.content} for argument content", "content"
             )
 
-        if request.attachment_id and not isinstance(request.attachment_id, int):
-            raise InvalidArgumentException(
-                f"Invalid value {request.attachment_id} for argument attachment_id", "attachment_id"
-            )
-
         try:
             post = self.posts_dao.post_create(request)
             return PostCreateResult(post=post)

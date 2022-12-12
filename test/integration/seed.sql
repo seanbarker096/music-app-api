@@ -3,7 +3,6 @@ USE gigs;
 DROP TABLE IF EXISTS gigs.post;
 CREATE TABLE gigs.post (
     id int(10) unsigned auto_increment,
-    attachment_uuid varchar(255) NULL,
     owner_id int(10) unsigned NOT NULL,
     content text NULL,
     create_time datetime NOT NULL,
