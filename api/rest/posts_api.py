@@ -16,7 +16,9 @@ def post_create():
     data = flask.request.json
 
     post_create_request = PostCreateRequest(
-        owner_id=123, content=data["content"], attachment_id=data.get("attachment_id", None)
+        owner_id=data["owner_id"],
+        content=data["content"],
+        attachment_id=data.get("attachment_id", None),
     )
 
     result = flask.current_app.conns.midlayer.post_create(post_create_request)

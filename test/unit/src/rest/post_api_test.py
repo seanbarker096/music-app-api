@@ -1,9 +1,9 @@
 import time
 from unittest.mock import Mock
 
-from api.typings.posts import Post, PostCreateRequest, PostCreateResult
-
 from rest import PostAPITestCase
+
+from api.typings.posts import Post, PostCreateRequest, PostCreateResult
 
 
 class PostApiTest(PostAPITestCase):
@@ -12,6 +12,7 @@ class PostApiTest(PostAPITestCase):
 
         json = {
             "content": "This is a test post!",
+            "owner_id": 555,
         }
 
         post = Post(
@@ -39,7 +40,7 @@ class PostApiTest(PostAPITestCase):
     def test_post_create_with_attachment(self):
         now = time.time()
 
-        json = {"content": "This is a test post!", "attachment_id": "1111"}
+        json = {"content": "This is a test post!", "owner_id": "555", "attachment_id": "1111"}
 
         post = Post(
             id=123,

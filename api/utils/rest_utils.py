@@ -53,7 +53,10 @@ def auth(func):
 
         if auth_token:
             try:
-                flask.current_app.conns.auth_service.validate_token(auth_token)
+                decoded_token = flask.current_app.conns.auth_service.validate_token(auth_token)
+                auth_user = build_auth_user_from_token_payload(decoded_token)
+
+                flask.g.req_user = auth_user
                 ## If auth token valid return
                 return func(*args, **kwargs)
             except:
@@ -68,9 +71,10 @@ def auth(func):
                 "Authorization of the request failed. Please try logging out and in again to revalidate your session"
             )
         try:
-            payload = flask.current_app.conns.auth_service.validate_token(refresh_token)
+            decoded_token = flask.current_app.conns.auth_service.validate_token(refresh_token)
 
-            auth_user = AuthUser(user_id=payload["user_id"], role=payload["role"])
+            auth_user = build_auth_user_from_token_payload(decoded_token)
+            flask.g.req_user = auth_user
 
             new_auth_token = flask.current_app.conns.auth_service.create_token(
                 auth_user=auth_user,
@@ -92,6 +96,19 @@ def auth(func):
         return func(*args, **kwargs)
 
     return wrapped_f
+
+
+def build_auth_user_from_token_payload(payload: Dict[str, str | int]) -> AuthUser:
+    """
+    :param dict: Token payload
+    """
+    user_id = payload.get("user_id", None)
+    role = payload.get("role", None)
+
+    if not user_id or not role:
+        raise Exception("Error when extracting requesting user information from token")
+
+    return AuthUser(user_id=user_id, role=role)
 
 
 def add_token_headers(response):

@@ -7,6 +7,9 @@ CREATE TABLE gigs.post (
     attachment_uuid varchar(255) NULL,
     owner_id int(10) unsigned NOT NULL,
     content text NULL,
+    create_time datetime NOT NULL,
+    updated_time datetime DEFAULT NULL,
+    is_deleted tinyint(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
