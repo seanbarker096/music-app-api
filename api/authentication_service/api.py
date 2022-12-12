@@ -19,6 +19,7 @@ from api.authentication_service.typings import (
     TokenCreateRequest,
     TokenType,
 )
+from api.utils.rest_utils import remove_bearer_from_token
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -125,12 +126,6 @@ class JWTTokenAuthService(TokenAuthService):
 
     def validate_token(self, token: str, token_type: Optional[TokenType] = None) -> Dict[str, any]:
         """Validate token allowing for 10 second leway."""
-        ## Handle tokens in Authorization header format ("Bearer the_actual_token")
-        strings = token.split("Bearer ")
-
-        if len(strings) == 2 and strings[0] == "":
-            token = strings[1]
-
         try:
             decoded_token = jwt.decode(
                 token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM

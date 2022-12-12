@@ -33,10 +33,22 @@ def build_api_error_repsonse(e: ResponseBaseException, http_status_code: int):
     )
 
 
+def remove_bearer_from_token(token: str):
+    ## Handle tokens in Authorization header format ("Bearer the_actual_token")
+    strings = token.split("Bearer ")
+
+    if len(strings) == 2 and strings[0] == "":
+        token = strings[1]
+
+    return token
+
+
 def auth(func):
     @functools.wraps(func)
     def wrapped_f(*args, **kwargs):
         auth_token = flask.request.headers.get("Authorization")
+        auth_token = remove_bearer_from_token(auth_token)
+
         flask.g.new_auth_token = None
 
         if auth_token:

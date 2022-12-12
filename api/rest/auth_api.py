@@ -21,6 +21,7 @@ from api.utils.rest_utils import (
     auth,
     build_api_error_repsonse,
     process_string_request_param,
+    remove_bearer_from_token,
 )
 from exceptions.response.exceptions import UserAlreadyExistsException
 
@@ -133,7 +134,11 @@ def signup():
 @blueprint.route("/logout/", methods=["POST"])
 @auth
 def logout():
-    request = AuthStateDeleteRequest(refresh_token=flask.request.headers.get("Refresh-Token", None))
+    refresh_token = flask.request.headers.get("Refresh-Token", None)
+    refresh_token = remove_bearer_from_token(refresh_token)
+
+    request = AuthStateDeleteRequest(refresh_token=refresh_token)
+
     flask.current_app.conns.auth_service.delete_auth_state(request)
 
     return flask.current_app.response_class(status=200, mimetype="application/json")
