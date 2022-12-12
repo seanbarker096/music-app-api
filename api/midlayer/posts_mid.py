@@ -2,6 +2,8 @@ from typing import Optional
 
 from api.dao.posts_dao import PostsDAO
 from api.midlayer import BaseMidlayerMixin
+from api.typings.posts import PostCreateRequest, PostCreateResult
+from exceptions.exceptions import InvalidArgumentException
 
 
 class PostMidlayerConnections:
@@ -22,5 +24,27 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
         ## Call the next mixins constructor
         super().__init__(config, conns)
 
-    def post_create(self):
-        ...
+    def post_create(self, request: PostCreateRequest) -> PostCreateResult:
+        if not isinstance(request.owner_id, int) or not str:
+            raise InvalidArgumentException(
+                f"Invalid value {request.owner_id} for argument owner_id", "owner_id"
+            )
+
+        if not isinstance(request.content, str) or not request.content:
+            raise InvalidArgumentException(
+                f"Invalid value {request.content} for argument content", "content"
+            )
+
+        if request.attachment_id and not isinstance(request.attachment_id, int):
+            raise InvalidArgumentException(
+                f"Invalid value {request.attachment_id} for argument attachment_id", "attachment_id"
+            )
+
+        try:
+            post = self.posts_dao.post_create(request)
+            return PostCreateResult(post=post)
+
+        except Exception:
+            raise Exception(
+                f"Failed to create post with content {request.content} for user with id {request.owner_id}"
+            )

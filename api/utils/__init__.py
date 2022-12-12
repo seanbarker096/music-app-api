@@ -3,6 +3,7 @@ import secrets
 import time
 
 from argon2 import PasswordHasher
+from argon2 import exceptions as ArgonExceptions
 
 ph = PasswordHasher(time_cost=12, memory_cost=16384)
 
@@ -18,7 +19,12 @@ def hash_password(password: str):
 
 
 def verify_hash(hash: str, password: str):
-    return ph.verify(hash, password)
+    try:
+        return ph.verify(hash, password)
+    except ArgonExceptions.VerifyMismatchError:
+        raise Exception(
+            "Failed to verify hash and password because password does not match the hash"
+        )
 
 
 ## TODO: Complete this

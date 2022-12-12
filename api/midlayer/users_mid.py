@@ -54,7 +54,10 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         return self.users_dao.strip_users_password(user_with_password)
 
     def _is_correct_password(self, password: str, hashed_password: str) -> bool:
-        return verify_hash(hashed_password, password)
+        try:
+            return verify_hash(hashed_password, password)
+        except:
+            return False
 
     def user_create(self, request: UserCreateRequest) -> UserCreateResult:
         ## TODO: Add validation for username length or maybe do this on front-end
@@ -76,11 +79,10 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
 
         try:
             user = self.users_dao.user_create(request, password_hash=password_hash)
-        ## TODO: Update to use our own duplicate key error
+        ## TODO: Update to use our own duplicate key error and move to dao as mmidlayer shoiuyldnt know about db duplicate key exceptions
         except DBDuplicateKeyException as e:
             duplicate_key = e.get_column()
             duplicate_value = request.username if duplicate_key == "username" else request.email
-            print(duplicate_key)
             raise UserAlreadyExistsException(
                 f"Cannot create user. User with {duplicate_key} {duplicate_value} already exists."
             )

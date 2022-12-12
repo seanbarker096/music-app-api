@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 
@@ -31,7 +32,12 @@ class PostCreateRequest(object):
     content: str = ...
     attachment_id: Optional[int] = ...
 
-    def __init__(self, owner_id: int, content: str, attachment_id: Optional[int]):
+    def __init__(
+        self,
+        owner_id: int,
+        content: str,
+        attachment_id: Optional[int],
+    ):
         self.owner_id = owner_id
         self.content = content
         self.attachment_id = attachment_id
