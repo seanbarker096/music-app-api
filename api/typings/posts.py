@@ -59,15 +59,15 @@ class PostAttachment(object):
 
 class PostAttachmentsCreateRequest(object):
     post_id: int = ...
-    file_ids: tuple[int] = ...
+    file_ids: list[int] = ...
 
-    def __init__(self, post_id: int, file_ids: tuple[int]):
+    def __init__(self, post_id: int, file_ids: list[int]):
         self.post_id = post_id
         self.file_ids = file_ids
 
 
 class PostAttachmentsCreateResult(object):
-    post_attachments: tuple[PostAttachment]
+    post_attachments: list[PostAttachment]
 
-    def __init__(self, post_attachments: tuple[PostAttachment]) -> None:
+    def __init__(self, post_attachments: list[PostAttachment]) -> None:
         self.post_attachments = post_attachments

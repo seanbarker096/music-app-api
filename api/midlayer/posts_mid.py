@@ -59,10 +59,9 @@ class PostAttachmentsMidlayerConnections:
 
 class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
-
         connections = (
-            conns.post_mid_conns
-            if conns and conns.post_mid_connsPostAttachmentsCreateRequest
+            conns.post_attachments_mid_conns
+            if conns and conns.post_attachments_mid_conns
             else PostAttachmentsMidlayerConnections(config)
         )
         self.posts_attachments_dao = connections.post_attachments_dao
@@ -82,7 +81,8 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
 
         file_ids = request.file_ids
 
-        if not isinstance(file_ids, tuple):
+        print("file_ids", type(file_ids))
+        if not isinstance(file_ids, list):
             raise InvalidArgumentException(
                 f"Invalid value {file_ids} for field file_ids. Field must be iterable",
                 "file_ids",
@@ -97,9 +97,7 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
                 )
                 attachments.append(attachment)
 
-            attachments_tuple = tuple(attachments)
-
-            return PostAttachmentsCreateResult(post_attachments=attachments_tuple)
+            return PostAttachmentsCreateResult(post_attachments=attachments)
 
         except Exception:
             raise Exception(

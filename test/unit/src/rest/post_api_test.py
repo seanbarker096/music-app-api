@@ -49,7 +49,7 @@ class PostApiTest(PostAPITestCase):
         json = {
             "content": "This is a test post!",
             "owner_id": "555",
-            "attachment_file_ids": "[1111]",
+            "attachment_file_ids": '["1111"]',
         }
 
         post = Post(
@@ -60,7 +60,9 @@ class PostApiTest(PostAPITestCase):
             content="This is a test post!",
         )
 
-        post_attachments = (PostAttachment(id=456, post_id=123, file_id=888, create_time=now),)
+        post_attachments = [
+            PostAttachment(id=456, post_id=123, file_id=888, create_time=now),
+        ]
 
         expected_post_create_response = PostCreateResult(post=post)
         expected_post_attachments_create_response = PostAttachmentsCreateResult(

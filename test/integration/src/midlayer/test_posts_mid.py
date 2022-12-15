@@ -41,7 +41,7 @@ class PostAttachmentsMidIntegrationTest(IntegrationTestCase):
 
         post_attachments_mid = PostAttachmentsMidlayerMixin(config=self.config)
 
-        request = PostAttachmentsCreateRequest(post_id=123, file_ids=(567, 8910))
+        request = PostAttachmentsCreateRequest(post_id=123, file_ids=[567, 8910])
 
         result = post_attachments_mid.post_attachments_create(request=request)
 

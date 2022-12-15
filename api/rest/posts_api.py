@@ -24,6 +24,7 @@ def post_create():
     post = post_result.post
 
     attachment_file_ids = data.get("attachment_file_ids", None)
+    attachment_file_ids = json.loads(attachment_file_ids) if attachment_file_ids else None
     attachment_dicts = []
 
     if attachment_file_ids and len(attachment_file_ids) > 0:
