@@ -58,3 +58,6 @@ class FileServiceDAO:
         )
 
         return file
+
+    def files_get(self):
+        ...

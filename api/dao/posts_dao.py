@@ -2,7 +2,7 @@ import time
 from typing import Optional
 
 from api.db.db import DB
-from api.typings.posts import Post, PostCreateRequest
+from api.typings.posts import Post, PostAttachment, PostCreateRequest
 
 
 class PostsDAO(object):
@@ -45,5 +45,23 @@ class PostAttachmentsDAO(object):
     def __init__(self, config, db: Optional[DB] = None):
         self.db = db if db else DB(config)
 
-    def post_attachment_create(self, post_id: int, attachment_file_id: int):
-        ...
+    def post_attachment_create(self, post_id: int, file_id: int) -> PostAttachment:
+        sql = """
+            INSERT INTO post_attachment(post_id, file_id, create_time) VALUES(%s, %s, FROM_UNIXTIME(%s))
+        """
+
+        now = time.time()
+
+        binds = (
+            post_id,
+            file_id,
+            now,
+        )
+
+        db_result = self.db.run_query(sql, binds)
+
+        post_attachment_id = db_result.get_last_row_id()
+
+        return PostAttachment(
+            id=post_attachment_id, post_id=post_id, file_id=file_id, create_time=now
+        )

@@ -47,13 +47,27 @@ class PostCreateResult(object):
 class PostAttachment(object):
     id: int = ...
     post_id: int = ...
-    file_uuid: int = ...
+    file_id: int = ...
+    create_time: int = ...
+
+    def __init__(self, id: int, post_id: int, file_id: int, create_time: int):
+        self.id = id
+        self.post_id = post_id
+        self.file_id = file_id
+        self.create_time = create_time
 
 
 class PostAttachmentsCreateRequest(object):
     post_id: int = ...
-    attachment_file_ids: tuple[int] = ...
+    file_ids: tuple[int] = ...
+
+    def __init__(self, post_id: int, file_ids: tuple[int]):
+        self.post_id = post_id
+        self.file_ids = file_ids
 
 
 class PostAttachmentsCreateResult(object):
     post_attachments: tuple[PostAttachment]
+
+    def __init__(self, post_attachments: tuple[PostAttachment]) -> None:
+        self.post_attachments = post_attachments

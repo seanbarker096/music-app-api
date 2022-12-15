@@ -57,7 +57,7 @@ class PostAttachmentsMidlayerConnections:
         )
 
 
-class PostAttachmentsMixin(BaseMidlayerMixin):
+class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
 
         connections = (
@@ -80,18 +80,28 @@ class PostAttachmentsMixin(BaseMidlayerMixin):
                 "post_id",
             )
 
-        attachment_file_ids = request.attachment_file_ids
+        file_ids = request.file_ids
 
-        if not isinstance(attachment_file_ids, tuple):
+        if not isinstance(file_ids, tuple):
             raise InvalidArgumentException(
-                f"Invalid value {attachment_file_ids} for field attachment_file_ids. Field must be iterable",
-                "attachment_file_ids",
+                f"Invalid value {file_ids} for field file_ids. Field must be iterable",
+                "file_ids",
             )
 
         try:
-            for attachment_file_id in attachment_file_ids:
-                self.posts_attachments_dao.post_attachment_create(
-                    post_id=request.post_id, attachment_file_id=attachment_file_id
+            ## TODO: Check if files exist by injecting file serving and calling files_get with array of file_ids
+            attachments = []
+            for file_id in file_ids:
+                attachment = self.posts_attachments_dao.post_attachment_create(
+                    post_id=request.post_id, file_id=file_id
                 )
-        except:
-            ...
+                attachments.append(attachment)
+
+            attachments_tuple = tuple(attachments)
+
+            return PostAttachmentsCreateResult(post_attachments=attachments_tuple)
+
+        except Exception:
+            raise Exception(
+                f"Failed to create attachment for post with id {request.post_id} and file with id {file_id}  "
+            )
