@@ -89,3 +89,9 @@ class PostApiTest(PostAPITestCase):
 
         self.assertEqual(response.status_code, 200, "Should return 200 status code")
         self.assertEqual(response.json, response_dict, "Should return the correct post")
+
+    def test_post_get_without_attachments(self):
+        ...
+
+    def test_post_get_with_attachments(self):
+        ...

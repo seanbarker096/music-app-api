@@ -46,3 +46,9 @@ def post_create():
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
     )
+
+
+@blueprint.route("/posts/", methods=["GET"])
+@auth
+def post_get():
+    data = flask.request.json

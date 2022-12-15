@@ -30,6 +30,9 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         )
         self.assertEqual(post.update_time, None, "Should not set the post update time on creation")
 
+    def test_post_get(self):
+        ...
+
 
 class PostAttachmentsMidIntegrationTest(IntegrationTestCase):
     def setUp(self):
@@ -68,3 +71,6 @@ class PostAttachmentsMidIntegrationTest(IntegrationTestCase):
         )
         self.assertEqual(second_attachment.post_id, 123, "Should return the correct post id (2)")
         self.assertEqual(second_attachment.id, 2, "Should return the correct attachment id (2)")
+
+    def test_post_attachments_get(self):
+        ...
