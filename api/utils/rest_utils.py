@@ -46,8 +46,9 @@ def remove_bearer_from_token(token: str):
 def auth(func):
     @functools.wraps(func)
     def wrapped_f(*args, **kwargs):
+        print("running auth")
         auth_token = flask.request.headers.get("Authorization")
-        auth_token = remove_bearer_from_token(auth_token)
+        auth_token = remove_bearer_from_token(auth_token) if auth_token else None
 
         flask.g.new_auth_token = None
 
@@ -64,6 +65,7 @@ def auth(func):
                 pass
 
         refresh_token = flask.request.headers.get("Refresh-Token")
+        refresh_token = remove_bearer_from_token(refresh_token) if refresh_token else None
 
         if not refresh_token:
             print("exception 1")

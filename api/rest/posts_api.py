@@ -10,8 +10,8 @@ blueprint = flask.Blueprint("posts", __name__)
 auth = rest_utils.auth
 
 
-@auth
 @blueprint.route("/posts/", methods=["POST"])
+@auth
 def post_create():
     data = flask.request.json
 
