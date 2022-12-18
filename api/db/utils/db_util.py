@@ -10,15 +10,15 @@ def assert_row_key_exists(
         raise Exception(f"Expected {key} to exist in {json.dumps(row)}")
 
 
-def add_wheres_to_query(wheres: List[str], operator: Optional[str]) -> str:
+def build_where_query_string(wheres: List[str], operator: Optional[str]) -> str:
 
     if len(wheres) == 0:
         raise Exception("wheres must have at least one item")
 
-    if operator != "OR" or operator != "AND":
+    if operator != "OR" and operator != "AND":
         raise Exception("Invalid operator provided. Operator shoulld be one of OR or AND")
 
-    where_string = "".append(" WHERE ")
+    where_string = " WHERE "
 
     where_string = where_string + f" {operator} ".join(wheres)
 

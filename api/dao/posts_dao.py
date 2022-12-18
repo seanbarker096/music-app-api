@@ -1,28 +1,31 @@
 import time
-from typing import Optional
+from typing import Dict, List, Optional
 
-from api.db import DB
-from api.db.utils.db_util import add_wheres_to_query
+from api.db.db import DB
+from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.posts import Post, PostAttachment, PostCreateRequest, PostsGetFilter
+from api.utils import date_time_to_unix_time
 
 
 class PostDBAlias:
-    OWNER_ID = "post_owner_id"
-    CONTENT = "post_content"
-    CREATE_TIME = "post_create_time"
-    UPDATE_TIME = "post_update_time"
-    IS_DELETED = "post_is_deleted"
+    POST_ID = "post_id"
+    POST_OWNER_ID = "post_owner_id"
+    POST_CONTENT = "post_content"
+    POST_CREATE_TIME = "post_create_time"
+    POST_UPDATE_TIME = "post_update_time"
+    POST_IS_DELETED = "post_is_deleted"
 
 
 class PostsDAO(object):
     db: DB
 
     POST_SELECTS = [
-        "owner_id as " + PostDBAlias.USER_ID,
-        "content as " + PostDBAlias.USER_USERNAME,
-        "create_time as " + PostDBAlias.CREATE_TIME,
-        "update_time as " + PostDBAlias.UPDATE_TIME,
-        "is_deleted as " + PostDBAlias.IS_DELETED,
+        "id as " + PostDBAlias.POST_ID,
+        "owner_id as " + PostDBAlias.POST_OWNER_ID,
+        "content as " + PostDBAlias.POST_CONTENT,
+        "create_time as " + PostDBAlias.POST_CREATE_TIME,
+        "update_time as " + PostDBAlias.POST_UPDATE_TIME,
+        "is_deleted as " + PostDBAlias.POST_IS_DELETED,
     ]
 
     def __init__(self, config, db: Optional[DB] = None):
@@ -72,7 +75,7 @@ class PostsDAO(object):
             wheres.append("is_deleted = %s")
             binds.append(int(filter.is_deleted))
 
-        where_string = add_wheres_to_query(wheres, "AND")
+        where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string
 
@@ -82,8 +85,43 @@ class PostsDAO(object):
 
         posts = []
         for row in rows:
-            post = build_post_from_db_row(row)
+            post = self._build_post_from_db_row(row)
             posts.append(post)
+
+        return posts
+
+    def _build_post_from_db_row(self, db_row: Dict[str, any]) -> Post:
+
+        assert_row_key_exists(db_row, PostDBAlias.POST_ID)
+        post_id = int(db_row[PostDBAlias.POST_ID])
+
+        assert_row_key_exists(db_row, PostDBAlias.POST_OWNER_ID)
+        owner_id = int(db_row[PostDBAlias.POST_OWNER_ID])
+
+        assert_row_key_exists(db_row, PostDBAlias.POST_CONTENT)
+        content = db_row[PostDBAlias.POST_CONTENT]
+
+        assert_row_key_exists(db_row, PostDBAlias.POST_CREATE_TIME)
+        create_time = float(date_time_to_unix_time(db_row[PostDBAlias.POST_CREATE_TIME]))
+
+        assert_row_key_exists(db_row, PostDBAlias.POST_UPDATE_TIME)
+        update_time = (
+            float(date_time_to_unix_time(db_row[PostDBAlias.POST_UPDATE_TIME]))
+            if db_row[PostDBAlias.POST_UPDATE_TIME]
+            else None
+        )
+
+        assert_row_key_exists(db_row, PostDBAlias.POST_IS_DELETED)
+        is_deleted = db_row[PostDBAlias.POST_IS_DELETED]
+
+        return Post(
+            id=post_id,
+            owner_id=owner_id,
+            content=content,
+            create_time=create_time,
+            update_time=update_time,
+            is_deleted=is_deleted,
+        )
 
 
 class PostAttachmentsDAO(object):

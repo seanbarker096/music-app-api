@@ -1,7 +1,8 @@
 import time
-from unittest.mock import Mock
+from test.test_utils import mock_decorator
+from unittest.mock import MagicMock, Mock, patch
 
-from rest import PostAPITestCase
+from rest import PostAPITestCase, set_up_patches
 
 from api.typings.posts import (
     Post,
@@ -11,6 +12,9 @@ from api.typings.posts import (
     PostCreateResult,
     PostsGetResult,
 )
+
+## Setup patches before the test case is initialised, which results in the blueprint file being called and defines functions before they can be patched
+set_up_patches()
 
 
 class PostApiTest(PostAPITestCase):

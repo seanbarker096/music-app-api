@@ -5,6 +5,7 @@ from typing import Dict
 import flask
 
 from api.authentication_service.typings import AuthUser, TokenType
+from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import ResponseBaseException
 
 
@@ -19,6 +20,16 @@ def process_string_request_param(request_body: Dict[str, any], parameter_name: s
         raise Exception(f"Invalid value {parameter} for parameter '{parameter_name}'")
 
     return parameter
+
+
+def class_to_dict(class_instance: object):
+
+    if not isinstance(class_instance, object):
+        raise InvalidArgumentException(
+            "Must provide an object instance to convert it to a dictionary", "class_instance"
+        )
+
+    return vars(class_instance)
 
 
 def build_api_error_repsonse(e: ResponseBaseException, http_status_code: int):
@@ -43,6 +54,7 @@ def remove_bearer_from_token(token: str):
     return token
 
 
+## TODO: Consider if this should jsut return AuthState set to Unauthenticated
 def auth(func):
     @functools.wraps(func)
     def wrapped_f(*args, **kwargs):

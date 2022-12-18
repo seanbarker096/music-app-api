@@ -69,6 +69,8 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
 
         posts = self.posts_dao.posts_get(filter)
 
+        return PostsGetResult(posts=posts)
+
 
 class PostAttachmentsMidlayerConnections:
     def __init__(self, config, post_attachments_dao: Optional[PostsDAO] = None):

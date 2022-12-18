@@ -29,5 +29,5 @@ class PostFixtureDTO(object):
     def get_update_time(self) -> Optional[int]:
         return self.update_time
 
-    def is_deleted(self) -> Optional[bool]:
+    def get_is_deleted(self) -> Optional[bool]:
         return self.is_deleted

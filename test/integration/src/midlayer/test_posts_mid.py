@@ -1,9 +1,9 @@
 import time
 from test.integration import IntegrationTestCase
-from test.integration.src.fixtures.DTO import PostFixtureDTO
 from test.integration.src.fixtures.DTO.post_attachment_fixture_dto import (
     PostAttachmentFixtureDTO,
 )
+from test.integration.src.fixtures.DTO.post_fixture_dto import PostFixtureDTO
 from unittest.mock import patch
 
 from api.midlayer.posts_mid import PostAttachmentsMidlayerMixin, PostsMidlayerMixin
@@ -52,6 +52,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         result = post_mid.posts_get(filter=filter)
         post = result.posts[0]
 
+        self.assertEqual(len(result.posts), 1, "Should only return one post")
         self.assertEqual(post.id, post_id, "Should return the correct post_id")
         self.assertEqual(post.owner_id, 555, "Should return the correct post owner id")
         self.assertEqual(post.content, "My great post", "Should return the correct post content")

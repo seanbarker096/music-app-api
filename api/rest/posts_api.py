@@ -1,17 +1,18 @@
 import json
+from unittest.mock import MagicMock, patch
 
 import flask
 
+import api
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostCreateRequest,
     PostsGetFilter,
 )
-from api.utils import rest_utils
 
 blueprint = flask.Blueprint("posts", __name__)
 
-auth = rest_utils.auth
+auth = api.utils.rest_utils.auth
 
 
 @blueprint.route("/posts/", methods=["POST"])
@@ -62,4 +63,12 @@ def post_get(post_id: int):
 
     posts_get_filter = PostsGetFilter(post_ids=[post_id], is_deleted=False)
 
-    posts_get_result = self.current_app.conns.midlayer.posts_get(posts_get_filter)
+    posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
+    posts = posts_get_result
+
+    posts_dicts = []
+    for post in posts:
+        posts_dicts.append(rest_utils.class_to_dict(post))
+
+    response = {}
+    response["posts"] = posts_dicts

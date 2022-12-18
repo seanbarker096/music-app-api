@@ -3,6 +3,8 @@ import io
 import os
 from unittest.mock import Mock
 
+from rest import FileServiceAPITestCase, set_up_patches
+
 from api.file_service.api import AcceptedMimeTypes
 from api.file_service.typings.typings import (
     FileCreateRequest,
@@ -12,7 +14,8 @@ from api.file_service.typings.typings import (
     FileServiceFile,
 )
 
-from rest import FileServiceAPITestCase
+## Setup patches before the test case is initialised, which results in the blueprint file being called and defines functions before they can be patched
+set_up_patches()
 
 
 class FileServiceApiTest(FileServiceAPITestCase):

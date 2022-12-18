@@ -1,9 +1,10 @@
 import os
 import unittest
 from configparser import ConfigParser
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import flask
+
 from api.application import FlaskApp
 from api.rest import file_service_api
 
@@ -22,3 +23,8 @@ class TestCase(unittest.TestCase):
 
         self.config = {}
         self.config["config_file"] = config
+
+    @classmethod
+    def tearDownAfterClass(cls):
+        ## Remove any patches which might be specific to a given test case/file
+        patch.stopall()

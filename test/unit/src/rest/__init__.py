@@ -1,12 +1,17 @@
 import os
 from configparser import ConfigParser
+from test.test_utils import mock_decorator
 from test.unit import TestCase
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import flask
 
+## Module level imports need to go below the patching so the mocks are used when parsing api definitions
+import api.rest.auth_api
+import api.rest.file_service_api
+import api.rest.posts_api
+import api.utils.rest_utils
 from api.application import FlaskApp
-from api.rest import auth_api, file_service_api, posts_api
 from api.server import after_request_setup
 
 
@@ -24,7 +29,9 @@ class APITestCase(TestCase):
         config.read(filename)
 
         mock_conns = Mock()
+
         app = FlaskApp(config=config, conns=mock_conns)
+        app.testing = True
 
         ## Dont bother with full url for testing
         app.register_blueprint(self.BLUEPRINT)
@@ -42,21 +49,26 @@ class APITestCase(TestCase):
 
 
 class FileServiceAPITestCase(APITestCase):
-    BLUEPRINT = file_service_api.blueprint
+    BLUEPRINT = api.rest.file_service_api.blueprint
 
     def setUp(self):
         super().setUp()
 
 
 class PostAPITestCase(APITestCase):
-    BLUEPRINT = posts_api.blueprint
+    BLUEPRINT = api.rest.posts_api.blueprint
 
     def setUp(self):
         super().setUp()
 
 
 class AuthAPITestCase(APITestCase):
-    BLUEPRINT = auth_api.blueprint
+    BLUEPRINT = api.rest.auth_api.blueprint
 
     def setUp(self):
         super().setUp()
+
+
+def set_up_patches():
+    patcher = patch("api.utils.rest_utils.auth", MagicMock(side_effect=mock_decorator))
+    mock = patcher.start()

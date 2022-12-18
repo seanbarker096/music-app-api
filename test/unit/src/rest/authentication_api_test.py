@@ -1,4 +1,5 @@
-from unittest.mock import Mock
+from test.test_utils import mock_decorator
+from unittest.mock import MagicMock, Mock, patch
 
 import jwt
 from rest import AuthAPITestCase
@@ -14,6 +15,7 @@ from api.authentication_service.typings import (
 )
 from api.midlayer.api import Midlayer
 from api.midlayer.users_mid import User
+from api.utils.rest_utils import auth
 from exceptions.response.exceptions import UserAlreadyExistsException
 
 
@@ -200,6 +202,7 @@ class AuthApiTest(AuthAPITestCase):
         """Tests that error is thrown if we try to invalidate a token that does not exist"""
         ...
 
+    @patch("api.utils.rest_utils.auth", auth)
     def test_auth_check_with_valid_auth_token(self):
 
         auth_token_payload = {
@@ -222,6 +225,7 @@ class AuthApiTest(AuthAPITestCase):
 
         self.assertEqual(response.status_code, 200, "Should authorize request for valid auth token")
 
+    @patch("api.utils.rest_utils.auth", auth)
     def test_authorize_request_with_invalid_auth_token_but_valid_refresh_token(self):
         refresh_token_payload = {
             "user_id": 1234,
@@ -256,6 +260,7 @@ class AuthApiTest(AuthAPITestCase):
             "Should update Authorization header with new auth token if refresh token was valid",
         )
 
+    @patch("api.utils.rest_utils.auth", auth)
     def test_authorize_request_with_invalid_auth_and_refresh_tokens(self):
         ## Get validation to throw
         self.app.conns.auth_service.validate_token = Mock()
