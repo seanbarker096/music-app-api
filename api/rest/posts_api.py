@@ -14,6 +14,8 @@ blueprint = flask.Blueprint("posts", __name__)
 
 auth = api.utils.rest_utils.auth
 
+print("running api file")
+
 
 @blueprint.route("/posts/", methods=["POST"])
 @auth

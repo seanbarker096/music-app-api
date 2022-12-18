@@ -1,10 +1,16 @@
 import functools
+from unittest.mock import MagicMock, patch
 
 
 def mock_decorator(func):
     @functools.wraps(func)
     def wrapped_f(*args, **kwargs):
-        print("running mock")
         return func(*args, **kwargs)
 
     return wrapped_f
+
+
+def set_up_patches():
+    print("running patches setup")
+    patcher = patch("api.utils.rest_utils.auth", MagicMock(side_effect=mock_decorator))
+    mock = patcher.start()
