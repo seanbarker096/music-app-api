@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 
 class Post(object):
@@ -8,6 +8,7 @@ class Post(object):
     content: str = ...
     create_time: int = ...
     update_time: Optional[int] = ...
+    is_deleted: Optional[bool] = ...
 
     def __init__(
         self,
@@ -15,12 +16,14 @@ class Post(object):
         owner_id: int,
         content: str,
         create_time: int,
-        update_time: Optional[int],
+        update_time: Optional[int] = None,
+        is_deleted: Optional[bool] = False,
     ):
         self.id = id
         self.owner_id = owner_id
         self.content = content
         self.create_time = create_time
+        self.is_deleted = is_deleted
         self.update_time = update_time
 
 
@@ -44,6 +47,25 @@ class PostCreateResult(object):
         self.post = post
 
 
+class PostsGetFilter(object):
+    post_ids: Optional[List[int]] = ...
+    is_deleted: Optional[bool] = ...
+
+    def __init__(
+        self, post_ids: Optional[List[int]] = None, is_deleted: Optional[bool] = None
+    ) -> None:
+        self.post_ids = post_ids
+        self.is_deleted = is_deleted
+
+
+class PostsGetResult(object):
+    posts: List[Post] = ...
+
+    def __init__(self, posts: List[Post]) -> None:
+        self.posts = posts
+
+
+# ********* POST ATTACHMENTS ************* #
 class PostAttachment(object):
     id: int = ...
     post_id: int = ...
@@ -70,4 +92,22 @@ class PostAttachmentsCreateResult(object):
     post_attachments: list[PostAttachment]
 
     def __init__(self, post_attachments: list[PostAttachment]) -> None:
+        self.post_attachments = post_attachments
+
+
+class PostAttachmentsGetFilter(object):
+    post_attachment_ids: Optional[List[int]] = ...
+    post_ids: Optional[List[int]]
+
+    def __init__(
+        self, post_attachment_ids: Optional[List[int]] = None, post_ids: Optional[List[int]] = None
+    ):
+        self.post_attachment_ids = post_attachment_ids
+        self.post_ids = post_ids
+
+
+class PostAttachmentsGetResult(object):
+    post_attachments: List[PostAttachment] = ...
+
+    def __init__(self, post_attachments: List[PostAttachment]) -> None:
         self.post_attachments = post_attachments

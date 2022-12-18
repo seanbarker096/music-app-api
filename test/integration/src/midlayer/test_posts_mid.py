@@ -1,12 +1,17 @@
 import time
 from test.integration import IntegrationTestCase
+from test.integration.src.fixtures.DTO import PostFixtureDTO
+from test.integration.src.fixtures.DTO.post_attachment_fixture_dto import (
+    PostAttachmentFixtureDTO,
+)
 from unittest.mock import patch
 
-from api.midlayer.posts_mid import (
+from api.midlayer.posts_mid import PostAttachmentsMidlayerMixin, PostsMidlayerMixin
+from api.typings.posts import (
     PostAttachmentsCreateRequest,
-    PostAttachmentsMidlayerMixin,
+    PostAttachmentsGetFilter,
     PostCreateRequest,
-    PostsMidlayerMixin,
+    PostsGetFilter,
 )
 
 
@@ -25,13 +30,31 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         post = post_mid.post_create(request).post
 
         self.assertEqual(post.id, 1, "Should return the correct post id")
+        self.assertEqual(post.content, "A test post", "Should return the correct post content")
         self.assertEqual(
             post.create_time, self.current_time, "Should return the correct post create time"
         )
         self.assertEqual(post.update_time, None, "Should not set the post update time on creation")
+        self.assertFalse(post.is_deleted)
 
     def test_post_get(self):
-        ...
+
+        post_dto = PostFixtureDTO(
+            owner_id=555, content="My great post", create_time=self.current_time
+        )
+
+        post_id = self.fixture_factory.post_fixture_create(post_dto)
+
+        post_mid = PostsMidlayerMixin(config=self.config)
+
+        filter = PostsGetFilter(post_ids=[post_id])
+
+        result = post_mid.posts_get(filter=filter)
+        post = result.posts[0]
+
+        self.assertEqual(post.id, post_id, "Should return the correct post_id")
+        self.assertEqual(post.owner_id, 555, "Should return the correct post owner id")
+        self.assertEqual(post.content, "My great post", "Should return the correct post content")
 
 
 class PostAttachmentsMidIntegrationTest(IntegrationTestCase):
@@ -73,4 +96,23 @@ class PostAttachmentsMidIntegrationTest(IntegrationTestCase):
         self.assertEqual(second_attachment.id, 2, "Should return the correct attachment id (2)")
 
     def test_post_attachments_get(self):
-        ...
+        post_attachment_dto = PostAttachmentFixtureDTO(
+            post_id=444, file_id=333, create_time=self.current_time
+        )
+
+        post_attachment_id = self.fixture_factory.post_attachment_fixture_create(
+            post_attachment_dto
+        )
+
+        post_attachments_mid = PostAttachmentsMidlayerMixin(config=self.config)
+
+        filter = PostAttachmentsGetFilter(post_ids=[post_attachment_id])
+
+        result = post_attachments_mid.post_attachments_get(filter=filter)
+        post_attachment = result.post_attachments[0]
+
+        self.assertEqual(
+            post_attachment.id, post_attachment_id, "Should return the correct post_id"
+        )
+        self.assertEqual(post_attachment.file_id, 333, "Should return the correct file id")
+        self.assertEqual(post_attachment.post_id, 444, "Should return the correct post id")

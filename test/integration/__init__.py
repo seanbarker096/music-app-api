@@ -2,6 +2,7 @@ import os
 import time
 import unittest
 from configparser import ConfigParser
+from test.integration.src.fixtures.fixture_factory import FixtureFactory
 
 from api.db.db import DB
 
@@ -25,6 +26,8 @@ class IntegrationTestCase(unittest.TestCase):
         self.db = DB(self.config)
         ## Allows us to access the actual time in tests when we mock time.time()
         self.current_time = time.time()
+
+        self.fixture_factory = FixtureFactory(db=self.db)
 
     def tearDown(self):
         self.truncate_db()

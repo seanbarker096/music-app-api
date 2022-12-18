@@ -2,7 +2,11 @@ import json
 
 import flask
 
-from api.typings.posts import PostAttachmentsCreateRequest, PostCreateRequest
+from api.typings.posts import (
+    PostAttachmentsCreateRequest,
+    PostCreateRequest,
+    PostsGetFilter,
+)
 from api.utils import rest_utils
 
 blueprint = flask.Blueprint("posts", __name__)
@@ -48,7 +52,14 @@ def post_create():
     )
 
 
-@blueprint.route("/posts/", methods=["GET"])
+@blueprint.route("/posts/<int:post_id>", methods=["GET"])
 @auth
-def post_get():
+def post_get(post_id: int):
     data = flask.request.json
+
+    if not post_id:
+        raise Exception("Invalid request. Must provide a valid post_id")
+
+    posts_get_filter = PostsGetFilter(post_ids=[post_id], is_deleted=False)
+
+    posts_get_result = self.current_app.conns.midlayer.posts_get(posts_get_filter)

@@ -1,19 +1,36 @@
 import time
 from typing import Optional
 
-from api.db.db import DB
-from api.typings.posts import Post, PostAttachment, PostCreateRequest
+from api.db import DB
+from api.db.utils.db_util import add_wheres_to_query
+from api.typings.posts import Post, PostAttachment, PostCreateRequest, PostsGetFilter
+
+
+class PostDBAlias:
+    OWNER_ID = "post_owner_id"
+    CONTENT = "post_content"
+    CREATE_TIME = "post_create_time"
+    UPDATE_TIME = "post_update_time"
+    IS_DELETED = "post_is_deleted"
 
 
 class PostsDAO(object):
     db: DB
+
+    POST_SELECTS = [
+        "owner_id as " + PostDBAlias.USER_ID,
+        "content as " + PostDBAlias.USER_USERNAME,
+        "create_time as " + PostDBAlias.CREATE_TIME,
+        "update_time as " + PostDBAlias.UPDATE_TIME,
+        "is_deleted as " + PostDBAlias.IS_DELETED,
+    ]
 
     def __init__(self, config, db: Optional[DB] = None):
         self.db = db if db else DB(config)
 
     def post_create(self, request: PostCreateRequest) -> Post:
         sql = """
-            INSERT INTO post(owner_id, content, create_time, updated_time, is_deleted)
+            INSERT INTO post(owner_id, content, create_time, update_time, is_deleted)
             VALUES(%s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
         """
         now = time.time()
@@ -37,6 +54,36 @@ class PostsDAO(object):
             create_time=now,
             update_time=None,
         )
+
+    def posts_get(self, filter: PostsGetFilter) -> List[Post]:
+        selects = f"""
+            SELECT {', '.join(self.POST_SELECTS)} 
+            FROM post
+        """
+
+        wheres = []
+        binds = []
+
+        if filter.post_ids:
+            wheres.append("id in %s")
+            binds.append(filter.post_ids)
+
+        if filter.is_deleted:
+            wheres.append("is_deleted = %s")
+            binds.append(int(filter.is_deleted))
+
+        where_string = add_wheres_to_query(wheres, "AND")
+
+        sql = selects + where_string
+
+        db_result = self.db.run_query(sql, binds)
+
+        rows = db_result.get_rows()
+
+        posts = []
+        for row in rows:
+            post = build_post_from_db_row(row)
+            posts.append(post)
 
 
 class PostAttachmentsDAO(object):

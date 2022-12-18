@@ -6,7 +6,7 @@ CREATE TABLE gigs.post (
     owner_id int(10) unsigned NOT NULL,
     content text NULL,
     create_time datetime NOT NULL,
-    updated_time datetime DEFAULT NULL,
+    update_time datetime DEFAULT NULL,
     is_deleted tinyint(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB

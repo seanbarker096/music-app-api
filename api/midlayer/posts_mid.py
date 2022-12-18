@@ -5,8 +5,12 @@ from api.midlayer import BaseMidlayerMixin
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostAttachmentsCreateResult,
+    PostAttachmentsGetFilter,
+    PostAttachmentsGetResult,
     PostCreateRequest,
     PostCreateResult,
+    PostsGetFilter,
+    PostsGetResult,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -48,6 +52,22 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to create post with content {request.content} for user with id {request.owner_id}"
             )
+
+    def posts_get(self, filter=PostsGetFilter) -> PostsGetResult:
+
+        if filter.post_ids and len(filter.post_ids) == 0:
+            raise InvalidArgumentException(
+                "Invalid value provided for filter field post_ids. At least one post_id must be provided",
+                "filter.post_ids",
+            )
+
+        if filter.is_deleted and not isinstance(filter.is_deleted, bool):
+            raise InvalidArgumentException(
+                "Invalid value provided for filter field is_deleted. A boolean argument must be provided",
+                "filter.is_deleted",
+            )
+
+        posts = self.posts_dao.posts_get(filter)
 
 
 class PostAttachmentsMidlayerConnections:
@@ -103,3 +123,6 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to create attachment for post with id {request.post_id} and file with id {file_id}  "
             )
+
+    def post_attachments_get(self, filter=PostAttachmentsGetFilter) -> PostAttachmentsGetResult:
+        ...

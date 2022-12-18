@@ -7,8 +7,9 @@ from api.typings.posts import (
     Post,
     PostAttachment,
     PostAttachmentsCreateResult,
-    PostCreateRequest,
+    PostAttachmentsGetResult,
     PostCreateResult,
+    PostsGetResult,
 )
 
 
@@ -90,8 +91,60 @@ class PostApiTest(PostAPITestCase):
         self.assertEqual(response.status_code, 200, "Should return 200 status code")
         self.assertEqual(response.json, response_dict, "Should return the correct post")
 
-    def test_post_get_without_attachments(self):
+    def test_post_get_by_id_without_attachments(self):
+
+        self.app.conns.midlayer = Mock()
+
+        expected_post = Post()
+
+        expected_posts_get_result = PostsGetResult(posts=[expected_post])
+
+        self.app.conns.midlayer.posts_get = Mock(return_value=expected_posts_get_result)
+
+        response = self.test_client.get(
+            "/posts/123",
+        )
+
+        response_dict = {}
+        response_dict["posts"] = [vars(expected_post)]
+        response_dict["attachments"] = []
+
+        self.assertEqual(response.status_code, 200, "Should return 200 status code")
+        self.assertEqual(response.json, response_dict, "Should return the correct post")
+
+    def test_post_get_post_not_found(self):
+        ...
+
+    def test_posts_get_multiple_posts_found(self):
         ...
 
     def test_post_get_with_attachments(self):
-        ...
+
+        self.app.conns.midlayer = Mock()
+
+        now = time.time()
+        expected_post = Post(id=123, owner_id=555, content="My great test post", create_time=now)
+        expected_post_attachment = PostAttachment(post_id=123, file_id=888, create_time=now)
+
+        expected_posts_get_result = PostsGetResult(posts=[expected_post])
+        expected_post_attachments_get_result = PostAttachmentsGetResult(
+            post_attachments=[expected_post_attachment]
+        )
+
+        self.app.conns.midlayer.posts_get = Mock(return_value=expected_posts_get_result)
+        self.app.conns.midlayer.post_attachments_get = Mock(
+            return_value=expected_post_attachments_get_result
+        )
+
+        response = self.test_client.get(
+            "/posts/123",
+        )
+
+        response_dict = {}
+        response_dict["posts"] = [vars(expected_post)]
+        response_dict["attachments"] = [vars(expected_post_attachment)]
+
+        self.assertEqual(response.status_code, 200, "Should return 200 status code")
+        self.assertEqual(
+            response.json, response_dict, "Should return the correct post and post attachments"
+        )
