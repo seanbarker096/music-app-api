@@ -29,8 +29,8 @@ class IntegrationTestCase(unittest.TestCase):
 
         self.fixture_factory = FixtureFactory(db=self.db)
 
-    def tearDown(self):
-        self.truncate_db()
+        ## We use addCleanup instead of tearDown because teardown does not get called if a test or setup fails
+        self.addCleanup(self.truncate_db)
 
     def truncate_db(self):
         with self.db.connection:

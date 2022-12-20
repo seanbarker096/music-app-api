@@ -3,13 +3,18 @@ import json
 import os
 
 import flask
+
+import api
 from api.file_service.typings.typings import FileCreateRequest, FileGetFilter
 
 blueprint = flask.Blueprint("file_service", __name__)
 
+auth = api.utils.rest_utils.auth
+
 # TODO: Limit file extensions accepted (see https://flask.palletsprojects.com/en/2.2.x/patterns/fileuploads/)
 # TODO: use secure_filename function from flask. Rename to file_upload
 @blueprint.route("/files/upload_file/", methods=["POST"])
+@auth
 def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
     print("test")
@@ -44,6 +49,7 @@ def upload_file():
 
 # TODO: Rename to file_get
 @blueprint.route("/files/<string:file_uuid>/", methods=["GET"])
+@auth
 def get_file(file_uuid: str):
     """Get file from the file service"""
     get_filter = FileGetFilter(uuid=file_uuid)

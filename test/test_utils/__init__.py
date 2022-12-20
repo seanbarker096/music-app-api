@@ -11,6 +11,5 @@ def mock_decorator(func):
 
 
 def set_up_patches():
-    print("running patches setup")
     patcher = patch("api.utils.rest_utils.auth", MagicMock(side_effect=mock_decorator))
     mock = patcher.start()

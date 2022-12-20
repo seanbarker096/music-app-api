@@ -1,4 +1,5 @@
 import json
+from test import test_utils
 from unittest.mock import MagicMock, patch
 
 import flask
@@ -6,9 +7,11 @@ import flask
 import api
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
+    PostAttachmentsGetFilter,
     PostCreateRequest,
     PostsGetFilter,
 )
+from api.utils import rest_utils
 
 blueprint = flask.Blueprint("posts", __name__)
 
@@ -58,19 +61,36 @@ def post_create():
 @blueprint.route("/posts/<int:post_id>", methods=["GET"])
 @auth
 def post_get(post_id: int):
-    data = flask.request.json
-
     if not post_id:
         raise Exception("Invalid request. Must provide a valid post_id")
 
     posts_get_filter = PostsGetFilter(post_ids=[post_id], is_deleted=False)
 
     posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
-    posts = posts_get_result
+    post = posts_get_result.posts[0]
 
-    posts_dicts = []
-    for post in posts:
-        posts_dicts.append(rest_utils.class_to_dict(post))
+    attachment_dicts = []
+    if post:
+        post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=[post.id])
+
+        post_attachments_get_result = flask.current_app.conns.midlayer.post_attachments_get(
+            post_attachments_get_filter
+        )
+
+        attachments = post_attachments_get_result.post_attachments
+
+        for attachment in attachments:
+            attachment_dicts.append(rest_utils.class_to_dict(attachment))
 
     response = {}
-    response["posts"] = posts_dicts
+    response["post"] = rest_utils.class_to_dict(post)
+    response["attachments"] = attachment_dicts
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+
+# posts_dicts = []
+#     for post in posts:
+#         posts_dicts.append(rest_utils.class_to_dict(post))

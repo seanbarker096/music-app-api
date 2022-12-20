@@ -1,21 +1,29 @@
 import copy
 import io
 import os
+from test.test_utils import set_up_patches
 from unittest.mock import Mock
 
-from rest import FileServiceAPITestCase, set_up_patches
+from rest.base import APITestCase
 
 from api.file_service.api import AcceptedMimeTypes
 from api.file_service.typings.typings import (
-    FileCreateRequest,
     FileCreateResult,
-    FileGetFilter,
     FileGetResult,
     FileServiceFile,
 )
 
 ## Setup patches before the test case is initialised, which results in the blueprint file being called and defines functions before they can be patched
 set_up_patches()
+
+from api.rest import file_service_api
+
+
+class FileServiceAPITestCase(APITestCase):
+    BLUEPRINT = file_service_api.blueprint
+
+    def setUp(self):
+        super().setUp()
 
 
 class FileServiceApiTest(FileServiceAPITestCase):

@@ -1,6 +1,7 @@
 import time
-from test.test_utils import mock_decorator, set_up_patches
-from unittest.mock import MagicMock, Mock, patch
+from test.test_utils import set_up_patches
+from test.unit.src.rest.base import APITestCase
+from unittest.mock import Mock
 
 from api.typings.posts import (
     Post,
@@ -14,8 +15,15 @@ from api.typings.posts import (
 ## Setup patches before the test case is initialised, which results in the blueprint file being called and defines functions before they can be patched
 set_up_patches()
 
+from api.rest import posts_api
 
-from rest.base import PostAPITestCase
+
+## Ideally we'd put these in base.py, however it results in early imports of certain files which prevent patching certain functions such as @auth
+class PostAPITestCase(APITestCase):
+    BLUEPRINT = posts_api.blueprint
+
+    def setUp(self):
+        super().setUp()
 
 
 class PostApiTest(PostAPITestCase):
@@ -97,21 +105,27 @@ class PostApiTest(PostAPITestCase):
         self.assertEqual(response.json, response_dict, "Should return the correct post")
 
     def test_post_get_by_id_without_attachments(self):
-
+        now = time.time()
         self.app.conns.midlayer = Mock()
 
-        expected_post = Post()
+        expected_post = Post(
+            id=111, owner_id=222, content="Just a test post!", create_time=now, update_time=None
+        )
 
         expected_posts_get_result = PostsGetResult(posts=[expected_post])
+        expected_post_attachments_get_result = PostAttachmentsGetResult(post_attachments=[])
 
         self.app.conns.midlayer.posts_get = Mock(return_value=expected_posts_get_result)
+        self.app.conns.midlayer.post_attachments_get = Mock(
+            return_value=expected_post_attachments_get_result
+        )
 
         response = self.test_client.get(
             "/posts/123",
         )
 
         response_dict = {}
-        response_dict["posts"] = [vars(expected_post)]
+        response_dict["post"] = vars(expected_post)
         response_dict["attachments"] = []
 
         self.assertEqual(response.status_code, 200, "Should return 200 status code")
@@ -129,7 +143,7 @@ class PostApiTest(PostAPITestCase):
 
         now = time.time()
         expected_post = Post(id=123, owner_id=555, content="My great test post", create_time=now)
-        expected_post_attachment = PostAttachment(post_id=123, file_id=888, create_time=now)
+        expected_post_attachment = PostAttachment(id=111, post_id=123, file_id=888, create_time=now)
 
         expected_posts_get_result = PostsGetResult(posts=[expected_post])
         expected_post_attachments_get_result = PostAttachmentsGetResult(
@@ -146,7 +160,7 @@ class PostApiTest(PostAPITestCase):
         )
 
         response_dict = {}
-        response_dict["posts"] = [vars(expected_post)]
+        response_dict["post"] = vars(expected_post)
         response_dict["attachments"] = [vars(expected_post_attachment)]
 
         self.assertEqual(response.status_code, 200, "Should return 200 status code")

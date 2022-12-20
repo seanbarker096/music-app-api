@@ -127,4 +127,27 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
             )
 
     def post_attachments_get(self, filter=PostAttachmentsGetFilter) -> PostAttachmentsGetResult:
-        ...
+
+        if not filter.post_attachment_ids and not filter.post_ids:
+            raise InvalidArgumentException(
+                "Must provide one of post_attachment_ids or post_ids in the filter", "filter"
+            )
+
+        if filter.post_attachment_ids and len(filter.post_attachment_ids) == 0:
+            raise InvalidArgumentException(
+                "Invalid argument provided for post_attachment_ids filter field. Value must be an of type list with at least one id provided",
+                "filter.post_attachment_ids",
+            )
+
+        if filter.post_ids and len(filter.post_ids) == 0:
+            raise InvalidArgumentException(
+                "Invalid argument provided for post_ids filter field. Value must be an of type list with at least one id provided",
+                "filter.post_ids",
+            )
+
+        try:
+            post_attachments = self.posts_attachments_dao.post_attachments_get(filter=filter)
+            return PostAttachmentsGetResult(post_attachments=post_attachments)
+
+        except Exception:
+            raise Exception("Failed to get post attachments")

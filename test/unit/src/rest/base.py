@@ -1,17 +1,12 @@
 import os
 from configparser import ConfigParser
-from test.test_utils import mock_decorator
 from test.unit import TestCase
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import flask
 
-import api.rest.auth_api
-import api.rest.file_service_api
-import api.rest.posts_api
-import api.utils.rest_utils
 from api.application import FlaskApp
-from api.server import after_request_setup
+from api.utils.rest_utils import after_request_setup
 
 
 class APITestCase(TestCase):
@@ -44,25 +39,4 @@ class APITestCase(TestCase):
 
         self.test_client = self.app.test_client()
 
-        super().setUp()
-
-
-class FileServiceAPITestCase(APITestCase):
-    BLUEPRINT = api.rest.file_service_api.blueprint
-
-    def setUp(self):
-        super().setUp()
-
-
-class PostAPITestCase(APITestCase):
-    BLUEPRINT = api.rest.posts_api.blueprint
-
-    def setUp(self):
-        super().setUp()
-
-
-class AuthAPITestCase(APITestCase):
-    BLUEPRINT = api.rest.auth_api.blueprint
-
-    def setUp(self):
         super().setUp()

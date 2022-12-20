@@ -54,6 +54,13 @@ def remove_bearer_from_token(token: str):
     return token
 
 
+def after_request_setup(response: flask.Response):
+    """Common after request setup to be used here and in unit tests"""
+    add_token_headers(response)
+
+    return response
+
+
 ## TODO: Consider if this should jsut return AuthState set to Unauthenticated
 def auth(func):
     @functools.wraps(func)

@@ -3,7 +3,13 @@ from typing import Dict, List, Optional
 
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
-from api.typings.posts import Post, PostAttachment, PostCreateRequest, PostsGetFilter
+from api.typings.posts import (
+    Post,
+    PostAttachment,
+    PostAttachmentsGetFilter,
+    PostCreateRequest,
+    PostsGetFilter,
+)
 from api.utils import date_time_to_unix_time
 
 
@@ -124,8 +130,22 @@ class PostsDAO(object):
         )
 
 
+class PostAttachmentDBAlias:
+    POST_ATTACHMENT_ID = "post_attachment_id"
+    POST_ATTACHMENT_POST_ID = "post_attachment_post_id"
+    POST_ATTACHMENT_FILE_ID = "post_attachment_file_id"
+    POST_ATTACHMENT_CREATE_TIME = "post_attachment_create_time"
+
+
 class PostAttachmentsDAO(object):
     db: DB
+
+    POST_ATTACHMENT_SELECTS = [
+        "id as " + PostAttachmentDBAlias.POST_ATTACHMENT_ID,
+        "post_id as " + PostAttachmentDBAlias.POST_ATTACHMENT_POST_ID,
+        "file_id as " + PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID,
+        "create_time as " + PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME,
+    ]
 
     def __init__(self, config, db: Optional[DB] = None):
         self.db = db if db else DB(config)
@@ -149,4 +169,56 @@ class PostAttachmentsDAO(object):
 
         return PostAttachment(
             id=post_attachment_id, post_id=post_id, file_id=file_id, create_time=now
+        )
+
+    def post_attachments_get(self, filter: PostAttachmentsGetFilter) -> List[PostAttachment]:
+        selects = f"""
+            SELECT {', '.join(self.POST_ATTACHMENT_SELECTS)} 
+            FROM post_attachment
+        """
+
+        wheres = []
+        binds = []
+
+        if filter.post_ids:
+            wheres.append("id in %s")
+            binds.append(filter.post_ids)
+
+        if filter.post_attachment_ids:
+            wheres.append("post_attachment_ids in %s")
+            binds.append(filter.post_attachment_ids)
+
+        where_string = build_where_query_string(wheres, "AND")
+
+        sql = selects + where_string
+
+        db_result = self.db.run_query(sql, binds)
+
+        rows = db_result.get_rows()
+
+        posts_attachments = []
+        for row in rows:
+            post = self._build_post_attachment_from_db_row(row)
+            posts_attachments.append(post)
+
+        return posts_attachments
+
+    def _build_post_attachment_from_db_row(self, db_row: Dict[str, any]) -> PostAttachment:
+
+        assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_ID)
+        post_attachment_id = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_ID])
+
+        assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_POST_ID)
+        post_id = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_POST_ID])
+
+        assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID)
+        file_id = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID])
+
+        assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME)
+        create_time = float(
+            date_time_to_unix_time(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME])
+        )
+
+        return PostAttachment(
+            id=post_attachment_id, post_id=post_id, file_id=file_id, create_time=create_time
         )

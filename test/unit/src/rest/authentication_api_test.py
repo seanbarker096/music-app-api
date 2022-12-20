@@ -1,10 +1,8 @@
-from test.test_utils import mock_decorator
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import jwt
-from rest import AuthAPITestCase
+from rest.base import APITestCase
 
-from api.authentication_service.api import JWTTokenAuthService
 from api.authentication_service.typings import (
     AuthState,
     AuthStateCreateResult,
@@ -13,10 +11,17 @@ from api.authentication_service.typings import (
     AuthUserRole,
     TokenType,
 )
-from api.midlayer.api import Midlayer
 from api.midlayer.users_mid import User
+from api.rest import auth_api
 from api.utils.rest_utils import auth
 from exceptions.response.exceptions import UserAlreadyExistsException
+
+
+class AuthAPITestCase(APITestCase):
+    BLUEPRINT = auth_api.blueprint
+
+    def setUp(self):
+        super().setUp()
 
 
 class AuthApiTest(AuthAPITestCase):

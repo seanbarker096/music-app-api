@@ -9,14 +9,6 @@ from api.debugger import initialize_flask_server_debugger_if_needed
 from api.rest import auth_api, file_service_api, posts_api
 from api.utils.rest_utils import add_token_headers
 
-
-def after_request_setup(response: flask.Response):
-    """Common after request setup to be used here and in unit tests"""
-    add_token_headers(response)
-
-    return response
-
-
 initialize_flask_server_debugger_if_needed()
 
 
