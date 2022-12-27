@@ -76,7 +76,7 @@ class S3StorageImp(StorageImp):
 
         return s3_upload_request
 
-    def get_file_uri(self, request: FileDownloadURLGetRequest) -> str:
+    def get_file_url(self, request: FileDownloadURLGetRequest) -> str:
         if not isinstance(request.file_identifier, str) or len(request.file_identifier) == 0:
             raise InvalidArgumentException(
                 f"Failed to get file download url. Invalid value {request.file_identifier} for parameter file_identifier",
