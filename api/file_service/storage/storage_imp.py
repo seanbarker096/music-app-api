@@ -24,5 +24,5 @@ class StorageImp(ABC):
         ...
 
     @abstractmethod
-    def get_file_download_url(self, request: FileDownloadURLGetRequest) -> str:
+    def get_file_uri(self, request: FileDownloadURLGetRequest) -> str:
         ...

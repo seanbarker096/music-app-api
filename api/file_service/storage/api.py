@@ -37,9 +37,7 @@ class Storage:
         ## method to save meta data to db
         self.storage_imp.save(save_request)
 
-        download_url = self.get_file_download_url(
-            request=FileDownloadURLGetRequest(file_identifier=request.uuid)
-        )
+        uri = self.get_file_uri(request=FileDownloadURLGetRequest(file_identifier=request.uuid))
 
         ## TODO: Can probably just send in the uuid and bytes here and not return a FileServiceFile. Just return the download url. However this does encourage the file to be created before uploading it
         return FileServiceFile(
@@ -49,14 +47,14 @@ class Storage:
             file_size=request.file_size,
             mime_type=request.mime_type,
             ## TODO: Consider whether we want to send back the bytes grabbed from s3 in case they are modified in some way
-            download_url=download_url,
+            uri=uri,
         )
 
     # def get_file(self, request: FileGetResult) -> FileGetResult:
     #     ...
 
-    def get_file_download_url(self, request: FileDownloadURLGetRequest) -> str:
-        return self.storage_imp.get_file_download_url(request)
+    def get_file_uri(self, request: FileDownloadURLGetRequest) -> str:
+        return self.storage_imp.get_file_uri(request)
 
     def get_file(self, filter: FileGetFilter) -> BytesIO:
         bytes_object = self.storage_imp.get_item(filter.uuid)

@@ -2,11 +2,11 @@ from io import BytesIO
 
 from boto3 import Session
 from botocore.exceptions import ClientError
-from exceptions.exceptions import InvalidArgumentException
-from exceptions.response.exceptions import CreateFileDownloadURLFailedException
 
 from api.file_service.storage.storage_imp import StorageImp
 from api.file_service.typings.typings import FileDownloadURLGetRequest
+from exceptions.exceptions import InvalidArgumentException
+from exceptions.response.exceptions import CreateFileDownloadURLFailedException
 
 
 class S3UploadRequest(object):
@@ -76,7 +76,7 @@ class S3StorageImp(StorageImp):
 
         return s3_upload_request
 
-    def get_file_download_url(self, request: FileDownloadURLGetRequest) -> str:
+    def get_file_uri(self, request: FileDownloadURLGetRequest) -> str:
         if not isinstance(request.file_identifier, str) or len(request.file_identifier) == 0:
             raise InvalidArgumentException(
                 f"Failed to get file download url. Invalid value {request.file_identifier} for parameter file_identifier",

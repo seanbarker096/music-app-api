@@ -58,6 +58,7 @@ CREATE TABLE gigs.users (
   last_login_date datetime NOT NULL,
   language_id int(10) unsigned NOT NULL,
   timezone_id int(10) unsigned NOT NULL, 
+  avatar_file_uuid varchar(255) DEFAULT NULL,
   password_hash varchar(256) NOT NULL,
   salt varchar(16) NULL,
   PRIMARY KEY (id),

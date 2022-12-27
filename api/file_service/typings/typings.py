@@ -22,7 +22,7 @@ class FileServiceFile(object):
     file_name: str = ...
     mime_type: str = ...
     file_size: Optional[int] = None
-    download_url: Optional[str] = None
+    uri: Optional[str] = None
 
     def __init__(
         self,
@@ -31,14 +31,14 @@ class FileServiceFile(object):
         file_name: str,
         mime_type: str,
         file_size: Optional[int] = None,
-        download_url: Optional[str] = None,
+        uri: Optional[str] = None,
     ):
         self.id: int = id
         self.uuid: str = uuid
         self.file_name = file_name
         self.mime_type: str = mime_type
         self.file_size: Optional[int] = file_size
-        self.download_url: Optional[str] = download_url
+        self.uri: Optional[str] = uri
 
 
 # Our storage service is built to integrate with any type of external service provider, so we can switch this out for a new Request object if a new provider is used and new fields are needed. The storage implementation validates the Request to ensure it has all the fields it needs. Validation shouldn't be done elsewhere to avoid coupling other Storage Service code to the specific service provider (e.g. S3)
@@ -85,7 +85,7 @@ class FileCreateRequest(object):
     file_name: str = ...
     mime_type: str = ...
     bytes: bytes = ...
-    download_url: Optional[str] = None
+    uri: Optional[str] = None
     file_size: Optional[int] = None
 
     def __init__(
@@ -94,13 +94,13 @@ class FileCreateRequest(object):
         file_name: str,
         mime_type: str,
         bytes: bytes,
-        download_url: Optional[str] = None,
+        uri: Optional[str] = None,
         file_size: Optional[int] = None,
     ) -> None:
         self.uuid = uuid
         self.file_name = file_name
         self.mime_type = mime_type
-        self.download_url = download_url
+        self.uri = uri
         self.file_size = file_size
         self.bytes = bytes
 

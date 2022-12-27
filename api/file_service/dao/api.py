@@ -11,7 +11,7 @@ class FileServiceDAO:
 
     def create_file_meta(self, request: FileMetaCreateRequest) -> FileServiceFile:
         sql = """
-        INSERT INTO files(uuid, file_size, file_name, mime_type, download_url) VALUES(%s, %s, %s, %s, %s)
+        INSERT INTO files(uuid, file_size, file_name, mime_type, uri) VALUES(%s, %s, %s, %s, %s)
         """
 
         binds = (request.uuid, None, request.file_name, request.mime_type, None)
@@ -23,7 +23,7 @@ class FileServiceDAO:
             uuid=request.uuid,
             file_name=request.file_name,
             mime_type=request.mime_type,
-            download_url=None,
+            uri=None,
         )
 
         return file
@@ -33,7 +33,7 @@ class FileServiceDAO:
 
     def get_file_by_uuid(self, uuid: str) -> FileServiceFile:
         sql = """
-        SELECT id, uuid, file_size, file_name, mime_type, download_url 
+        SELECT id, uuid, file_size, file_name, mime_type, uri 
         FROM files 
         WHERE uuid = %s
         """
@@ -54,7 +54,7 @@ class FileServiceDAO:
             file_name=row["file_name"],
             mime_type=row["mime_type"],
             file_size=row["file_size"],
-            download_url=row["download_url"],
+            uri=row["uri"],
         )
 
         return file
