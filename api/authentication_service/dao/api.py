@@ -73,7 +73,7 @@ class AuthTokenServiceDAO:
 
         result = self.db.run_query(sql, binds)
 
-        row_count = result.get_row_count()
+        row_count = result.affected_rows()
 
         if row_count == 0:
             raise Exception(f"Failed to remove token {token} from the database")

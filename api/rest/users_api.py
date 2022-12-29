@@ -12,7 +12,7 @@ blueprint = flask.Blueprint("users", __name__)
 @blueprint.route("/users/<int:user_id>", methods=["PATCH"])
 @auth
 def user_update(user_id: int):
-    print("running")
+    ## TODO: Add update time for user object and update this value in DAO
     request = flask.request.json
 
     avatar_file_uuid = process_string_request_param(

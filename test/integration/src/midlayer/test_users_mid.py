@@ -9,6 +9,7 @@ from api.typings.users import (
     UserCreateRequest,
     UsersGetFilter,
     UsersGetProjection,
+    UserUpdateRequest,
     UserWithPassword,
 )
 from api.utils import generate_salt, hash_password
@@ -184,3 +185,48 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             users_mid.get_user_by_username_and_password(
                 filter=filter, projection=UsersGetProjection()
             )
+
+    def test_user_update(self):
+        self._seed_user()
+
+        users_mid = UsersMidlayerMixin(self.config)
+
+        request = UserUpdateRequest(user_id=1, avatar_file_uuid="abcdefg")
+
+        result = users_mid.user_update(request)
+        updated_user = result.user
+
+        self.assertEqual(1, updated_user.id, "Should return the user_id of the updated user")
+        self.assertEqual(
+            "abcdefg", updated_user.avatar_file_uuid, "Should return the updated avatar file uuid"
+        )
+        self.assertEqual(
+            "testUser123", updated_user.username, "Should return the user's original username"
+        )
+
+    def test_user_update_when_user_does_not_exist(self):
+        self._seed_user()
+
+        users_mid = UsersMidlayerMixin(self.config)
+
+        request = UserUpdateRequest(user_id=2, avatar_file_uuid="abcdefg")
+
+        with self.assertRaisesRegex(
+            expected_exception=Exception,
+            expected_regex="Failed to update user with id 2 because user could not be found.",
+            msg="Should throw exception if user is not found",
+        ):
+            users_mid.user_update(request)
+
+    def test_user_update_with_no_property_values_provided(self):
+        self._seed_user()
+
+        users_mid = UsersMidlayerMixin(self.config)
+
+        request = UserUpdateRequest(user_id=1, avatar_file_uuid=None)
+
+        with self.assertRaisesRegex(
+            expected_exception=Exception,
+            expected_regex="Failed to update user with id 1.",
+        ):
+            users_mid.user_update(request)

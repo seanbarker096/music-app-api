@@ -85,3 +85,13 @@ class UserAlreadyExistsException(ResponseBaseException):
 
     def __init__(self, message: str):
         super().__init__(message=message)
+
+
+class UserNotFoundException(ResponseBaseException):
+    _http_code = 404
+    _name = "USER_NOT_FOUND"
+    _code = ErrorCodes.USER_NOT_FOUND.value
+    _detail = "Failed to find user"
+
+    def __init__(self, message: str):
+        super().__init__(message=message)

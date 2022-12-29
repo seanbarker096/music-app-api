@@ -64,10 +64,17 @@ class UserWithPassword:
 
 
 class UsersGetFilter:
+    user_id: Optional[str]
     username: Optional[str]
     password: Optional[str]
 
-    def __init__(self, username: Optional[str], password: Optional[str]) -> None:
+    def __init__(
+        self,
+        user_id: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
+        self.user_id = user_id
         self.username = username
         self.password = password
 
@@ -117,9 +124,9 @@ class UserCreateResult:
 
 class UserUpdateRequest:
     user_id: int = ...
-    avatar_file_uuid: str = ...
+    avatar_file_uuid: Optional[str] = ...
 
-    def __init__(self, user_id: int, avatar_file_uuid: str):
+    def __init__(self, user_id: int, avatar_file_uuid: Optional[str] = None):
         self.user_id = user_id
         self.avatar_file_uuid = avatar_file_uuid
 

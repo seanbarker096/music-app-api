@@ -1,11 +1,22 @@
 import time
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from api.db.db import DB
-from api.db.utils.db_util import assert_row_key_exists
-from api.typings.users import User, UserCreateRequest, UsersGetFilter, UserWithPassword
+from api.db.utils.db_util import (
+    assert_row_key_exists,
+    build_update_set_string,
+    build_where_query_string,
+)
+from api.typings.users import (
+    User,
+    UserCreateRequest,
+    UsersGetFilter,
+    UserUpdateRequest,
+    UserWithPassword,
+)
 from api.utils import date_time_to_unix_time, hash_password
 from exceptions.db.exceptions import DBDuplicateKeyException
+from exceptions.response.exceptions import UserNotFoundException
 
 
 class UserDBAlias:
@@ -50,8 +61,33 @@ class UsersDAO(object):
     def __init__(self, config, db: Optional[DB] = None) -> None:
         self.db = db if db else DB(config)
 
-    def users_get(self, filter: UsersGetFilter):
-        ...
+    def users_get(self, filter: UsersGetFilter) -> List[User]:
+        selects = f"""
+            SELECT {', '.join(self.USER_SELECTS)} 
+            FROM users
+        """
+
+        wheres = []
+        binds = []
+
+        if filter.user_id:
+            wheres.append("id = %s")
+            binds.append(filter.user_id)
+
+        where_string = build_where_query_string(wheres, "AND")
+
+        sql = selects + where_string
+
+        db_result = self.db.run_query(sql, binds)
+
+        rows = db_result.get_rows()
+
+        users = []
+        for row in rows:
+            user = self._build_user_from_db_row(row)
+            users.append(user)
+
+        return users
 
     def get_user_by_username(
         self, username: str, include_password=False
@@ -139,6 +175,52 @@ class UsersDAO(object):
             raise Exception(
                 f"Failed to create user with username {request.username} and email {request.email}"
             )
+
+    def user_update(self, request: UserUpdateRequest) -> User:
+        if not request.user_id:
+            raise Exception(
+                "Cannot update user as not user_id. Must provide user_id to update a user"
+            )
+
+        ## Get user to update
+        filter = UsersGetFilter(user_id=request.user_id)
+        users = self.users_get(filter)
+
+        if len(users) == 0:
+            raise UserNotFoundException(
+                f"Failed to update user with id {request.user_id} because user could not be found."
+            )
+
+        user = users[0]
+
+        updates = []
+        binds = []
+
+        if (
+            request.avatar_file_uuid is not None
+            and user.avatar_file_uuid != request.avatar_file_uuid
+        ):
+            updates.append("avatar_file_uuid = %s")
+            binds.append(request.avatar_file_uuid)
+            user.avatar_file_uuid = request.avatar_file_uuid
+
+        if len(updates) == 0:
+            raise Exception(
+                "Failed to update user because no fields provided to update in the user update request, or no fields in request have changed from original users fields"
+            )
+
+        set_string = build_update_set_string(updates)
+
+        sql = f"""
+            UPDATE users {set_string} WHERE id = {request.user_id}
+        """
+
+        db_result = self.db.run_query(sql, binds)
+
+        if db_result.affected_rows() == 0:
+            raise Exception("Failed to update any users for the provided request parameters")
+
+        return user
 
     def _build_user_from_db_row(self, db_row: Dict[str, any]) -> User:
 

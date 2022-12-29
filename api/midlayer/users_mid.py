@@ -9,10 +9,16 @@ from api.typings.users import (
     UserCreateResult,
     UsersGetFilter,
     UsersGetProjection,
+    UserUpdateRequest,
+    UserUpdateResult,
     UserWithPassword,
 )
 from api.utils import hash_password, validate_password, verify_hash
-from exceptions.response.exceptions import UserAlreadyExistsException
+from exceptions.response.exceptions import (
+    ResponseBaseException,
+    UserAlreadyExistsException,
+    UserNotFoundException,
+)
 
 
 class UserMidlayerConnections:
@@ -28,6 +34,21 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
             else UserMidlayerConnections(config)
         )
         self.users_dao = connections.users_dao
+
+    def get_user_by_id(self, user_id: int) -> User:
+        filter = UsersGetFilter(user_id=user_id)
+
+        users = self.users_dao.users_get(filter)
+
+        if filter.password or filter.username:
+            raise Exception(
+                "get_user_by_id called with username or password filter set. Please use UsersMidlayerMixin:get_user_by_username_and_password instead"
+            )
+
+        if len(users) == 0:
+            raise UserNotFoundException(f"Could not find user with id {user_id}")
+
+        return users[0]
 
     def get_user_by_username_and_password(
         self, filter: UsersGetFilter, projection: UsersGetProjection
@@ -88,3 +109,17 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
             )
 
         return UserCreateResult(user=user)
+
+    def user_update(self, request: UserUpdateRequest) -> UserUpdateResult:
+        if not request.user_id:
+            raise Exception("Must provide a valid user_id")
+
+        try:
+            updated_user = self.users_dao.user_update(request)
+
+            return UserUpdateResult(user=updated_user)
+
+        except UserNotFoundException as e:
+            raise e
+        except Exception:
+            raise Exception(f"Failed to update user with id {request.user_id}.")
