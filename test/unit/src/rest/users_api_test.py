@@ -1,4 +1,5 @@
 ## Setup patches before the test case is initialised, which results in the blueprint file being called and defines functions before they can be patched
+import copy
 from test.test_utils import set_up_patches
 from test.unit.src.rest.base import APITestCase
 from unittest.mock import Mock
@@ -32,11 +33,28 @@ class UsersAPITestCase(APITestCase):
 
 
 class UsersApiTest(UsersAPITestCase):
-    def user_update(self):
-        ...
-        # request = UserUpdateRequest(user_id=self.test_user.id, avatar_file_uuid=1234)
+    def test_user_update(self):
+        json_request = {"avatar_file_uuid": "abcdefg"}
 
-        # expected_response = UserUpdateResult(user=self.test_user)
+        user = copy.copy(self.test_user)
 
-        # self.app.conns.midlayer = Mock()
-        # self.app.conns.midlayer.user_update = Mock(return_value=expected_response)
+        user.avatar_file_uuid = "abcdefg"
+        expected_response = UserUpdateResult(user=user)
+
+        self.app.conns.midlayer = Mock()
+        self.app.conns.midlayer.user_update = Mock(return_value=expected_response)
+
+        response = self.test_client.patch(f"/users/{user.id}", json=json_request)
+        updated_user = response.json.get("user")
+
+        self.app.conns.midlayer.user_update.assert_called_once()
+
+        self.assertEqual(response.status_code, 200, "Should return 200 status code")
+        self.assertEqual(
+            updated_user["id"], user.id, "Should return the same user specified in the request"
+        )
+        self.assertEqual(
+            updated_user["avatar_file_uuid"],
+            "abcdefg",
+            "Should update the avatar file uuid successfully",
+        )
