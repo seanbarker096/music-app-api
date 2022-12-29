@@ -17,7 +17,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         mock_storage_imp.save = Mock()
         mock_storage_imp_save_request = Mock()  ## This method usually returns some sort of object
         mock_storage_imp.process_upload_request = Mock(return_value=mock_storage_imp_save_request)
-        mock_storage_imp.get_file_download_url = Mock(
+        mock_storage_imp.get_file_url = Mock(
             return_value="www.file-store.com/download/some-random-location"
         )
 
@@ -43,7 +43,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(isinstance(file_response.id, int))
         assert file_response.uuid == test_uuid
         assert file_response.mime_type == mime_type
-        assert file_response.download_url == "www.file-store.com/download/some-random-location"
+        assert file_response.url == "www.file-store.com/download/some-random-location"
         assert file_response.file_size is None
 
         ## TODO: Improve test by actually querying the db for the file and ensuring its been stored there correctly
@@ -136,7 +136,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         ## TODO: Create fixtures to avoid doing this directly in the test
         file_id = self.db.run_query(
             """
-        INSERT INTO files(uuid, file_size, file_name, mime_type, download_url) VALUES(%s, %s, %s, %s, %s)
+        INSERT INTO files(uuid, file_size, file_name, mime_type, url) VALUES(%s, %s, %s, %s, %s)
         """,
             (
                 "abcdefghikklmnop",
@@ -164,7 +164,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(file.uuid, "abcdefghikklmnop", "Should return the correct file uuid")
         self.assertEqual(file.mime_type, "image/png", "Should return the correct mime_type")
         self.assertEqual(
-            file.download_url,
+            file.url,
             "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
         )
         self.assertEqual(file.file_name, "my-test-file.png")

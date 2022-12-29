@@ -66,7 +66,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         # Now fetch the download url
         request = FileDownloadURLGetRequest(file_identifier="atestfileuuid")
 
-        download_url = s3_storage_imp.get_file_download_url(request)
+        download_url = s3_storage_imp.get_file_url(request)
 
         self.assertTrue(isinstance(download_url, str))
         self.assertTrue(len(download_url) > 0)

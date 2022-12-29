@@ -10,6 +10,7 @@ class User:
     is_deleted: bool
     email: str
     last_login_date: float
+    avatar_file_uuid: Optional[str]
     language_id: Optional[str]
     timezone_id: Optional[int]
 
@@ -25,6 +26,7 @@ class User:
         last_login_date: float,
         language_id: Optional[str],
         timezone_id: Optional[str],
+        avatar_file_uuid: Optional[str] = None,
     ):
         self.id = id
         self.username = username
@@ -33,6 +35,7 @@ class User:
         self.create_time = create_time
         self.is_deleted = is_deleted
         self.email = email
+        self.avatar_file_uuid = avatar_file_uuid
         self.last_login_date = last_login_date
         self.language_id = language_id
         self.timezone_id = timezone_id
@@ -51,6 +54,7 @@ class UserWithPassword:
         self.create_time = user.create_time
         self.is_deleted = user.is_deleted
         self.email = user.email
+        self.avatar_file_uuid = user.avatar_file_uuid
         self.last_login_date = user.last_login_date
         self.language_id = user.language_id
         self.timezone_id = user.timezone_id
@@ -105,6 +109,22 @@ class UserCreateRequest:
 
 
 class UserCreateResult:
+    user: User
+
+    def __init__(self, user: User):
+        self.user = user
+
+
+class UserUpdateRequest:
+    user_id: int = ...
+    avatar_file_uuid: str = ...
+
+    def __init__(self, user_id: int, avatar_file_uuid: str):
+        self.user_id = user_id
+        self.avatar_file_uuid = avatar_file_uuid
+
+
+class UserUpdateResult:
     user: User
 
     def __init__(self, user: User):

@@ -29,7 +29,7 @@ CREATE TABLE gigs.files (
     file_name varchar(1024) NOT NULL,
     file_size int(10) NULL,
     mime_type varchar(255) NOT NULL,
-    "url" varchar(255) NULL,
+    url varchar(255) NULL,
     PRIMARY KEY (id),
     UNIQUE INDEX uuid_idx(uuid)
 ) ENGINE = InnoDB

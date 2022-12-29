@@ -16,6 +16,7 @@ class UserDBAlias:
     USER_CREATE_TIME = "user_create_time"
     USER_IS_DELETED = "user_is_deleted"
     USER_EMAIL = "user_email"
+    USER_AVATAR_FILE_UUID = "user_avatar_file_uuid"
     USER_LAST_LOGIN_DATE = "user_last_login_date"
     USER_LANGUAGE_ID = "user_language_id"
     USER_TIMEZONE_ID = "USER_TIMEZONE_ID"
@@ -34,6 +35,7 @@ class UsersDAO(object):
         "create_time as " + UserDBAlias.USER_CREATE_TIME,
         "is_deleted as " + UserDBAlias.USER_IS_DELETED,
         "email as " + UserDBAlias.USER_EMAIL,
+        "avatar_file_uuid as " + UserDBAlias.USER_AVATAR_FILE_UUID,
         "last_login_date as " + UserDBAlias.USER_LAST_LOGIN_DATE,
         "language_id as " + UserDBAlias.USER_LANGUAGE_ID,
         "timezone_id as " + UserDBAlias.USER_TIMEZONE_ID,
@@ -90,8 +92,8 @@ class UsersDAO(object):
     def user_create(self, request: UserCreateRequest, password_hash: str) -> User:
 
         sql = """
-            INSERT INTO users(username, first_name, second_name, create_time, is_deleted, email, last_login_date, language_id, timezone_id, password_hash, salt)
-            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
+            INSERT INTO users(username, first_name, second_name, create_time, is_deleted, email, avatar_file_uuid, last_login_date, language_id, timezone_id, password_hash, salt)
+            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
         """
 
         now = time.time()
@@ -105,6 +107,7 @@ class UsersDAO(object):
             now,
             False,
             request.email,
+            None,
             now,
             1,
             1,
@@ -124,6 +127,7 @@ class UsersDAO(object):
                 second_name=request.second_name,
                 create_time=now,
                 is_deleted=False,
+                avatar_file_uuid=None,
                 email=request.email,
                 last_login_date=now,
                 language_id=1,
@@ -164,6 +168,9 @@ class UsersDAO(object):
             date_time_to_unix_time(db_row[UserDBAlias.USER_LAST_LOGIN_DATE])
         )
 
+        assert_row_key_exists(db_row, UserDBAlias.USER_AVATAR_FILE_UUID)
+        avatar_file_uuid = db_row[UserDBAlias.USER_AVATAR_FILE_UUID]
+
         assert_row_key_exists(db_row, UserDBAlias.USER_LANGUAGE_ID)
         language_id = db_row[UserDBAlias.USER_LANGUAGE_ID]
 
@@ -179,6 +186,7 @@ class UsersDAO(object):
             is_deleted=is_deleted,
             email=email,
             last_login_date=last_login_unix_time,
+            avatar_file_uuid=avatar_file_uuid,
             language_id=language_id,
             timezone_id=timezone_id,
         )
@@ -215,6 +223,7 @@ class UsersDAO(object):
             create_time=user_with_password.create_time,
             is_deleted=user_with_password.is_deleted,
             email=user_with_password.email,
+            avatar_file_uuid=user_with_password.avatar_file_uuid,
             last_login_date=user_with_password.last_login_date,
             language_id=user_with_password.language_id,
             timezone_id=user_with_password.timezone_id,

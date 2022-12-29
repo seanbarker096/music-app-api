@@ -27,6 +27,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             create_time=now,
             is_deleted=False,
             email="mikel@gmail.com",
+            avatar_file_uuid=None,
             last_login_date=now,
             language_id=1,
             timezone_id=1,
@@ -41,12 +42,11 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
     def _seed_user(self):
 
         sql = """
-            INSERT INTO users(username, first_name, second_name, create_time, is_deleted, email, last_login_date, language_id, timezone_id, password_hash, salt)
-            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
+            INSERT INTO users(username, first_name, second_name, create_time, is_deleted, email, avatar_file_uuid, last_login_date, language_id, timezone_id, password_hash, salt)
+            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
         """
 
         binds = list(vars(self.test_user_with_password).values())
-        print(binds)
 
         binds = binds[1:]  ## Ignore the id
         self.db.run_query(sql, binds)
@@ -84,6 +84,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             user.last_login_date,
             "Should set the last login date to be the datetime at when the user was created",
         )
+        self.assertEqual(None, user.avatar_file_uuid, "Should not have created a user avatar")
         self.assertEqual(1, user.language_id, "Should return the correct language id")
         self.assertEqual(1, user.timezone_id, "Should return the correct timezone id")
 

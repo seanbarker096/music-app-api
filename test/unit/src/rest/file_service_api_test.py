@@ -74,7 +74,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
             file_name="my-test-file.png",
             mime_type="image/png",
             file_size=None,
-            download_url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
+            url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
         )
 
         bytes = io.BytesIO(b"some intial bytes")
