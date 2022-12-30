@@ -65,7 +65,6 @@ def after_request_setup(response: flask.Response):
 def auth(func):
     @functools.wraps(func)
     def wrapped_f(*args, **kwargs):
-        print("running auth")
         auth_token = flask.request.headers.get("Authorization")
         auth_token = remove_bearer_from_token(auth_token) if auth_token else None
 

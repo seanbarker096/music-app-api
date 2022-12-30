@@ -65,6 +65,7 @@ def login():
 
     response = {
         "user_id": auth_state.auth_user.user_id,
+        "auth_status": auth_state.status,
         "token": auth_state.access_token,
         "r_token": auth_state.refresh_token,
     }
@@ -146,5 +147,6 @@ def logout():
 
 @blueprint.route("/validate/", methods=["GET"])
 @auth
-def validate():
+def validate_auth_session():
+    """Use to validate auth tokens. Throws if @auth check fails"""
     return flask.current_app.response_class(status=200, mimetype="application/json")
