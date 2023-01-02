@@ -20,6 +20,7 @@ from api.typings.users import (
 from api.utils.rest_utils import (
     auth,
     build_api_error_repsonse,
+    build_auth_user_from_token_payload,
     process_string_request_param,
     remove_bearer_from_token,
 )
@@ -57,8 +58,6 @@ def login():
 
     auth_state = result.auth_state
 
-    print(auth_state.status)
-
     ## This shouldn't really happen. If auth failed an error should be thrown
     if auth_state.status != AuthStatus.AUTHENTICATED.value:
         raise Exception(f"Failed to authenticate user with id {user.id}")
@@ -66,8 +65,9 @@ def login():
     response = {
         "user_id": auth_state.auth_user.user_id,
         "auth_status": auth_state.status,
-        "token": auth_state.access_token,
-        "r_token": auth_state.refresh_token,
+        "role": auth_state.auth_user.role,
+        "access_token": auth_state.access_token,
+        "refresh_token": auth_state.refresh_token,
     }
 
     response = flask.current_app.response_class(
@@ -75,8 +75,6 @@ def login():
     )
 
     response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
-
-    print(response.headers)
 
     return response
 
@@ -119,6 +117,8 @@ def signup():
 
     response = {
         "user_id": auth_state.auth_user.user_id,
+        "auth_status": auth_state.status,
+        "role": auth_state.auth_user.role,
         "token": auth_state.access_token,
         "r_token": auth_state.refresh_token,
     }
@@ -150,3 +150,39 @@ def logout():
 def validate_auth_session():
     """Use to validate auth tokens. Throws if @auth check fails"""
     return flask.current_app.response_class(status=200, mimetype="application/json")
+
+
+@blueprint.route("/token/", methods=["POST"])
+def get_token():
+    request = flask.request.json
+
+    token_type = process_string_request_param(request_body=request, parameter_name="token_type")
+
+    if token_type == "access":
+        refresh_token = flask.request.headers.get("Refresh-Token")
+        refresh_token = remove_bearer_from_token(refresh_token) if refresh_token else None
+
+        if not refresh_token:
+            raise Exception(
+                "Request failed as invalid refresh token provided. A valid refresh token is required to obtain an acess token"
+            )
+        try:
+            decoded_token = flask.current_app.conns.auth_service.validate_token(refresh_token)
+
+            auth_user = build_auth_user_from_token_payload(decoded_token)
+            flask.g.req_user = auth_user
+
+            new_auth_token = flask.current_app.conns.auth_service.create_token(
+                auth_user=auth_user,
+                token_type=TokenType.ACCESS.value,
+                refresh_token=refresh_token,
+            )
+
+            response = {"token": new_auth_token}
+
+            return flask.current_app.response_class(
+                response=json.dumps(response), status=200, mimetype="application/json"
+            )
+
+        except Exception:
+            raise Exception("Failed to fetch a new auth token")
