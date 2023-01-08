@@ -119,8 +119,8 @@ def signup():
         "user_id": auth_state.auth_user.user_id,
         "auth_status": auth_state.status,
         "role": auth_state.auth_user.role,
-        "token": auth_state.access_token,
-        "r_token": auth_state.refresh_token,
+        "access_token": auth_state.access_token,
+        "refresh_token": auth_state.refresh_token,
     }
 
     response = flask.current_app.response_class(

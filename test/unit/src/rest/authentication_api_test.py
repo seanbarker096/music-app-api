@@ -142,11 +142,13 @@ class AuthApiTest(AuthAPITestCase):
         self.assertIsInstance(token, str, "Should return an access token")
 
         self.assertEqual(
-            token, response_body["token"], "Should also return the access token in the response"
+            token,
+            response_body["access_token"],
+            "Should also return the access token in the response",
         )
 
         self.assertIsInstance(
-            response_body["r_token"],
+            response_body["refresh_token"],
             str,
             "Should return a refresh token in the response",
         )
