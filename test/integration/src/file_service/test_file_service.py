@@ -70,8 +70,17 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             self.assertEqual(e.exception.get_source(), "uuid")
 
     def test_file_upload_with_duplicate_uuid(self):
+        mock_storage_imp = Mock()
+        mock_storage_imp.save = Mock()
+        mock_storage_imp_save_request = Mock()  ## This method usually returns some sort of object
+        mock_storage_imp.process_upload_request = Mock(return_value=mock_storage_imp_save_request)
+        mock_storage_imp.get_file_url = Mock(
+            return_value="www.file-store.com/download/some-random-location"
+        )
+
         ## Create first file
-        file_service = FileService(self.config)
+        # file_service = FileService(config=self.config, storage=mock_storage_imp)
+        file_service = FileService(config=self.config)
 
         test_uuid_one = "testuuidone1234"
         mime_type = "image/png"
@@ -95,13 +104,15 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             bytes=byte_message,
         )
 
-        with self.assertRaises(DBDuplicateKeyException) as e:
+        with self.assertRaises(FileUUIDNotUniqueException) as e:
             file_service.create_file(request_two)
 
             self.assertEqual(
                 e.exception.get_message(),
-                "Duplicate entry 'testuuidone1234' for key 'files.uuid_idx'",
+                f"Could not create file because file with uuid {test_uuid_two} already exists",
             )
+
+            self.assertEqual(e.exception.get_source(), test_uuid_two)
 
     def test_file_upload_with_url_unsafe_uuid(self):
         """Tests file create with url unsafe uuid"""

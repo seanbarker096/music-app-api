@@ -12,9 +12,9 @@ class ResponseBaseException(Exception):
     _http_code: int  # Should be set by the parent error class
     _name: str
     _code: int
-    _detail: str  # Sent to front end but not shown to client
+    _detail: str  # Sent to front end but not shown to client. Set these in the Exception itself
     _source: Optional[str] = None
-    _message: str  # For debugging and logging purposes
+    _message: str  # For debugging and logging purposes. This message is passed in when creating the exception
 
     def __init__(self, message=None, source=None):
         """We set some common properties here to avoid repeatedly doing this in child classes"""
@@ -54,10 +54,24 @@ class FileUUIDNotUniqueException(ResponseBaseException):
     _http_code = 400
     _name = "FILE_UUID_NOT_UNIQUE"
     _code = ErrorCodes.FILE_UUID_NOT_UNIQUE.value
-    _message = "File uuid must be unique."
+    _detail = "File uuid must be unique."
 
-    def __init__(self, source: str):
-        super().__init__(source)
+    def __init__(self, source: str, message: str):
+        super().__init__(message, source)
+
+
+class FileNotFoundException(ResponseBaseException):
+    _http_code = 404
+    _name = "FILE_NOT_FOUND"
+    _code = ErrorCodes.FILE_NOT_FOUND
+    _message = "File was not found"
+
+    def __init__(self, source: str, message: Optional[str] = None):
+        ## Allow overwriting of default message
+        if message:
+            self._message = message
+
+        super().__init__(message=self._message, source=source)
 
 
 class BadRequestException(ResponseBaseException):

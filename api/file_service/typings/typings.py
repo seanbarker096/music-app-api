@@ -80,6 +80,15 @@ class FileMetaCreateRequest(object):
         self.file_name = file_name
 
 
+class FileMetaUpdateRequest(object):
+    file_id: int
+    url: Optional[str]
+
+    def __init__(self, id: Optional[int], url: Optional[str]) -> None:
+        self.id = id
+        self.url = url
+
+
 class FileCreateRequest(object):
     uuid: str = ...
     file_name: str = ...

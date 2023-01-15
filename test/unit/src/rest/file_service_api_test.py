@@ -36,6 +36,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
             uuid="a-random-file-uuid",
             file_name="my-test-file.txt",
             mime_type=AcceptedMimeTypes.APP_OCTET_STREAM.value,
+            url="www.file-store.com/download/some-random-location",
         )
 
         expected_response = FileCreateResult(file=file_response)
@@ -66,6 +67,31 @@ class FileServiceApiTest(FileServiceAPITestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_file_bytes_get(self):
+
+        expected_file_service_file = FileServiceFile(
+            id=1,
+            uuid="12345abc",
+            file_name="my-test-file.png",
+            mime_type="image/png",
+            file_size=None,
+            url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
+        )
+
+        bytes = io.BytesIO(b"some intial bytes")
+        expected_file_get_response = FileGetResult(
+            file=expected_file_service_file, file_bytes=copy.copy(bytes)
+        )
+
+        self.app.conns.file_service = Mock()
+        self.app.conns.file_service.get_file = Mock(return_value=expected_file_get_response)
+
+        response = self.test_client.get("/file_bytes/12345abc/")
+
+        bytes_response = response.data
+
+        self.assertEqual(bytes.read(), bytes_response, "Should return the correct file byte stream")
+
     def test_file_get(self):
 
         expected_file_service_file = FileServiceFile(
@@ -87,6 +113,6 @@ class FileServiceApiTest(FileServiceAPITestCase):
 
         response = self.test_client.get("/files/12345abc/")
 
-        bytes_response = response.data
+        response = response.json
 
-        self.assertEqual(bytes.read(), bytes_response, "Should return the correct file byte stream")
+        self.assertEqual(response["file"]["uuid"], "12345abc", "Should return the correct file")

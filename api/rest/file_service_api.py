@@ -48,6 +48,21 @@ def upload_file():
 
 
 # TODO: Rename to file_get
+@blueprint.route("/file_bytes/<string:file_uuid>/", methods=["GET"])
+@auth
+def get_file_bytes(file_uuid: str):
+    """Get file from the file service"""
+    get_filter = FileGetFilter(uuid=file_uuid)
+
+    ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
+    get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
+
+    return flask.current_app.response_class(
+        response=get_result.file_bytes, status=200, mimetype=get_result.file.mime_type
+    )
+
+
+# TODO: Rename to file_get
 @blueprint.route("/files/<string:file_uuid>/", methods=["GET"])
 @auth
 def get_file(file_uuid: str):
@@ -57,8 +72,12 @@ def get_file(file_uuid: str):
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
 
+    response = {}
+
+    response["file"] = vars(get_result.file)
+
     return flask.current_app.response_class(
-        response=get_result.file_bytes, status=200, mimetype=get_result.file.mime_type
+        response=json.dumps(response), status=200, mimetype="application/json"
     )
 
 
