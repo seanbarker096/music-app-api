@@ -45,9 +45,8 @@ def login():
     if not isinstance(username, str) or len(username) == 0:
         raise Exception("Invalid argument username. Username must be a valid string")
 
-    filter = UsersGetFilter(password=request["password"], username=request["username"])
     user = flask.current_app.conns.midlayer.get_user_by_username_and_password(
-        filter, projection=UsersGetProjection()
+        username=request["username"], password=request["password"], projection=UsersGetProjection()
     )
 
     auth_state_request = AuthStateCreateRequest(

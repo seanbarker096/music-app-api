@@ -9,11 +9,13 @@ from api.typings.users import (
     UserCreateResult,
     UsersGetFilter,
     UsersGetProjection,
+    UsersGetResult,
     UserUpdateRequest,
     UserUpdateResult,
     UserWithPassword,
 )
 from api.utils import hash_password, validate_password, verify_hash
+from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
     ResponseBaseException,
     UserAlreadyExistsException,
@@ -35,6 +37,21 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         )
         self.users_dao = connections.users_dao
 
+    def users_get(self, filter: UsersGetFilter) -> UsersGetResult:
+        if not isinstance(filter.user_ids, list) or len(filter.user_ids) == 0:
+            raise InvalidArgumentException(
+                "user_ids filter field must be a non empty list", filter.user_ids
+            )
+
+        users = []
+
+        try:
+            users = self.users_dao.users_get(filter)
+        except:
+            raise Exception("Failed to get users")
+
+        return UsersGetResult(users=users)
+
     def get_user_by_id(self, user_id: int) -> User:
         filter = UsersGetFilter(user_id=user_id)
 
@@ -51,22 +68,22 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         return users[0]
 
     def get_user_by_username_and_password(
-        self, filter: UsersGetFilter, projection: UsersGetProjection
+        self, password: str, username: str, projection: UsersGetProjection
     ) -> User | UserWithPassword:
 
-        if not filter.password or not isinstance(filter.password, str):
-            raise Exception(f"Invalid value {filter.password} for filter argument password")
+        if not password or not isinstance(password, str):
+            raise Exception(f"Invalid value {password} for filter argument password")
 
-        if not filter.username or not isinstance(filter.username, str):
-            raise Exception(f"Invalid value {filter.username} for filter argument username")
+        if not username or not isinstance(username, str):
+            raise Exception(f"Invalid value {username} for filter argument username")
 
         user_with_password = self.users_dao.get_user_by_username(
-            username=filter.username, include_password=True
+            username=username, include_password=True
         )
 
-        if not self._is_correct_password(filter.password, user_with_password.password_hash):
+        if not self._is_correct_password(password, user_with_password.password_hash):
             raise Exception(
-                f"Cannot get user with username {filter.username}. Incorrect password provided"
+                f"Cannot get user with username {username}. Incorrect password provided"
             )
 
         if projection.password:

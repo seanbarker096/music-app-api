@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 
 class User:
@@ -64,19 +64,13 @@ class UserWithPassword:
 
 
 class UsersGetFilter:
-    user_id: Optional[str]
-    username: Optional[str]
-    password: Optional[str]
+    user_ids: Optional[List[str]] = None
 
     def __init__(
         self,
-        user_id: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
+        user_ids: Optional[List[str]] = None,
     ) -> None:
-        self.user_id = user_id
-        self.username = username
-        self.password = password
+        self.user_ids = user_ids
 
 
 class UsersGetProjection:

@@ -1,6 +1,6 @@
 import functools
 import json
-from typing import Dict
+from typing import Dict, List
 
 import flask
 
@@ -20,6 +20,15 @@ def process_string_request_param(request_body: Dict[str, any], parameter_name: s
         raise Exception(f"Invalid value {parameter} for parameter '{parameter_name}'")
 
     return parameter
+
+
+def get_set_request_param(parameter_name: str, type: any) -> List[str | int] | None:
+    """Validates and returns a flask request body array parameter"""
+
+    if parameter_name in flask.request.values:
+        return flask.request.values.getlist(parameter_name, type)
+
+    return None
 
 
 def class_to_dict(class_instance: object):

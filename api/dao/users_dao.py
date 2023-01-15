@@ -70,9 +70,9 @@ class UsersDAO(object):
         wheres = []
         binds = []
 
-        if filter.user_id:
-            wheres.append("id = %s")
-            binds.append(filter.user_id)
+        if filter.user_ids and isinstance(filter.user_ids, list):
+            wheres.append("id in %s")
+            binds.append(filter.user_ids)
 
         where_string = build_where_query_string(wheres, "AND")
 
