@@ -90,9 +90,10 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(1, user.timezone_id, "Should return the correct timezone id")
 
         ## Assert password stored correctly
-        filter = UsersGetFilter(username="testUser123", password="testPassword")
         user_with_password = users_mid.get_user_by_username_and_password(
-            filter=filter, projection=UsersGetProjection(password=True)
+            password="testPassword",
+            username="testUser123",
+            projection=UsersGetProjection(password=True),
         )
         self.assertIsInstance(user_with_password.password_hash, str)
         self.assertTrue(len(user_with_password.password_hash))
@@ -148,9 +149,8 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
 
         users_mid = UsersMidlayerMixin(self.config)
 
-        filter = UsersGetFilter(username="testUser123", password="password1")
         user_result = users_mid.get_user_by_username_and_password(
-            filter=filter, projection=UsersGetProjection()
+            password="password1", username="testUser123", projection=UsersGetProjection()
         )
 
         user_result_dict = vars(user_result)
@@ -175,15 +175,15 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
 
         users_mid = UsersMidlayerMixin(self.config)
 
-        filter = UsersGetFilter(username="testUser123", password="thisPasswordIsWrong")
-
         with self.assertRaisesRegex(
             Exception,
-            expected_regex=f"Cannot get user with username {filter.username}. Incorrect password provided",
+            expected_regex=f"Cannot get user with username testUser123. Incorrect password provided",
             msg="Should raise exception with correct error message",
         ):
             users_mid.get_user_by_username_and_password(
-                filter=filter, projection=UsersGetProjection()
+                password="thisPasswordIsWrong",
+                username="testUser123",
+                projection=UsersGetProjection(),
             )
 
     def test_user_update(self):

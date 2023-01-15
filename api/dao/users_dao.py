@@ -183,7 +183,7 @@ class UsersDAO(object):
             )
 
         ## Get user to update
-        filter = UsersGetFilter(user_id=request.user_id)
+        filter = UsersGetFilter(user_ids=[request.user_id])
         users = self.users_get(filter)
 
         if len(users) == 0:
