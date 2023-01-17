@@ -38,7 +38,7 @@ def user_update(user_id: int):
     )
 
 
-@blueprint.route("/users/", methods=["GET"])
+@blueprint.route("/users", methods=["GET"])
 @auth
 def users_get():
     user_ids = get_set_request_param(parameter_name="user_ids[]", type=int)

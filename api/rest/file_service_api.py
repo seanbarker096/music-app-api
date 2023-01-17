@@ -6,6 +6,7 @@ import flask
 
 import api
 from api.file_service.typings.typings import FileCreateRequest, FileGetFilter
+from api.utils.rest_utils import get_set_request_param
 
 blueprint = flask.Blueprint("file_service", __name__)
 
@@ -63,18 +64,26 @@ def get_file_bytes(file_uuid: str):
 
 
 # TODO: Rename to file_get
-@blueprint.route("/files/<string:file_uuid>/", methods=["GET"])
+@blueprint.route("/files/", methods=["GET"])
 @auth
-def get_file(file_uuid: str):
+def get_files():
     """Get file from the file service"""
-    get_filter = FileGetFilter(uuid=file_uuid)
+
+    file_uuids = get_set_request_param(parameter_name="uuids[]", type=str)
+
+    if len(file_uuids) == 0:
+        raise Exception("Invalid request. Must provide at least one file uuid")
+
+    ## TODO: Make this backend work with multiple files when use case arises. For now we hack it
+    ## as api was built for a single file initially
+    get_filter = FileGetFilter(uuid=file_uuids[0])
 
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
 
     response = {}
 
-    response["file"] = vars(get_result.file)
+    response["files"] = [vars(get_result.file)]
 
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
