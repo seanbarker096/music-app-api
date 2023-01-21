@@ -5,7 +5,7 @@
 
 ### DB Container ###
 export MYSQL_ROOT_PASSWORD='mysqlroot'
-export MY_SQL_CONTAINER_NAME='dev-mysql-host'
+export MY_SQL_CONTAINER_NAME='integration-test-mysql-host'
 export ENVIRONMENT='dev'
 
 echo "Checking for old containers and volumes..."

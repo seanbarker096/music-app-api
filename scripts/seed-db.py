@@ -54,3 +54,5 @@ with open(
 
 # set it on the user
 user_update_request = UserUpdateRequest(user.id, avatar_file_uuid=avatar_file_uuid)
+
+users_dao.user_update(user_update_request)
