@@ -81,6 +81,10 @@ class PostsDAO(object):
             wheres.append("is_deleted = %s")
             binds.append(int(filter.is_deleted))
 
+        if filter.owner_ids:
+            wheres.append("owner_id in %s")
+            binds.append(filter.owner_ids)
+
         where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string

@@ -58,13 +58,19 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
         if filter.post_ids and len(filter.post_ids) == 0:
             raise InvalidArgumentException(
                 "Invalid value provided for filter field post_ids. At least one post_id must be provided",
-                "filter.post_ids",
+                filter.post_ids,
             )
 
         if filter.is_deleted and not isinstance(filter.is_deleted, bool):
             raise InvalidArgumentException(
                 "Invalid value provided for filter field is_deleted. A boolean argument must be provided",
-                "filter.is_deleted",
+                filter.is_deleted,
+            )
+
+        if filter.owner_ids and not isinstance(filter.owner_ids, list):
+            raise InvalidArgumentException(
+                "Invalid value provided for filter field owner_ids. At least one owner_id must be provided",
+                filter.owner_ids,
             )
 
         posts = self.posts_dao.posts_get(filter)

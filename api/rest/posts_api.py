@@ -15,7 +15,7 @@ from api.utils import rest_utils
 
 blueprint = flask.Blueprint("posts", __name__)
 
-auth = api.utils.rest_utils.auth
+auth = rest_utils.auth
 
 
 @blueprint.route("/posts/", methods=["POST"])
@@ -58,7 +58,8 @@ def post_create():
 
 @blueprint.route("/posts/<int:post_id>", methods=["GET"])
 @auth
-def post_get(post_id: int):
+def post_get_by_id(post_id: int):
+
     if not post_id:
         raise Exception("Invalid request. Must provide a valid post_id")
 
@@ -82,6 +83,40 @@ def post_get(post_id: int):
 
     response = {}
     response["post"] = rest_utils.class_to_dict(post)
+    response["attachments"] = attachment_dicts
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+
+@blueprint.route("/posts/", methods=["GET"])
+def posts_get():
+
+    owner_ids = rest_utils.get_set_request_param("owner_ids[]", type=int)
+
+    posts_get_filter = PostsGetFilter(owner_ids=owner_ids, is_deleted=False)
+
+    posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
+    posts = posts_get_result.posts
+
+    attachment_dicts = []
+    if len(posts) > 0:
+        post_ids = [post.id for post in posts]
+        post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
+
+        post_attachments_get_result = flask.current_app.conns.midlayer.post_attachments_get(
+            post_attachments_get_filter
+        )
+
+        attachments = post_attachments_get_result.post_attachments
+
+        attachment_dicts = [rest_utils.class_to_dict(attachment) for attachment in attachments]
+
+    response = {}
+
+    response["posts"] = [rest_utils.class_to_dict(post) for post in posts]
+
     response["attachments"] = attachment_dicts
 
     return flask.current_app.response_class(

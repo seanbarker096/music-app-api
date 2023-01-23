@@ -50,12 +50,17 @@ class PostCreateResult(object):
 class PostsGetFilter(object):
     post_ids: Optional[List[int]] = ...
     is_deleted: Optional[bool] = ...
+    owner_ids: Optional[List[int]] = ...
 
     def __init__(
-        self, post_ids: Optional[List[int]] = None, is_deleted: Optional[bool] = None
+        self,
+        post_ids: Optional[List[int]] = None,
+        is_deleted: Optional[bool] = None,
+        owner_ids: Optional[List[int]] = None,
     ) -> None:
         self.post_ids = post_ids
         self.is_deleted = is_deleted
+        self.owner_ids = owner_ids
 
 
 class PostsGetResult(object):
