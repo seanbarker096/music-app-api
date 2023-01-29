@@ -91,6 +91,7 @@ def post_get_by_id(post_id: int):
 
 
 @blueprint.route("/posts/", methods=["GET"])
+@auth
 def posts_get():
 
     owner_ids = rest_utils.get_set_request_param("owner_ids[]", type=int)
@@ -117,6 +118,29 @@ def posts_get():
 
     response["posts"] = [rest_utils.class_to_dict(post) for post in posts]
 
+    response["attachments"] = attachment_dicts
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+
+@blueprint.route("/attachments/", methods=["GET"])
+@auth
+def post_attachments_get():
+    post_ids = rest_utils.get_set_request_param("post_ids[]", type=int)
+
+    post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
+
+    post_attachments_get_result = flask.current_app.conns.midlayer.post_attachments_get(
+        post_attachments_get_filter
+    )
+
+    attachments = post_attachments_get_result.post_attachments
+
+    attachment_dicts = [rest_utils.class_to_dict(attachment) for attachment in attachments]
+
+    response = {}
     response["attachments"] = attachment_dicts
 
     return flask.current_app.response_class(

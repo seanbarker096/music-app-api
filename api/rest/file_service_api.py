@@ -71,12 +71,24 @@ def get_files():
 
     file_uuids = get_set_request_param(parameter_name="uuids[]", type=str)
 
-    if len(file_uuids) == 0:
+    file_ids = get_set_request_param(parameter_name="ids[]", type=int)
+
+    if file_ids and len(file_ids) == 0:
+        raise Exception("Invalid request. Must provide at least one file id")
+
+    if file_uuids and len(file_uuids) == 0:
         raise Exception("Invalid request. Must provide at least one file uuid")
+
+    if file_ids and file_uuids:
+        raise Exception("Cannot query using both file_ids and uuids")
+
+    if not file_ids and not file_uuids:
+        raise Exception("Must provide either file_ids or file_uuids when getting a file")
 
     ## TODO: Make this backend work with multiple files when use case arises. For now we hack it
     ## as api was built for a single file initially
-    get_filter = FileGetFilter(uuid=file_uuids[0])
+
+    get_filter = FileGetFilter(uuid=file_uuids[0]) if file_uuids else FileGetFilter(file_ids[0])
 
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
     get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)

@@ -143,9 +143,11 @@ class FileDownloadURLGetRequest(object):
 
 
 class FileGetFilter(object):
-    uuid: str = ...
+    id: Optional[int] = ...
+    uuid: Optional[str] = ...
 
-    def __init__(self, uuid: str) -> None:
+    def __init__(self, id: Optional[int] = None, uuid: Optional[str] = None) -> None:
+        self.id = id
         self.uuid = uuid
 
 

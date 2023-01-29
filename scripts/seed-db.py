@@ -1,9 +1,11 @@
 import os
 from configparser import ConfigParser
 
+from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
 from api.dao.users_dao import UsersDAO
 from api.file_service.api import FileService
 from api.file_service.typings.typings import FileCreateRequest
+from api.typings.posts import PostAttachmentsCreateRequest, PostCreateRequest
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
 
@@ -19,6 +21,8 @@ config.read(filename)
 config_dict = {"config_file": config}
 
 users_dao = UsersDAO(config_dict)
+posts_dao = PostsDAO(config_dict)
+post_attachments_dao = PostAttachmentsDAO(config_dict)
 file_service = FileService(config_dict)
 
 
@@ -56,3 +60,13 @@ with open(
 user_update_request = UserUpdateRequest(user.id, avatar_file_uuid=avatar_file_uuid)
 
 users_dao.user_update(user_update_request)
+
+
+## create a post
+post_create_request = PostCreateRequest(owner_id=user.id, content="This is a new post")
+
+post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post.id, file_id=avatar_file.id
+)

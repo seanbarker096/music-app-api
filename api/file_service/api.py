@@ -148,9 +148,18 @@ class FileService:
     def get_file(self, filter: FileGetFilter) -> FileGetResult:
         # Check the file exists in the database. This is mostly the metadata
 
-        file = self.file_service_dao.get_file_by_uuid(filter.uuid)
+        if not filter.id and not filter.uuid:
+            InvalidArgumentException(
+                "Must provide either a file id or file uuid when getting a file", filter
+            )
 
-        bytes_object = self.storage.get_file(filter)
+        file = (
+            self.file_service_dao.get_file_by_uuid(filter.uuid)
+            if filter.uuid
+            else self.file_service_dao.get_file_by_id(filter.id)
+        )
+
+        bytes_object = self.storage.get_file(FileGetFilter(id=file.id, uuid=file.uuid))
         ## seek required for some reason otherwise image not returned from api correctly
         bytes_object.seek(0)
 
