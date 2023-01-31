@@ -5,8 +5,8 @@ import os
 import flask
 
 import api
-from api.file_service.typings.typings import FileCreateRequest, FileGetFilter
-from api.utils.rest_utils import get_set_request_param
+from api.file_service.typings.typings import FileCreateRequest, FilesGetFilter
+from api.utils.rest_utils import class_to_dict, get_set_request_param
 
 blueprint = flask.Blueprint("file_service", __name__)
 
@@ -53,13 +53,15 @@ def upload_file():
 @auth
 def get_file_bytes(file_uuid: str):
     """Get file from the file service"""
-    get_filter = FileGetFilter(uuid=file_uuid)
+    get_filter = FilesGetFilter(uuids=[file_uuid])
 
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
-    get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
+    get_result = flask.current_app.conns.file_service.get_files(filter=get_filter, with_bytes=True)
+
+    file = get_result.files[0]
 
     return flask.current_app.response_class(
-        response=get_result.file_bytes, status=200, mimetype=get_result.file.mime_type
+        response=file.bytes, status=200, mimetype=file.mime_type
     )
 
 
@@ -88,14 +90,18 @@ def get_files():
     ## TODO: Make this backend work with multiple files when use case arises. For now we hack it
     ## as api was built for a single file initially
 
-    get_filter = FileGetFilter(uuid=file_uuids[0]) if file_uuids else FileGetFilter(file_ids[0])
+    get_filter = FilesGetFilter(uuids=file_uuids) if file_uuids else FilesGetFilter(file_ids)
 
     ## TODO: Adjust this conver the bytes into a file before returning. Use mime type to work out the extension
-    get_result = flask.current_app.conns.file_service.get_file(filter=get_filter)
+    files = flask.current_app.conns.file_service.get_files(filter=get_filter).files
+
+    file_dicts = [class_to_dict(file) for file in files]
 
     response = {}
 
-    response["files"] = [vars(get_result.file)]
+    response["files"] = file_dicts
+
+    print(response)
 
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"

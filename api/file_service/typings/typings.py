@@ -1,6 +1,5 @@
 import io
-from inspect import formatannotationrelativeto
-from typing import Optional
+from typing import List, Optional
 
 
 class FileMeta(object):
@@ -23,6 +22,7 @@ class FileServiceFile(object):
     mime_type: str = ...
     file_size: Optional[int] = None
     url: Optional[str] = None
+    bytes: Optional[io.BytesIO] = None
 
     def __init__(
         self,
@@ -32,6 +32,7 @@ class FileServiceFile(object):
         mime_type: str,
         file_size: Optional[int] = None,
         url: Optional[str] = None,
+        bytes: Optional[io.BytesIO] = None,
     ):
         self.id: int = id
         self.uuid: str = uuid
@@ -39,6 +40,7 @@ class FileServiceFile(object):
         self.mime_type: str = mime_type
         self.file_size: Optional[int] = file_size
         self.url: Optional[str] = url
+        self.bytes = bytes
 
 
 # Our storage service is built to integrate with any type of external service provider, so we can switch this out for a new Request object if a new provider is used and new fields are needed. The storage implementation validates the Request to ensure it has all the fields it needs. Validation shouldn't be done elsewhere to avoid coupling other Storage Service code to the specific service provider (e.g. S3)
@@ -81,7 +83,7 @@ class FileMetaCreateRequest(object):
 
 
 class FileMetaUpdateRequest(object):
-    file_id: int
+    id: int
     url: Optional[str]
 
     def __init__(self, id: Optional[int], url: Optional[str]) -> None:
@@ -142,19 +144,17 @@ class FileDownloadURLGetRequest(object):
         self.file_identifier = file_identifier
 
 
-class FileGetFilter(object):
-    id: Optional[int] = ...
-    uuid: Optional[str] = ...
+class FilesGetFilter(object):
+    ids: Optional[int] = ...
+    uuids: Optional[str] = ...
 
-    def __init__(self, id: Optional[int] = None, uuid: Optional[str] = None) -> None:
-        self.id = id
-        self.uuid = uuid
+    def __init__(self, ids: Optional[int] = None, uuids: Optional[str] = None) -> None:
+        self.ids = ids
+        self.uuids = uuids
 
 
-class FileGetResult(object):
-    file: FileServiceFile
-    file_bytes: io.BytesIO  ## The file holding the actual bytes
+class FilesGetResult(object):
+    files: List[FileServiceFile] = ...
 
-    def __init__(self, file_bytes: bytes, file: FileServiceFile):
-        self.file_bytes = file_bytes
-        self.file = file
+    def __init__(self, files: Optional[List[FileServiceFile]] = None):
+        self.files = files

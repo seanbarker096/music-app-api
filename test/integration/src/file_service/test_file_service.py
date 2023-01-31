@@ -4,7 +4,7 @@ from test.integration import IntegrationTestCase
 from unittest.mock import Mock
 
 from api.file_service.api import AcceptedMimeTypes, FileService, Storage
-from api.file_service.typings.typings import FileCreateRequest, FileGetFilter
+from api.file_service.typings.typings import FileCreateRequest, FilesGetFilter
 from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import FileUUIDNotUniqueException
@@ -131,7 +131,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
     def test_file_update_from_non_owner(self):
         ...
 
-    def test_file_get(self):
+    def test_files_get(self):
 
         file_buffer = io.BytesIO(b"some initial binary data")
 
@@ -158,11 +158,11 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             ),
         ).get_last_row_id()
 
-        filter = FileGetFilter(uuid="abcdefghikklmnop")
+        filter = FilesGetFilter(uuids=["abcdefghikklmnop"])
 
-        file_get_result = file_service.get_file(filter)
-        file = file_get_result.file
-        file_bytes = file_get_result.file_bytes
+        file_get_result = file_service.get_files(filter, get_bytes=True)
+        file = file_get_result.files[0]
+        file_bytes = file.bytes
 
         mock_storage_imp.get_item.assert_called_once_with("abcdefghikklmnop")
 

@@ -9,8 +9,8 @@ from rest.base import APITestCase
 from api.file_service.api import AcceptedMimeTypes
 from api.file_service.typings.typings import (
     FileCreateResult,
-    FileGetResult,
     FileServiceFile,
+    FilesGetResult,
 )
 
 ## Setup patches before the test case is initialised, which results in the blueprint file being called and defines functions before they can be patched
@@ -68,6 +68,7 @@ class FileServiceApiTest(FileServiceAPITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_file_bytes_get(self):
+        bytes = io.BytesIO(b"some intial bytes")
 
         expected_file_service_file = FileServiceFile(
             id=1,
@@ -76,15 +77,13 @@ class FileServiceApiTest(FileServiceAPITestCase):
             mime_type="image/png",
             file_size=None,
             url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
+            bytes=copy.copy(bytes),
         )
 
-        bytes = io.BytesIO(b"some intial bytes")
-        expected_file_get_response = FileGetResult(
-            file=expected_file_service_file, file_bytes=copy.copy(bytes)
-        )
+        expected_file_get_response = FilesGetResult(files=[expected_file_service_file])
 
         self.app.conns.file_service = Mock()
-        self.app.conns.file_service.get_file = Mock(return_value=expected_file_get_response)
+        self.app.conns.file_service.get_files = Mock(return_value=expected_file_get_response)
 
         response = self.test_client.get("/file_bytes/12345abc/")
 
@@ -92,7 +91,8 @@ class FileServiceApiTest(FileServiceAPITestCase):
 
         self.assertEqual(bytes.read(), bytes_response, "Should return the correct file byte stream")
 
-    def test_file_get(self):
+    def test_files_get(self):
+        bytes = io.BytesIO(b"some intial bytes")
 
         expected_file_service_file = FileServiceFile(
             id=1,
@@ -101,18 +101,19 @@ class FileServiceApiTest(FileServiceAPITestCase):
             mime_type="image/png",
             file_size=None,
             url="https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
+            bytes=copy.copy(bytes),
         )
 
-        bytes = io.BytesIO(b"some intial bytes")
-        expected_file_get_response = FileGetResult(
-            file=expected_file_service_file, file_bytes=copy.copy(bytes)
-        )
+        expected_file_get_response = FilesGetResult(files=[expected_file_service_file])
 
         self.app.conns.file_service = Mock()
-        self.app.conns.file_service.get_file = Mock(return_value=expected_file_get_response)
+        self.app.conns.file_service.get_files = Mock(return_value=expected_file_get_response)
 
-        response = self.test_client.get("/files/12345abc/")
+        ## FIX ME:: Cant seem to get a non-None response type when trying to use url params here
+        response = self.test_client.get("/files", query_string={"uuids": "12345abc"})
 
         response = response.json
 
-        self.assertEqual(response["file"]["uuid"], "12345abc", "Should return the correct file")
+        file = response["files"][0]
+
+        self.assertEqual(file["uuid"], "12345abc", "Should return the correct file")

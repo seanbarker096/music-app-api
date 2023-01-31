@@ -8,10 +8,10 @@ from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import (
     FileCreateRequest,
     FileCreateResult,
-    FileGetFilter,
-    FileGetResult,
     FileMetaCreateRequest,
     FileMetaUpdateRequest,
+    FilesGetFilter,
+    FilesGetResult,
     FileUpdateRequest,
     FileUploadRequest,
 )
@@ -145,22 +145,41 @@ class FileService:
         """Used to update file fields e.g. the bytes field when a user tries to upload the actual file after its meta data has been saved."""
         ...
 
-    def get_file(self, filter: FileGetFilter) -> FileGetResult:
+    # def get_file(self, filter: FileGetFilter) -> FileGetResult:
+    #     # Check the file exists in the database. This is mostly the metadata
+
+    #     if not filter.id and not filter.uuid:
+    #         InvalidArgumentException(
+    #             "Must provide either a file id or file uuid when getting a file", filter
+    #         )
+
+    #     file = (
+    #         self.file_service_dao.get_file_by_uuid(filter.uuid)
+    #         if filter.uuid
+    #         else self.file_service_dao.get_file_by_id(filter.id)
+    #     )
+
+    #     bytes_object = self.storage.get_file(FileGetFilter(id=file.id, uuid=file.uuid))
+    #     ## seek required for some reason otherwise image not returned from api correctly
+    #     bytes_object.seek(0)
+
+    #     return FileGetResult(file_bytes=bytes_object, file=file)
+
+    def get_files(self, filter: FilesGetFilter, get_bytes=False) -> FilesGetResult:
         # Check the file exists in the database. This is mostly the metadata
 
-        if not filter.id and not filter.uuid:
+        if not filter.ids and not filter.uuids:
             InvalidArgumentException(
-                "Must provide either a file id or file uuid when getting a file", filter
+                "Must provide either file ids or file uuids when getting a file", filter
             )
 
-        file = (
-            self.file_service_dao.get_file_by_uuid(filter.uuid)
-            if filter.uuid
-            else self.file_service_dao.get_file_by_id(filter.id)
-        )
+        files = self.file_service_dao.files_get(filter)
 
-        bytes_object = self.storage.get_file(FileGetFilter(id=file.id, uuid=file.uuid))
-        ## seek required for some reason otherwise image not returned from api correctly
-        bytes_object.seek(0)
+        if get_bytes:
+            for file in files:
+                bytes_object = self.storage.get_file(file.uuid)
+                ## seek required for some reason otherwise image not returned from api correctly
+                bytes_object.seek(0)
+                file.bytes = bytes_object
 
-        return FileGetResult(file_bytes=bytes_object, file=file)
+        return FilesGetResult(files=files)

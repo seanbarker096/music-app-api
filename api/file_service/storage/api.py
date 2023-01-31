@@ -5,7 +5,6 @@ from api.file_service.storage.s3_storage_imp import S3StorageImp
 from api.file_service.storage.storage_imp import StorageImp
 from api.file_service.typings.typings import (
     FileDownloadURLGetRequest,
-    FileGetFilter,
     FileServiceFile,
     FileUploadRequest,
 )
@@ -56,6 +55,6 @@ class Storage:
     def get_file_url(self, request: FileDownloadURLGetRequest) -> str:
         return self.storage_imp.get_file_url(request)
 
-    def get_file(self, filter: FileGetFilter) -> BytesIO:
-        bytes_object = self.storage_imp.get_item(filter.uuid)
+    def get_file(self, uuid: str) -> BytesIO:
+        bytes_object = self.storage_imp.get_item(uuid)
         return bytes_object
