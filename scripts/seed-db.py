@@ -62,8 +62,37 @@ user_update_request = UserUpdateRequest(user.id, avatar_file_uuid=avatar_file_uu
 users_dao.user_update(user_update_request)
 
 
-## create a post
+## create a few posts
+
+# 1
 post_create_request = PostCreateRequest(owner_id=user.id, content="This is a new post")
+
+post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post.id, file_id=avatar_file.id
+)
+
+# 2
+post_create_request = PostCreateRequest(owner_id=user.id, content="This is a second post")
+
+post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post.id, file_id=avatar_file.id
+)
+
+# 3
+post_create_request = PostCreateRequest(owner_id=user.id, content="This is a thrid post")
+
+post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post.id, file_id=avatar_file.id
+)
+
+# 4
+post_create_request = PostCreateRequest(owner_id=user.id, content="This is a fourth post")
 
 post = posts_dao.post_create(post_create_request)
 
