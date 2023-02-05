@@ -184,4 +184,4 @@ def get_token():
             )
 
         except Exception:
-            raise Exception("Failed to fetch a new auth token")
+            raise Exception("Failed to create a new auth token")
