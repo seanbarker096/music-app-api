@@ -55,6 +55,21 @@ with open(
     )
     avatar_file = file_service.create_file(request).file
 
+dog_video_uuid = "202"
+dog_video_file = None
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "dog.mp4"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid=dog_video_uuid,
+        file_name="dog.mp4",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="video/mp4",
+        url=None,
+    )
+    dog_video_file = file_service.create_file(request).file
+
 
 # set it on the user
 user_update_request = UserUpdateRequest(user.id, avatar_file_uuid=avatar_file_uuid)
@@ -70,7 +85,7 @@ post_create_request = PostCreateRequest(owner_id=user.id, content="This is a new
 post = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=avatar_file.id
+    post_id=post.id, file_id=dog_video_file.id
 )
 
 # 2
@@ -79,23 +94,23 @@ post_create_request = PostCreateRequest(owner_id=user.id, content="This is a sec
 post = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=avatar_file.id
+    post_id=post.id, file_id=dog_video_file.id
 )
 
-# 3
-post_create_request = PostCreateRequest(owner_id=user.id, content="This is a thrid post")
+# # 3
+# post_create_request = PostCreateRequest(owner_id=user.id, content="This is a thrid post")
 
-post = posts_dao.post_create(post_create_request)
+# post = posts_dao.post_create(post_create_request)
 
-post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=avatar_file.id
-)
+# post_attachment = post_attachments_dao.post_attachment_create(
+#     post_id=post.id, file_id=avatar_file.id
+# )
 
-# 4
-post_create_request = PostCreateRequest(owner_id=user.id, content="This is a fourth post")
+# # 4
+# post_create_request = PostCreateRequest(owner_id=user.id, content="This is a fourth post")
 
-post = posts_dao.post_create(post_create_request)
+# post = posts_dao.post_create(post_create_request)
 
-post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=avatar_file.id
-)
+# post_attachment = post_attachments_dao.post_attachment_create(
+#     post_id=post.id, file_id=avatar_file.id
+# )
