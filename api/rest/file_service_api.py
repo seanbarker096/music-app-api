@@ -18,10 +18,9 @@ auth = api.utils.rest_utils.auth
 @auth
 def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
-    print("test")
+
     form_data = flask.request.form
-    file = flask.request.files["file"]
-    print("file", file)
+    file = flask.request.files.get("file")
 
     if not file:
         raise Exception("No file provided")
