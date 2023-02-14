@@ -32,11 +32,9 @@ def post_create():
     post_result = flask.current_app.conns.midlayer.post_create(post_create_request)
     post = post_result.post
 
-    print(data.get("attachment_file_ids"))
+    attachment_file_ids = data.get("attachment_file_ids")
+    attachment_file_ids = [int(file_id) for file_id in attachment_file_ids]
 
-    attachment_file_ids = get_set_request_param(parameter_name="attachment_file_ids", type=int)
-
-    # attachment_file_ids = json.loads(attachment_file_ids) if attachment_file_ids else None
     attachment_dicts = []
 
     if attachment_file_ids and len(attachment_file_ids) > 0:

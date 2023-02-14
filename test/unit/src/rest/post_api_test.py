@@ -62,8 +62,8 @@ class PostApiTest(PostAPITestCase):
 
         json = {
             "content": "This is a test post!",
-            "owner_id": "555",
-            "attachment_file_ids": '["1111"]',
+            "owner_id": 555,
+            "attachment_file_ids": [888],
         }
 
         post = Post(
