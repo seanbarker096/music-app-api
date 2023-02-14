@@ -107,7 +107,13 @@ def get_files():
     )
 
 
-@blueprint.route("/files/test/", methods=["GET"])
-def test():
+# @blueprint.route("/files/test/", methods=["GET"])
+# def test():
 
+#     return flask.current_app.response_class(response={test: "it worked!"}, status=200)
+
+
+@blueprint.route("/files/test/", methods=["POST"])
+def test():
+    print(flask.request.json)
     return flask.current_app.response_class(response={test: "it worked!"}, status=200)

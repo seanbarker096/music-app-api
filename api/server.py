@@ -21,7 +21,7 @@ filename = os.path.join(flask.helpers.get_root_path(__name__), "config", f"{env}
 config.read(filename)
 
 app = FlaskApp(config)
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1000 * 1000
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1000 * 1000  # TODO: Come up with sensible max file size
 origin = config.get("cors", "origin")
 CORS(app, origins=[origin])
 

@@ -12,6 +12,7 @@ from api.typings.posts import (
     PostsGetFilter,
 )
 from api.utils import rest_utils
+from api.utils.rest_utils import get_set_request_param
 
 blueprint = flask.Blueprint("posts", __name__)
 
@@ -31,8 +32,11 @@ def post_create():
     post_result = flask.current_app.conns.midlayer.post_create(post_create_request)
     post = post_result.post
 
-    attachment_file_ids = data.get("attachment_file_ids", None)
-    attachment_file_ids = json.loads(attachment_file_ids) if attachment_file_ids else None
+    print(data.get("attachment_file_ids"))
+
+    attachment_file_ids = get_set_request_param(parameter_name="attachment_file_ids", type=int)
+
+    # attachment_file_ids = json.loads(attachment_file_ids) if attachment_file_ids else None
     attachment_dicts = []
 
     if attachment_file_ids and len(attachment_file_ids) > 0:
