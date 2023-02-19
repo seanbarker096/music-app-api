@@ -17,5 +17,8 @@
 
   "python.linting.pylintEnabled": true,
   // Detects unused imports
-  "python.linting.pylintArgs": ["--enable=W0614"]
+  "python.linting.pylintArgs": [
+    "--enable=W0614"
+  ],
+  "python.linting.enabled": true
 }

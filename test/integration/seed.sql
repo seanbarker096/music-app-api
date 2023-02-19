@@ -66,3 +66,19 @@ CREATE TABLE gigs.users (
   UNIQUE INDEX email_idx(email)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
+
+DROP TABLE IF EXISTS gigs.artists;
+CREATE TABLE gigs.artists (
+  id int(10) unsigned auto_increment,
+  artist_name varchar(128) NOT NULL
+  biography varchar(500) default NULL,
+  create_time datetime NOT NULL,
+  updated_time datetime default NULL,
+  uuid varchar(255) NOT NULL,
+  owner_id int(10) unsigned,
+  PRIMARY KEY (id),
+  UNIQUE INDEX artist_name_idx(artist_name),
+  UNIQUE INDEX owner_id_idx(owner_id),
+  UNIQUE INDEX uuid_idx(uuid)  
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
