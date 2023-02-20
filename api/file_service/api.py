@@ -100,7 +100,8 @@ class FileService:
 
         if isinstance(request.file_size, int) and request.file_size > self.MAX_FILE_SIZE:
             raise InvalidArgumentException(
-                f"Failed to upload file. File size exceeds maximum allowed value of {self.MAX_FILE_SIZE}"
+                f"Failed to upload file. File size exceeds maximum allowed value of {self.MAX_FILE_SIZE}",
+                request.file_size,
             )
 
         ## store the file meta data in the db first. This means if our db is down we aren't storing files in s3 without having any info in our db. Also means if s3 is down we have some information in db to try again later with
