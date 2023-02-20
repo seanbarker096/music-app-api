@@ -29,7 +29,7 @@ app.register_blueprint(file_service_api.blueprint, url_prefix="/api/fileservice/
 app.register_blueprint(posts_api.blueprint, url_prefix="/api/posts/0.1")
 app.register_blueprint(auth_api.blueprint, url_prefix="/api/auth/0.1")
 app.register_blueprint(users_api.blueprint, url_prefix="/api/users/0.1")
-app.regiter_blueprint(artists_api.blueprint, url_prefix="/api/artists/0.1")
+app.register_blueprint(artist_api.blueprint, url_prefix="/api/artists/0.1")
 
 
 @app.after_request

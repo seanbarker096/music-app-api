@@ -70,7 +70,7 @@ CREATE TABLE gigs.users (
 DROP TABLE IF EXISTS gigs.artists;
 CREATE TABLE gigs.artists (
   id int(10) unsigned auto_increment,
-  artist_name varchar(128) NOT NULL
+  artist_name varchar(128) NOT NULL,
   biography varchar(500) default NULL,
   create_time datetime NOT NULL,
   updated_time datetime default NULL,

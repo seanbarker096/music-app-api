@@ -21,6 +21,7 @@ from api.authentication_service.typings import (
 )
 from api.utils.rest_utils import remove_bearer_from_token
 from exceptions.exceptions import InvalidArgumentException
+from exceptions.response.exceptions import InvalidAuthTokenException
 
 
 class TokenAuthService(ABC):
@@ -127,11 +128,14 @@ class JWTTokenAuthService(TokenAuthService):
     def validate_token(self, token: str, token_type: Optional[TokenType] = None) -> Dict[str, any]:
         """Validate token allowing for 10 second leway."""
         try:
+            print(token)
             decoded_token = jwt.decode(
                 token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
             )
         except jwt.ExpiredSignatureError:
-            raise Exception(f"Failed to validate token {token} because it has expired")
+            raise InvalidAuthTokenException(
+                f"Failed to validate token {token} because it has expired"
+            )
 
         if token_type == TokenType.REFRESH.value:
             try:
@@ -140,7 +144,7 @@ class JWTTokenAuthService(TokenAuthService):
                     user_id=decoded_token["user_id"], session_id=decoded_token["session_id"]
                 )
             except:
-                raise Exception(
+                raise InvalidAuthTokenException(
                     f"Failed to validate token {token} of type {TokenType.REFRESH.value} as it could not be found. It may have been deleted and is therefore no longer valid"
                 )
         return decoded_token

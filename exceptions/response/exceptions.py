@@ -109,3 +109,13 @@ class UserNotFoundException(ResponseBaseException):
 
     def __init__(self, message: str):
         super().__init__(message=message)
+
+
+class InvalidAuthTokenException(ResponseBaseException):
+    _http_code = 401
+    _name = "INVALID_AUTH_TOKEN"
+    _code = ErrorCodes.INVALID_AUTH_TOKEN.value
+    _detail = "Invalid authentication token"
+
+    def __init__(self, message: str):
+        super().__init__(message=message)

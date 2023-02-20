@@ -4,15 +4,18 @@ import flask
 
 from api.typings.artists import ArtistsGetFilter
 from api.utils import rest_utils
-from api.utils.rest_utils import get_set_request_param
+from api.utils.rest_utils import auth, get_set_request_param
 
 blueprint = flask.Blueprint("artists", __name__)
 
 
 @blueprint.route("/artists/", methods=["GET"])
+@auth
 def artists_get():
+    print(flask.request.values)
+    uuids = get_set_request_param(parameter_name="uuid[]", type=str)
 
-    uuids = get_set_request_param(parameter_name="user_ids[]", type=int)
+    print("uuids: ", uuids)
 
     artists_get_filter = ArtistsGetFilter(uuids=uuids)
 

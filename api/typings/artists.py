@@ -5,9 +5,9 @@ class Artist:
     id: int = ...
     uuid: str = ...
     name: str = ...
-    create_time: str = ...
+    create_time: float = ...
     biography: Optional[str] = ...
-    updated_time: Optional[str] = ...
+    updated_time: Optional[float] = ...
     owner_id: Optional[int] = ...
 
     def __init__(
@@ -15,9 +15,9 @@ class Artist:
         id: int,
         uuid: str,
         name: str,
-        create_time: str,
+        create_time: float,
         biography: Optional[str] = None,
-        updated_time: Optional[str] = None,
+        updated_time: Optional[float] = None,
         owner_id: Optional[int] = None,
     ) -> None:
         self.id = id
@@ -34,3 +34,32 @@ class ArtistsGetFilter:
 
     def __init__(self, uuids: Optional[List[int]] = None) -> None:
         self.uuids = uuids
+
+
+class ArtistsGetResult:
+    artists: List[Artist] = ...
+
+    def __init__(self, artists: List[Artist]) -> None:
+        self.artists = artists
+
+
+class ArtistCreateRequest:
+    name: str = ...
+    uuid: str = ...
+    biography: Optional[str] = ...
+    owner_id: Optional[int] = ...
+
+    def __init__(
+        self, name: str, uuid: str, biography: Optional[str] = None, owner_id: Optional[str] = None
+    ) -> None:
+        self.name = name
+        self.uuid = uuid
+        self.biography = biography
+        self.owner_id = owner_id
+
+
+class ArtistCreateResult:
+    artist: Artist = ...
+
+    def __init__(self, artist: Artist) -> None:
+        self.artist = artist

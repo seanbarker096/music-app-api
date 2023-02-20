@@ -6,7 +6,10 @@ import flask
 
 from api.authentication_service.typings import AuthUser, TokenType
 from exceptions.exceptions import InvalidArgumentException
-from exceptions.response.exceptions import ResponseBaseException
+from exceptions.response.exceptions import (
+    InvalidAuthTokenException,
+    ResponseBaseException,
+)
 
 
 def process_string_request_param(request_body: Dict[str, any], parameter_name: str) -> str:
@@ -82,13 +85,15 @@ def auth(func):
         if auth_token:
             try:
                 decoded_token = flask.current_app.conns.auth_service.validate_token(auth_token)
+                print("test", decoded_token)
                 auth_user = build_auth_user_from_token_payload(decoded_token)
-
+                print("authuser", auth_user)
                 flask.g.req_user = auth_user
                 ## If auth token valid return
                 return func(*args, **kwargs)
-            except:
-                ## Otherwise try generating a new one using refresh token
+
+            except InvalidAuthTokenException:
+                ## If auth service throws try to validate refresh token
                 pass
 
         refresh_token = flask.request.headers.get("Refresh-Token")

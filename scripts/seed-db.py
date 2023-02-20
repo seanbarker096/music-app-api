@@ -5,6 +5,8 @@ from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
 from api.dao.users_dao import UsersDAO
 from api.file_service.api import FileService
 from api.file_service.typings.typings import FileCreateRequest
+from api.midlayer.artists_mid import ArtistsMidlayerMixin
+from api.typings.artists import ArtistCreateRequest
 from api.typings.posts import PostAttachmentsCreateRequest, PostCreateRequest
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
@@ -23,6 +25,9 @@ config_dict = {"config_file": config}
 users_dao = UsersDAO(config_dict)
 posts_dao = PostsDAO(config_dict)
 post_attachments_dao = PostAttachmentsDAO(config_dict)
+
+aritsts_mid = ArtistsMidlayerMixin(config_dict)
+
 file_service = FileService(config_dict)
 
 
@@ -77,7 +82,7 @@ user_update_request = UserUpdateRequest(user.id, avatar_file_uuid=avatar_file_uu
 users_dao.user_update(user_update_request)
 
 
-## create a few posts
+################### CREATE POSTS ####################
 
 # 1
 post_create_request = PostCreateRequest(owner_id=user.id, content="This is a new post")
@@ -114,3 +119,15 @@ post_attachment = post_attachments_dao.post_attachment_create(
 # post_attachment = post_attachments_dao.post_attachment_create(
 #     post_id=post.id, file_id=avatar_file.id
 # )
+
+
+###################### CREATE ARTISTS ######################
+
+artist_create_request = ArtistCreateRequest(
+    name="Sean Barker",
+    biography="I am a software developer",
+    uuid="asdaskjflkhw",
+    owner_id=user.id,
+)
+
+artist = aritsts_mid.artist_create(artist_create_request)

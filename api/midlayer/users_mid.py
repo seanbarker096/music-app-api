@@ -37,6 +37,9 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         )
         self.users_dao = connections.users_dao
 
+        ## Call the next mixins constructor
+        super().__init__(config, conns)
+
     def users_get(self, filter: UsersGetFilter) -> UsersGetResult:
         if not isinstance(filter.user_ids, list) or len(filter.user_ids) == 0:
             raise InvalidArgumentException(
