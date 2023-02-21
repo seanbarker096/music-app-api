@@ -1,6 +1,7 @@
 from typing import Optional
 
 from api.artist_search_service.search_client import SearchImp, SpotifySearchImp
+from api.artist_search_service.types import ArtistSearchRequest, ArtistSearchResult
 
 
 class SearchClient(object):
@@ -19,8 +20,10 @@ class SearchClient(object):
         else:
             self.search_imp = search_imp
 
-    def search(self, query: str) -> List[Artist]:
-        return self.search_imp.search(query)
+    def search(self, request: ArtistSearchRequest) -> ArtistSearchResult:
 
-    def _search(self, query: str) -> List[Artist]:
-        ...
+        processed_request = self.search_imp.process_request(request)
+
+        raw_result = self.search_imp.search(processed_request)
+
+        return self.search_imp.build_search_result(raw_result)
