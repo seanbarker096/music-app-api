@@ -29,6 +29,15 @@ class Artist:
         self.owner_id = owner_id
 
 
+class ArtistSearchArtist:
+    uuid: str = ...
+    name: str = ...
+
+    def __init__(self, uuid: str, name: str) -> None:
+        self.uuid = uuid
+        self.name = name
+
+
 class ArtistsGetFilter:
     uuids: Optional[List[int]] = ...
 

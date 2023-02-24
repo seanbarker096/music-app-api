@@ -26,3 +26,11 @@ class InvalidArgumentException(AppException):
 
     def get_source(self):
         return self._source
+
+
+class AppSearchServiceException(AppException):
+    _message: str
+
+    def __init__(self, message: str):
+        self._message = message
+        super().__init__(message)

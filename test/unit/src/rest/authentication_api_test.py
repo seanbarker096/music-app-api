@@ -14,7 +14,10 @@ from api.authentication_service.typings import (
 from api.midlayer.users_mid import User
 from api.rest import auth_api
 from api.utils.rest_utils import auth
-from exceptions.response.exceptions import UserAlreadyExistsException
+from exceptions.response.exceptions import (
+    InvalidAuthTokenException,
+    UserAlreadyExistsException,
+)
 
 
 class AuthAPITestCase(APITestCase):
@@ -246,7 +249,7 @@ class AuthApiTest(AuthAPITestCase):
         ## Get validation to throw
         self.app.conns.auth_service.validate_token = Mock()
         self.app.conns.auth_service.validate_token.side_effect = [
-            Exception(),
+            InvalidAuthTokenException('Invalid auth token "invalid_auth_jwt"'),
             refresh_token_payload,
         ]
 
