@@ -13,10 +13,7 @@ blueprint = flask.Blueprint("artists", __name__)
 @blueprint.route("/artists/", methods=["GET"])
 @auth
 def artists_get():
-    print(flask.request.values)
     uuids = get_set_request_param(parameter_name="uuid[]", type=str)
-
-    print("uuids: ", uuids)
 
     artists_get_filter = ArtistsGetFilter(uuids=uuids)
 
@@ -32,7 +29,18 @@ def artists_get():
     )
 
 
-@blueprint.route("/artists/search/", methods=["GET"])
+@blueprint.route("/artist/<string:uuid>", methods=["GET"])
+@auth
+def artist_get_or_create(uuid: str):
+    artist = flask.current_app.conns.midlayer.artist_get_or_create(uuid=uuid).artists[0]
+    artist_dict = rest_utils.class_to_dict(artist)
+
+    return flask.current_app.response_class(
+        response=json.dumps(artist_dict), status=200, mimetype="application/json"
+    )
+
+
+@blueprint.route("/artists/search/", methods=["POST"])
 @auth
 def artists_search():
     data = flask.request.json

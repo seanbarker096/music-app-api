@@ -85,9 +85,7 @@ def auth(func):
         if auth_token:
             try:
                 decoded_token = flask.current_app.conns.auth_service.validate_token(auth_token)
-                print("test", decoded_token)
                 auth_user = build_auth_user_from_token_payload(decoded_token)
-                print("authuser", auth_user)
                 flask.g.req_user = auth_user
                 ## If auth token valid return
                 return func(*args, **kwargs)

@@ -1,9 +1,9 @@
 from typing import Optional
 
 from api.artist_search_service.api import (
-    ArtistSearchRequest,
-    ArtistSearchResult,
     ArtistSearchService,
+    ArtistsSearchRequest,
+    ArtistsSearchResult,
 )
 from api.dao.artists_dao import ArtistsDAO
 from api.midlayer import BaseMidlayerMixin
@@ -56,8 +56,8 @@ class ArtistsMidlayerMixin(BaseMidlayerMixin):
         artists = self.artists_dao.artists_get(filter)
         return ArtistsGetResult(artists=artists)
 
-    def artist_search(self, searchQuery: str) -> ArtistSearchResult:
-        request = ArtistSearchRequest(
+    def artist_search(self, searchQuery: str) -> ArtistsSearchResult:
+        request = ArtistsSearchRequest(
             search_terms={"q": searchQuery},
         )
 
@@ -85,3 +85,36 @@ class ArtistsMidlayerMixin(BaseMidlayerMixin):
         artist = self.artists_dao.artist_create(request)
 
         return ArtistCreateResult(artist=artist)
+
+    def artist_get_or_create(self, uuid: str) -> ArtistsGetResult:
+        artist = None
+        filter = ArtistsGetFilter(uuids=[uuid])
+        fetched_artists = self.artists_get(filter=filter).artists
+
+        if len(fetched_artists) > 1:
+            raise Exception(
+                f"Failed to get_or_create artist for uuid {uuid}. More than one artist was found for this uuid"
+            )
+
+        ## If no artist found in our db, grab it from spotify and create it in our db
+        if len(fetched_artists) == 0:
+            search_artist = self.artist_search_service.get_artist_by_uuid(uuid)
+
+            if search_artist.uuid != uuid:
+                raise Exception(
+                    "Search service returned artist with different uuid than requested. uuid requests: {uuid}, uuid returned: {search_artist.uuid}"
+                )
+
+            created_artist = self.artist_create(
+                ArtistCreateRequest(
+                    name=search_artist.name,
+                    uuid=search_artist.uuid,
+                    image_url=search_artist.image_url,
+                )
+            ).artist
+
+            artist = created_artist
+        else:
+            artist = fetched_artists[0]
+
+        return ArtistsGetResult(artists=[artist])

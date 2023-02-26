@@ -7,8 +7,9 @@ class Artist:
     name: str = ...
     create_time: float = ...
     biography: Optional[str] = ...
-    updated_time: Optional[float] = ...
+    update_time: Optional[float] = ...
     owner_id: Optional[int] = ...
+    image_url: Optional[str] = ...
 
     def __init__(
         self,
@@ -17,25 +18,29 @@ class Artist:
         name: str,
         create_time: float,
         biography: Optional[str] = None,
-        updated_time: Optional[float] = None,
+        update_time: Optional[float] = None,
         owner_id: Optional[int] = None,
+        image_url: Optional[str] = None,
     ) -> None:
         self.id = id
         self.uuid = uuid
         self.name = name
         self.create_time = create_time
         self.biography = biography
-        self.updated_time = updated_time
+        self.update_time = update_time
         self.owner_id = owner_id
+        self.image_url = image_url
 
 
 class ArtistSearchArtist:
     uuid: str = ...
     name: str = ...
+    image_url: Optional[str] = ...
 
-    def __init__(self, uuid: str, name: str) -> None:
+    def __init__(self, uuid: str, name: str, image_url: Optional[str] = None) -> None:
         self.uuid = uuid
         self.name = name
+        self.image_url = image_url
 
 
 class ArtistsGetFilter:
@@ -57,14 +62,21 @@ class ArtistCreateRequest:
     uuid: str = ...
     biography: Optional[str] = ...
     owner_id: Optional[int] = ...
+    image_url: Optional[str] = ...
 
     def __init__(
-        self, name: str, uuid: str, biography: Optional[str] = None, owner_id: Optional[str] = None
+        self,
+        name: str,
+        uuid: str,
+        biography: Optional[str] = None,
+        owner_id: Optional[str] = None,
+        image_url: Optional[str] = None,
     ) -> None:
         self.name = name
         self.uuid = uuid
         self.biography = biography
         self.owner_id = owner_id
+        self.image_url = image_url
 
 
 class ArtistCreateResult:

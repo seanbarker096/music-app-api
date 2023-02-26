@@ -3,7 +3,11 @@ from typing import Optional
 
 from api.artist_search_service.search_client.search_imp import SearchImp
 from api.artist_search_service.search_client.spotify_search_imp import SpotifySearchImp
-from api.artist_search_service.types import ArtistSearchRequest, ArtistSearchResult
+from api.artist_search_service.types import (
+    ArtistSearchArtist,
+    ArtistsSearchRequest,
+    ArtistsSearchResult,
+)
 from exceptions.exceptions import AppSearchServiceException
 
 
@@ -23,7 +27,7 @@ class ArtistSearchService:
         else:
             self.search_imp = search_imp
 
-    def search(self, request: ArtistSearchRequest) -> ArtistSearchResult:
+    def search(self, request: ArtistsSearchRequest) -> ArtistsSearchResult:
         try:
             processed_request = self.search_imp.process_request(request)
 
@@ -34,4 +38,21 @@ class ArtistSearchService:
         except Exception as err:
             raise AppSearchServiceException(
                 f"Failed to fetch artists from spotfy api because {json.dumps(str(err))}"
+            )
+
+    def get_artist_by_uuid(self, uuid: str) -> ArtistSearchArtist:
+        try:
+            if not isinstance(uuid, str) or not uuid:
+                raise AppSearchServiceException(f"Invalid uuid provided: {uuid}")
+
+            if self.search_imp.client != "spotify":
+                raise AppSearchServiceException(
+                    "get_artist_by_uuid is only supported for spotify search inmplementation"
+                )
+
+            return self.search_imp.get_artist_by_uuid(uuid)
+
+        except Exception as err:
+            raise AppSearchServiceException(
+                f"Failed to get artist by uuid from spotfy api because {json.dumps(str(err))}"
             )

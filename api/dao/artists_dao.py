@@ -13,8 +13,9 @@ class ArtistDBAlias:
     ARTIST_NAME = "artist_name"
     ARTIST_CREATE_TIME = "artist_create_time"
     ARTIST_BIOGRAPHY = "artist_biography"
-    ARTIST_UPDATED_TIME = "artist_updated_time"
+    ARTIST_UPDATED_TIME = "artist_update_time"
     ARTIST_OWNER_ID = "artist_owner_id"
+    ARTIST_IMAGE_URL = "artist_image_url"
 
 
 class ArtistsDAO(object):
@@ -26,8 +27,9 @@ class ArtistsDAO(object):
         "artist_name as " + ArtistDBAlias.ARTIST_NAME,
         "create_time as " + ArtistDBAlias.ARTIST_CREATE_TIME,
         "biography as " + ArtistDBAlias.ARTIST_BIOGRAPHY,
-        "updated_time as " + ArtistDBAlias.ARTIST_UPDATED_TIME,
+        "update_time as " + ArtistDBAlias.ARTIST_UPDATED_TIME,
         "owner_id as " + ArtistDBAlias.ARTIST_OWNER_ID,
+        "image_url as " + ArtistDBAlias.ARTIST_IMAGE_URL,
     ]
 
     def __init__(self, config, db: Optional[DB] = None):
@@ -63,7 +65,7 @@ class ArtistsDAO(object):
 
     def artist_create(self, request: ArtistCreateRequest) -> Artist:
         sql = """
-            INSERT INTO artists(uuid, artist_name, create_time, biography, updated_time, owner_id) VALUES(%s, %s, FROM_UNIXTIME(%s), %s, FROM_UNIXTIME(%s), %s)
+            INSERT INTO artists(uuid, artist_name, create_time, biography, update_time, owner_id, image_url) VALUES(%s, %s, FROM_UNIXTIME(%s), %s, FROM_UNIXTIME(%s), %s, %s)
         """
 
         now = time.time()
@@ -75,6 +77,7 @@ class ArtistsDAO(object):
             request.biography,
             None,
             request.owner_id,
+            request.image_url,
         )
 
         db_result = self.db.run_query(sql, binds)
@@ -87,8 +90,9 @@ class ArtistsDAO(object):
             name=request.name,
             create_time=now,
             biography=request.biography,
-            updated_time=None,
+            update_time=None,
             owner_id=request.owner_id,
+            image_url=request.image_url,
         )
 
     def _build_artist_from_row(self, db_row: Dict[str, any]) -> Artist:
@@ -108,7 +112,7 @@ class ArtistsDAO(object):
         artist_biography = db_row[ArtistDBAlias.ARTIST_BIOGRAPHY]
 
         assert_row_key_exists(db_row, ArtistDBAlias.ARTIST_UPDATED_TIME)
-        artist_updated_time = (
+        artist_update_time = (
             float(date_time_to_unix_time(db_row[ArtistDBAlias.ARTIST_UPDATED_TIME]))
             if db_row[ArtistDBAlias.ARTIST_UPDATED_TIME]
             else None
@@ -117,12 +121,16 @@ class ArtistsDAO(object):
         assert_row_key_exists(db_row, ArtistDBAlias.ARTIST_OWNER_ID)
         artist_owner_id = int(db_row[ArtistDBAlias.ARTIST_OWNER_ID])
 
+        assert_row_key_exists(db_row, ArtistDBAlias.ARTIST_IMAGE_URL)
+        artist_image_url = db_row[ArtistDBAlias.ARTIST_IMAGE_URL]
+
         return Artist(
             id=artist_id,
             uuid=artist_uuid,
             name=artist_name,
             create_time=artist_create_time,
             biography=artist_biography,
-            updated_time=artist_updated_time,
+            update_time=artist_update_time,
             owner_id=artist_owner_id,
+            image_url=artist_image_url,
         )

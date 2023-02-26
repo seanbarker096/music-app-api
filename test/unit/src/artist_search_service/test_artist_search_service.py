@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 from api.artist_search_service.api import ArtistSearchService
 from api.artist_search_service.search_client.spotify_search_imp import SpotifySearchImp
-from api.artist_search_service.types import ArtistSearchRequest
+from api.artist_search_service.types import ArtistsSearchRequest
 
 
 class ArtistSearchServiceTestCase(TestCase):
@@ -90,7 +90,7 @@ class ArtistSearchServiceTestCase(TestCase):
 
         service = ArtistSearchService(self.config, mock_search_imp)
 
-        request = ArtistSearchRequest(search_terms={"q": "E"})
+        request = ArtistsSearchRequest(search_terms={"q": "E"})
 
         response = service.search(request)
 

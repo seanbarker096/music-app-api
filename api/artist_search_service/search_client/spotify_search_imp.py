@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from api.artist_search_service.search_client.search_imp import SearchImp
-from api.artist_search_service.types import ArtistSearchRequest, ArtistSearchResult
+from api.artist_search_service.types import ArtistsSearchRequest, ArtistsSearchResult
 from api.typings.artists import ArtistSearchArtist
 from exceptions.exceptions import AppSearchServiceException
 
@@ -24,8 +24,9 @@ class SpotifySearchImp(SearchImp):
         self.config = config
         self.secret = config["config_file"]["artist-search-service"].get("spotity-client-secret")
         self.client_id = config["config_file"]["artist-search-service"].get("spotify-client-id")
+        self.client = "spotify"
 
-    def process_request(self, request: ArtistSearchRequest) -> SpotifySearchRequest:
+    def process_request(self, request: ArtistsSearchRequest) -> SpotifySearchRequest:
         ## Currently only support the q search term
         searchTerm = request.search_terms.get("q", None)
 
@@ -40,7 +41,7 @@ class SpotifySearchImp(SearchImp):
 
         return self._spotify_search_artists(access_token, request.q, request.limit)
 
-    def build_search_result(self, api_result: Dict[str, Any]) -> ArtistSearchResult:
+    def build_search_result(self, api_result: Dict[str, Any]) -> ArtistsSearchResult:
 
         dict = api_result.get("artists", None)
 
@@ -53,7 +54,7 @@ class SpotifySearchImp(SearchImp):
 
         app_artists = [self._build_app_artist(artist) for artist in artists]
 
-        return ArtistSearchResult(
+        return ArtistsSearchResult(
             artists=app_artists,
             total=total,
             offset=offset,
@@ -98,7 +99,9 @@ class SpotifySearchImp(SearchImp):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as err:
-            raise Exception(f"Failed to search for artists. Error: {json.dumps(str(err))}")
+            raise Exception(
+                f"Error in request to spotify api when searching for artists. Error: {json.dumps(str(err))}"
+            )
 
     def _build_app_artist(self, artist: dict) -> ArtistSearchArtist:
 
@@ -108,10 +111,48 @@ class SpotifySearchImp(SearchImp):
         self._assert_field_exists("id", artist)
         uuid = artist["id"]
 
-        return ArtistSearchArtist(name=name, uuid=uuid)
+        self._assert_field_exists("images", artist)
+        image_url = artist["images"][-1]["url"] if len(artist["images"]) > 0 else None
+
+        return ArtistSearchArtist(name=name, uuid=uuid, image_url=image_url)
 
     def _assert_field_exists(self, field: str, artist: Dict[str, Any]):
-        if not artist.get(field, None):
+
+        if artist.get(field, None) is None:
             raise Exception(
-                f"Field {field} not found in in spotify api response. Response {json.dumps(artist)}"
+                f"Field {field} not found in in spotify api response. Response: {json.dumps(artist)}"
+            )
+
+    def get_artist_by_uuid(
+        self,
+        uuid: str,
+    ) -> ArtistSearchArtist:
+        access_token = self._spotify_get_access_token()
+        artist_dict = self._get_artist_by_uuid(access_token, uuid)
+
+        self._assert_field_exists("name", artist_dict)
+        name = artist_dict["name"]
+
+        self._assert_field_exists("id", artist_dict)
+        uuid = artist_dict["id"]
+
+        self._assert_field_exists("images", artist_dict)
+        image_url = artist_dict["images"][-1]["url"] if len(artist_dict["images"]) > 0 else None
+
+        return ArtistSearchArtist(name=name, uuid=uuid, image_url=image_url)
+
+    def _get_artist_by_uuid(
+        self,
+        access_token: str,
+        uuid: str,
+    ) -> Dict[str, Any]:
+        headers = {"Authorization": f"Bearer {access_token}"}
+        url = f"https://api.spotify.com/v1/artists/{uuid}"
+        response = requests.get(url, headers=headers)
+        try:
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as err:
+            raise Exception(
+                f"Error in request to spotify api when getting artist by uuid: {uuid}. Error: {json.dumps(str(err))}"
             )
