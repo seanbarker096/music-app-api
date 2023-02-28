@@ -6,7 +6,9 @@ from api.dao.users_dao import UsersDAO
 from api.file_service.api import FileService
 from api.file_service.typings.typings import FileCreateRequest
 from api.midlayer.artists_mid import ArtistsMidlayerMixin
+from api.midlayer.features_mid import FeaturesMidlayerMixin
 from api.typings.artists import ArtistCreateRequest
+from api.typings.features import FeatureCreateRequest
 from api.typings.posts import PostAttachmentsCreateRequest, PostCreateRequest
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
@@ -23,6 +25,9 @@ config.read(filename)
 config_dict = {"config_file": config}
 
 users_dao = UsersDAO(config_dict)
+
+features_mid = FeaturesMidlayerMixin(config_dict)
+
 posts_dao = PostsDAO(config_dict)
 post_attachments_dao = PostAttachmentsDAO(config_dict)
 
@@ -131,3 +136,12 @@ artist_create_request = ArtistCreateRequest(
 )
 
 artist = aritsts_mid.artist_create(artist_create_request)
+
+
+################### CREATE FEATURES ####################
+
+feature_create_request = FeatureCreateRequest(
+    owner_id=user.id, owner_type="artist", context_type="post", context_id=post.id
+)
+
+feature = features_mid.feature_create(feature_create_request).feature

@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from api.artist_search_service.api import (
@@ -82,7 +83,12 @@ class ArtistsMidlayerMixin(BaseMidlayerMixin):
         ):
             raise InvalidArgumentException("Biography must be a valid string", request.biography)
 
-        artist = self.artists_dao.artist_create(request)
+        try:
+            artist = self.artists_dao.artist_create(request)
+        except Exception as err:
+            raise Exception(
+                f"Failed to create artist because {json.dumps(str(err))}. Request: {json.dumps(vars(request))}"
+            )
 
         return ArtistCreateResult(artist=artist)
 
@@ -102,7 +108,7 @@ class ArtistsMidlayerMixin(BaseMidlayerMixin):
 
             if search_artist.uuid != uuid:
                 raise Exception(
-                    "Search service returned artist with different uuid than requested. uuid requests: {uuid}, uuid returned: {search_artist.uuid}"
+                    f"Search service returned artist with different uuid than requested. uuid requests: {uuid}, uuid returned: {search_artist.uuid}"
                 )
 
             created_artist = self.artist_create(

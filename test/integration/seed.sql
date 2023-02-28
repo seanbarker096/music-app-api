@@ -78,8 +78,20 @@ CREATE TABLE gigs.artists (
   owner_id int(10) unsigned,
   image_url varchar(512) NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX artist_name_idx(artist_name),
+  INDEX artist_name_idx(artist_name),
   UNIQUE INDEX owner_id_idx(owner_id),
   UNIQUE INDEX uuid_idx(uuid)  
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
+
+DROP TABLE IF EXISTS gigs.feature;
+CREATE TABLE gigs.feature (
+  id int(10) unsigned auto_increment,
+  context_type varchar(60) NOT NULL,
+  context_id int(10) unsigned NOT NULL,
+  owner_type varchar(60) NOT NULL,
+  owner_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (id),
+  INDEX owner_type_owner_id_context_id_idx(owner_type, owner_id, context_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
