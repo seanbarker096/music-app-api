@@ -109,7 +109,11 @@ class ArtistsDAO(object):
         artist_create_time = float(date_time_to_unix_time(db_row[ArtistDBAlias.ARTIST_CREATE_TIME]))
 
         assert_row_key_exists(db_row, ArtistDBAlias.ARTIST_BIOGRAPHY)
-        artist_biography = db_row[ArtistDBAlias.ARTIST_BIOGRAPHY]
+        artist_biography = (
+            db_row[ArtistDBAlias.ARTIST_BIOGRAPHY]
+            if db_row[ArtistDBAlias.ARTIST_BIOGRAPHY]
+            else None
+        )
 
         assert_row_key_exists(db_row, ArtistDBAlias.ARTIST_UPDATED_TIME)
         artist_update_time = (
@@ -119,10 +123,18 @@ class ArtistsDAO(object):
         )
 
         assert_row_key_exists(db_row, ArtistDBAlias.ARTIST_OWNER_ID)
-        artist_owner_id = int(db_row[ArtistDBAlias.ARTIST_OWNER_ID])
+        artist_owner_id = (
+            int(db_row[ArtistDBAlias.ARTIST_OWNER_ID])
+            if db_row[ArtistDBAlias.ARTIST_OWNER_ID]
+            else None
+        )
 
         assert_row_key_exists(db_row, ArtistDBAlias.ARTIST_IMAGE_URL)
-        artist_image_url = db_row[ArtistDBAlias.ARTIST_IMAGE_URL]
+        artist_image_url = (
+            db_row[ArtistDBAlias.ARTIST_IMAGE_URL]
+            if db_row[ArtistDBAlias.ARTIST_IMAGE_URL]
+            else None
+        )
 
         return Artist(
             id=artist_id,
