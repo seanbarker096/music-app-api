@@ -13,10 +13,11 @@ blueprint = flask.Blueprint("features", __name__)
 @auth
 def features_get():
     data = flask.request.values
+    print(data)
 
-    owner_type = data.get("owner_type", None)
+    owner_type = data.get("owner_type", None, str)
 
-    owner_id = data.get("owner_id", None)
+    owner_id = data.get("owner_id", None, int)
 
     if not owner_id and not owner_type:
         raise InvalidArgumentException("Must provide at least one filter field", json.dumps(data))

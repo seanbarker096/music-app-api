@@ -135,13 +135,15 @@ artist_create_request = ArtistCreateRequest(
     owner_id=user.id,
 )
 
-artist = aritsts_mid.artist_create(artist_create_request)
+artist = aritsts_mid.artist_create(artist_create_request).artist
 
 
 ################### CREATE FEATURES ####################
 
 feature_create_request = FeatureCreateRequest(
-    owner_id=user.id, owner_type="artist", context_type="post", context_id=post.id
+    owner_id=2, owner_type="artist", context_type="post", context_id=post.id
 )
+
+print("artist.id", artist.id)
 
 feature = features_mid.feature_create(feature_create_request).feature

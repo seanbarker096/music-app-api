@@ -1,6 +1,7 @@
 from typing import Optional
 
 from api.midlayer.artists_mid import ArtistsMidlayerConnections, ArtistsMidlayerMixin
+from api.midlayer.features_mid import FeaturesMidlayerConnections, FeaturesMidlayerMixin
 from api.midlayer.posts_mid import (
     PostAttachmentsMidlayerConnections,
     PostAttachmentsMidlayerMixin,
@@ -18,6 +19,7 @@ class MidlayerConnections:
         post_attachments_mid_conns: Optional[PostAttachmentsMidlayerConnections] = None,
         user_mid_conns: Optional[UserMidlayerConnections] = None,
         artist_mid_conns: Optional[ArtistsMidlayerConnections] = None,
+        feature_mid_conns: Optional[ArtistsMidlayerConnections] = None,
     ):
         self.post_mid_conns = post_mid_conns if post_mid_conns else PostMidlayerConnections(config)
         self.post_attachments_mid_conns = (
@@ -29,10 +31,17 @@ class MidlayerConnections:
         self.artist_mid_conns = (
             artist_mid_conns if artist_mid_conns else ArtistsMidlayerConnections(config)
         )
+        self.feature_mid_conns = (
+            feature_mid_conns if feature_mid_conns else FeaturesMidlayerConnections(config)
+        )
 
 
 class Midlayer(
-    PostsMidlayerMixin, PostAttachmentsMidlayerMixin, UsersMidlayerMixin, ArtistsMidlayerMixin
+    PostsMidlayerMixin,
+    PostAttachmentsMidlayerMixin,
+    UsersMidlayerMixin,
+    ArtistsMidlayerMixin,
+    FeaturesMidlayerMixin,
 ):
     def __init__(self, config, conns: Optional[MidlayerConnections] = None):
         connections = conns if conns else MidlayerConnections(config)

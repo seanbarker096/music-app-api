@@ -98,7 +98,9 @@ def posts_get():
 
     owner_ids = rest_utils.get_set_request_param("owner_ids[]", type=int)
 
-    posts_get_filter = PostsGetFilter(owner_ids=owner_ids, is_deleted=False)
+    ids = rest_utils.get_set_request_param("ids[]", type=int)
+
+    posts_get_filter = PostsGetFilter(owner_ids=owner_ids, ids=ids, is_deleted=False)
 
     posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
     posts = posts_get_result.posts

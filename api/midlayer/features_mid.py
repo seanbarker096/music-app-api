@@ -32,11 +32,12 @@ class FeaturesMidlayerMixin(BaseMidlayerMixin):
         super().__init__(config, conns)
 
     def features_get(self, filter=FeaturesGetFilter) -> FeaturesGetResult:
-
         if filter.context_id and not isinstance(filter.context_id, int):
             raise InvalidArgumentException("context_id must be a valid integer", filter.context_id)
 
-        if filter.context_type and filter.context_type not in FeatureContextType:
+        if filter.context_type and filter.context_type not in set(
+            item.value for item in FeatureContextType
+        ):
             raise InvalidArgumentException(
                 "Invalid value provided for filter field context_type", filter.context_type
             )
@@ -44,7 +45,9 @@ class FeaturesMidlayerMixin(BaseMidlayerMixin):
         if filter.owner_id and not isinstance(filter.owner_id, int):
             raise InvalidArgumentException("owner_id must be a valid integer", filter.owner_id)
 
-        if filter.owner_type and filter.owner_type not in FeatureOwnerType:
+        if filter.owner_type and filter.owner_type not in set(
+            item.value for item in FeatureOwnerType
+        ):
             raise InvalidArgumentException(
                 "Invalid value provided for filter field owner_type", filter.owner_type
             )
