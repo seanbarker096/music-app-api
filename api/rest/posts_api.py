@@ -65,7 +65,7 @@ def post_get_by_id(post_id: int):
     if not post_id:
         raise Exception("Invalid request. Must provide a valid post_id")
 
-    posts_get_filter = PostsGetFilter(post_ids=[post_id], is_deleted=False)
+    posts_get_filter = PostsGetFilter(ids=[post_id], is_deleted=False)
 
     posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
     post = posts_get_result.posts[0]

@@ -73,9 +73,9 @@ class PostsDAO(object):
         wheres = []
         binds = []
 
-        if filter.post_ids:
+        if filter.ids:
             wheres.append("id in %s")
-            binds.append(filter.post_ids)
+            binds.append(filter.ids)
 
         if filter.is_deleted:
             wheres.append("is_deleted = %s")

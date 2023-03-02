@@ -47,7 +47,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         post_mid = PostsMidlayerMixin(config=self.config)
 
-        filter = PostsGetFilter(post_ids=[post_id])
+        filter = PostsGetFilter(ids=[post_id])
 
         result = post_mid.posts_get(filter=filter)
         post = result.posts[0]

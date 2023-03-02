@@ -55,10 +55,10 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
 
     def posts_get(self, filter=PostsGetFilter) -> PostsGetResult:
 
-        if filter.post_ids and len(filter.post_ids) == 0:
+        if filter.ids and len(filter.ids) == 0:
             raise InvalidArgumentException(
-                "Invalid value provided for filter field post_ids. At least one post_id must be provided",
-                filter.post_ids,
+                "Invalid value provided for filter field ids. At least one post_id must be provided",
+                filter.ids,
             )
 
         if filter.is_deleted and not isinstance(filter.is_deleted, bool):
