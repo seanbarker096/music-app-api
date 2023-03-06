@@ -12,6 +12,7 @@ from api.rest import (
     features_api,
     file_service_api,
     posts_api,
+    tags_api,
     users_api,
 )
 from api.utils.rest_utils import add_token_headers, after_request_setup
@@ -38,6 +39,7 @@ app.register_blueprint(auth_api.blueprint, url_prefix="/api/auth/0.1")
 app.register_blueprint(users_api.blueprint, url_prefix="/api/users/0.1")
 app.register_blueprint(artist_api.blueprint, url_prefix="/api/artists/0.1")
 app.register_blueprint(features_api.blueprint, url_prefix="/api/features/0.1")
+app.register_blueprint(tags_api.blueprint, url_prefix="/api/tags/0.1")
 
 
 @app.after_request

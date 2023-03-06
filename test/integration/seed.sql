@@ -95,3 +95,18 @@ CREATE TABLE gigs.feature (
   INDEX owner_type_owner_id_context_id_idx(owner_type, owner_id, context_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
+
+DROP TABLE IF EXISTS gigs.tag;
+CREATE TABLE gigs.tag (
+  id int(10) unsigned auto_increment,
+  tagged_in_entity_type varchar(60) NOT NULL, -- e.g. a user is tagged in a post. tagged_in_entity_type = user
+  tagged_in_entity_id int(10) unsigned NOT NULL,
+  tagged_entity_type varchar(60) NOT NULL,
+  tagged_entity_id int(10) unsigned NOT NULL,
+  creator_type varchar(60) NOT NULL,
+  creator_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (id),
+  INDEX tagged_in_id_tagged_entity_type_idx(tagged_entity_id, tagged_entity_type),
+  INDEX tagged_entity_id_tagged_entity_type_idx(tagged_entity_id, tagged_entity_type)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
