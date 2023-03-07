@@ -10,10 +10,15 @@ from api.typings.posts import (
     PostAttachmentsGetFilter,
     PostCreateRequest,
     PostsGetFilter,
-    UserPostsGetFilter,
+    ProfilePostsGetFilter,
+    ProfileType,
 )
 from api.utils import rest_utils
-from api.utils.rest_utils import get_set_request_param, process_bool_request_param
+from api.utils.rest_utils import (
+    get_set_request_param,
+    process_bool_request_param,
+    process_enum_request_param,
+)
 
 blueprint = flask.Blueprint("posts", __name__)
 
@@ -153,23 +158,25 @@ def post_attachments_get():
     )
 
 
-@blueprint.route("/users/<int:user_id>/posts", methods=["GET"])
+@blueprint.route("/profiles/<int:profile_id>/posts", methods=["GET"])
 @auth
-def get_users_posts(user_id: int):
+def get_profiles_posts(profile_id: int):
     """Get all posts for a user. This includes posts they created, posts they are tagged in and posts they have featured in their profile (depending on the filters applied)."""
 
     include_tagged = process_bool_request_param("include_tagged", optional=True)
     include_owned = process_bool_request_param("include_owned", optional=True)
     include_featured = process_bool_request_param("include_featured", optional=True)
+    profile_type = process_enum_request_param("profile_type", ProfileType)
 
-    user_posts_get_filter = UserPostsGetFilter(
-        user_id=user_id,
+    profile_posts_get_filter = ProfilePostsGetFilter(
+        profile_id=profile_id,
+        profile_type=profile_type,
         include_tagged=include_tagged,
         include_owned=include_owned,
         include_featured=include_featured,
     )
 
-    posts = flask.current_app.conns.midlayer.user_posts_get(user_posts_get_filter).posts
+    posts = flask.current_app.conns.midlayer.profile_posts_get(profile_posts_get_filter).posts
 
     attachment_dicts = []
 

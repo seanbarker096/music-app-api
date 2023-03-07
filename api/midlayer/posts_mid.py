@@ -11,8 +11,10 @@ from api.typings.posts import (
     PostCreateResult,
     PostsGetFilter,
     PostsGetResult,
-    UserPostsGetFilter,
+    ProfilePostsGetFilter,
+    ProfileType,
 )
+from api.utils.rest_utils import process_enum_request_param
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -78,11 +80,19 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
 
         return PostsGetResult(posts=posts)
 
-    def user_posts_get(self, filter=UserPostsGetFilter) -> PostsGetResult:
-        if not filter.user_id or not isinstance(filter.user_id, int):
+    def profile_posts_get(self, filter=ProfilePostsGetFilter) -> PostsGetResult:
+        if not filter.profile_id or not isinstance(filter.profile_id, int):
             raise InvalidArgumentException(
-                f"Invalid value {filter.user_id} for argument user_id. Must be a valid integer.",
-                "filter.user_id",
+                f"Invalid value {filter.profile_id} for argument profile_id. Must be a valid integer.",
+                "filter.profile_id",
+            )
+
+        if not filter.profile_type or not process_enum_request_param(
+            filter.profile_type, ProfileType
+        ):
+            raise InvalidArgumentException(
+                f"Invalid value {filter.profile_type} for argument profile_type. Must be a valid member of ProfileType.",
+                "filter.profile_type",
             )
 
         if not isinstance(filter.include_featured, bool):
@@ -103,7 +113,7 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 "filter.include_tagged",
             )
 
-        posts = self.posts_dao.user_posts_get(filter)
+        posts = self.posts_dao.profile_posts_get(filter)
 
         return PostsGetResult(posts=posts)
 

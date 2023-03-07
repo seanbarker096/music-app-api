@@ -3,14 +3,18 @@ from typing import Dict, List, Optional
 
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
+from api.typings.features import FeatureContextType, FeatureOwnerType
 from api.typings.posts import (
     Post,
     PostAttachment,
     PostAttachmentsGetFilter,
     PostCreateRequest,
+    PostOwnerType,
     PostsGetFilter,
-    UserPostsGetFilter,
+    ProfilePostsGetFilter,
+    ProfileType,
 )
+from api.typings.tags import TaggedEntityType, TaggedInEntityType
 from api.utils import date_time_to_unix_time
 
 
@@ -101,7 +105,8 @@ class PostsDAO(object):
 
         return posts
 
-    def user_posts_get(self, filter: UserPostsGetFilter) -> List[Post]:
+    def profile_posts_get(self, filter: ProfilePostsGetFilter) -> List[Post]:
+        # IF THIS QUERY IS SLOW CONSIDER USING A UNION ALL
         selects = f"""
             SELECT {', '.join(self.POST_SELECTS)} 
             FROM post
@@ -111,19 +116,84 @@ class PostsDAO(object):
         binds = []
         joins = []
 
+        if not filter.include_featured and not filter.include_owned and not filter.include_tagged:
+            raise Exception(f"Unbounded request made to profile_posts_get. Request: {vars(filter)}")
+
         wheres.append("is_deleted = %s")
         binds.append(False)
 
-        if filter.user_id and filter.include_owned:
-            wheres.append("owner_id in %s")
-            binds.append(filter.user_id)
+        ## Before converting the ProfileType enum value to corresponding values for features and tags, ensure its valid
+        if filter.profile_type not in set(item.value for item in ProfileType):
+            raise Exception(f"Invalid profile_type: {filter.profile_type}")
 
-        where_string = build_where_query_string(wheres, "AND")
+        # If include_owned set, we want to grab all posts the user owns, along with ones they have featured on their profile, or hav ebeen tagged in (if those filters are set). If we use where here, we will filter out tagged and featured posts this query finds, because the user will not own any of these. We therefore LEFT JOIN the posts table on itself.
+        if filter.include_owned is True and filter.profile_id and filter.profile_type:
+            if filter.profile_type == ProfileType.ARTIST:
+                owner_type = PostOwnerType.ARTIST
+            if filter.profile_type == ProfileType.USER:
+                owner_type = PostOwnerType.USER
+            joins.append(
+                """
+            LEFT JOIN post as post_two
+                ON post_two.id = post.id
+                AND post_two.owner_id = %s
+                AND post_two.owner_type %s"""
+            )
 
-        if filter.include_featured:
-            joins.append("LEFT JOIN ")
+            binds.append(filter.profile_id)
+            binds.append(owner_type)
 
-        sql = selects + where_string
+        # Join to get all posts this profile has featured on their profile. I.e. get all posts
+        # that this profile owns/created.
+        if filter.include_featured is True:
+            if filter.profile_type == ProfileType.USER:
+                feature_owner_type = FeatureOwnerType.USER
+            if filter.profile_type == ProfileType.ARTIST:
+                feature_owner_type = FeatureOwnerType.ARTIST
+
+            joins.append(
+                """
+            LEFT JOIN feature
+                ON  feature.context_id = post.id
+                AND feature.context_type = %s
+                AND feature.owner_type = %s
+                AND feature.owner_id = %s"""
+            )
+
+            binds.append(FeatureContextType.POST.value)
+            binds.append(feature_owner_type)
+            binds.append(filter.profile_id)
+
+        if filter.include_tagged is True:
+            if filter.profile_type == ProfileType.USER:
+                tagged_entity_type = TaggedEntityType.USER
+            if filter.profile_type == ProfileType.ARTIST:
+                tagged_entity_type = TaggedEntityType.ARTIST
+
+            joins.append(
+                """
+            LEFT JOIN tag 
+                ON tag.tagged_entity_id = post.id
+                AND tag.tagged_entity_id = %s
+                AND tag.tagged_entity_type = %s"""
+            )
+
+            binds.append(filter.profile_id)
+            binds.append(tagged_entity_type)
+
+        join_wheres = []
+        join_wheres.append("post_two IS NOT NULL")
+        join_wheres.append("feature.id IS NOT NULL")
+        join_wheres.append("tag.id IS NOT NULL")
+
+        join_wheres_string = build_where_query_string(wheres, "OR", prepend_where_string=False)
+
+        wheres.append(f"({join_wheres_string})")
+        wheres_string = build_where_query_string(wheres, "AND")
+
+        final_wheres_string = wheres_string
+        # Now filter out any rows where there is a null in all 3 columns
+        sql = selects + f"".join(joins) + final_wheres_string
 
         db_result = self.db.run_query(sql, binds)
 

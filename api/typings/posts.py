@@ -2,9 +2,15 @@ from enum import Enum
 from typing import List, Optional
 
 
+class PostOwnerType(Enum):
+    ARTIST = "artist"
+    USER = "user"
+
+
 class Post(object):
     id: int = ...
     owner_id: int = ...
+    owner_type = PostOwnerType = ...
     content: str = ...
     create_time: int = ...
     update_time: Optional[int] = ...
@@ -14,6 +20,7 @@ class Post(object):
         self,
         id: int,
         owner_id: int,
+        owner_type: PostOwnerType,
         content: str,
         create_time: int,
         update_time: Optional[int] = None,
@@ -21,6 +28,7 @@ class Post(object):
     ):
         self.id = id
         self.owner_id = owner_id
+        self.owner_type = owner_type
         self.content = content
         self.create_time = create_time
         self.is_deleted = is_deleted
@@ -29,14 +37,17 @@ class Post(object):
 
 class PostCreateRequest(object):
     owner_id: int = ...
+    owner_type: PostOwnerType = ...
     content: str = ...
 
     def __init__(
         self,
         owner_id: int,
+        owner_type: PostOwnerType,
         content: str,
     ):
         self.owner_id = owner_id
+        self.owner_type = owner_type
         self.content = content
 
 
@@ -51,16 +62,19 @@ class PostsGetFilter(object):
     ids: Optional[List[int]] = ...
     is_deleted: Optional[bool] = ...
     owner_ids: Optional[List[int]] = ...
+    owner_types: Optional[List[PostOwnerType]] = ...
 
     def __init__(
         self,
         ids: Optional[List[int]] = None,
         is_deleted: Optional[bool] = None,
         owner_ids: Optional[List[int]] = None,
+        owner_types: Optional[List[PostOwnerType]] = None,
     ) -> None:
         self.ids = ids
         self.is_deleted = is_deleted
         self.owner_ids = owner_ids
+        self.owner_types = owner_types
 
 
 class PostsGetResult(object):
@@ -70,20 +84,28 @@ class PostsGetResult(object):
         self.posts = posts
 
 
-class UserPostsGetFilter(object):
-    user_id: int = ...
+class ProfileType(Enum):
+    ARTIST = "artist"
+    USER = "user"
+
+
+class ProfilePostsGetFilter(object):
+    profile_id: int = ...
+    profile_type: ProfileType = ...
     include_tagged: Optional[bool] = ...
     include_featured: Optional[bool] = ...
     include_owned: Optional[bool] = ...
 
     def __init__(
         self,
-        user_id: int,
+        profile_id: int,
+        profile_type: ProfileType,
         include_tagged: Optional[bool] = None,
         include_featured: Optional[bool] = None,
         include_owned: Optional[bool] = None,
     ) -> None:
-        self.user_id = user_id
+        self.profile_id = profile_id
+        self.profile_type = profile_type
         self.include_tagged = include_tagged if include_tagged else True
         self.include_featured = include_featured if include_featured else True
         self.include_owned = include_owned if include_owned else True

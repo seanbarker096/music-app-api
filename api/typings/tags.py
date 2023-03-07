@@ -7,6 +7,7 @@ class TaggedEntityType(Enum):
     ARTIST = "artist"
 
 
+# I.e. 'A user has been tagged IN a post'
 class TaggedInEntityType(Enum):
     POST = "post"
 
