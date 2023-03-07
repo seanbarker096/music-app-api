@@ -62,19 +62,19 @@ class PostsGetFilter(object):
     ids: Optional[List[int]] = ...
     is_deleted: Optional[bool] = ...
     owner_ids: Optional[List[int]] = ...
-    owner_types: Optional[List[PostOwnerType]] = ...
+    owner_type: Optional[PostOwnerType] = ...
 
     def __init__(
         self,
         ids: Optional[List[int]] = None,
         is_deleted: Optional[bool] = None,
         owner_ids: Optional[List[int]] = None,
-        owner_types: Optional[List[PostOwnerType]] = None,
+        owner_type: Optional[PostOwnerType] = None,
     ) -> None:
         self.ids = ids
         self.is_deleted = is_deleted
         self.owner_ids = owner_ids
-        self.owner_types = owner_types
+        self.owner_type = owner_type
 
 
 class PostsGetResult(object):

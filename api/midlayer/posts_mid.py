@@ -9,6 +9,7 @@ from api.typings.posts import (
     PostAttachmentsGetResult,
     PostCreateRequest,
     PostCreateResult,
+    PostOwnerType,
     PostsGetFilter,
     PostsGetResult,
     ProfilePostsGetFilter,
@@ -42,6 +43,12 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 f"Invalid value {request.owner_id} for argument owner_id", "owner_id"
             )
 
+        if request.owner_type not in set(item.value for item in PostOwnerType):
+            raise InvalidArgumentException(
+                f"Invalid value {request.owner_type} for argument owner_type. Must provide a valid member of the PostOwnerType enum",
+                "owner_type",
+            )
+
         if not isinstance(request.content, str) or not request.content:
             raise InvalidArgumentException(
                 f"Invalid value {request.content} for argument content", "content"
@@ -61,19 +68,25 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
         if filter.ids and len(filter.ids) == 0:
             raise InvalidArgumentException(
                 "Invalid value provided for filter field ids. At least one post_id must be provided",
-                filter.ids,
+                "filter.ids",
             )
 
         if filter.is_deleted and not isinstance(filter.is_deleted, bool):
             raise InvalidArgumentException(
                 "Invalid value provided for filter field is_deleted. A boolean argument must be provided",
-                filter.is_deleted,
+                "filter.is_deleted",
             )
 
         if filter.owner_ids and not isinstance(filter.owner_ids, list):
             raise InvalidArgumentException(
                 "Invalid value provided for filter field owner_ids. At least one owner_id must be provided",
-                filter.owner_ids,
+                "filter.owner_ids",
+            )
+
+        if filter.owner_type and filter.owner_type not in set(item.value for item in PostOwnerType):
+            raise InvalidArgumentException(
+                f"Invalid value {filter.owner_type} for filter field owner_type. A valid member of the PostOwnerType enum must be provided",
+                "filter.owner_type",
             )
 
         posts = self.posts_dao.posts_get(filter)
@@ -87,8 +100,8 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 "filter.profile_id",
             )
 
-        if not filter.profile_type or not process_enum_request_param(
-            filter.profile_type, ProfileType
+        if not filter.profile_type or filter.profile_type not in set(
+            item.value for item in ProfileType
         ):
             raise InvalidArgumentException(
                 f"Invalid value {filter.profile_type} for argument profile_type. Must be a valid member of ProfileType.",
@@ -113,7 +126,13 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 "filter.include_tagged",
             )
 
-        posts = self.posts_dao.profile_posts_get(filter)
+        try:
+            posts = self.posts_dao.profile_posts_get(filter)
+
+        except Exception as err:
+            raise Exception(
+                f"Failed to get posts for profile with id {filter.profile_id} and type {filter.profile_type} because {str(err)}. Request: {vars(filter)}"
+            )
 
         return PostsGetResult(posts=posts)
 

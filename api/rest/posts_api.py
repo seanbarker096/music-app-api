@@ -9,6 +9,7 @@ from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostAttachmentsGetFilter,
     PostCreateRequest,
+    PostOwnerType,
     PostsGetFilter,
     ProfilePostsGetFilter,
     ProfileType,
@@ -103,10 +104,13 @@ def post_get_by_id(post_id: int):
 def posts_get():
 
     owner_ids = rest_utils.get_set_request_param("owner_ids[]", type=int)
+    owner_type = rest_utils.process_enum_request_param("owner_type", PostOwnerType, optional=True)
 
     ids = rest_utils.get_set_request_param("ids[]", type=int)
 
-    posts_get_filter = PostsGetFilter(owner_ids=owner_ids, ids=ids, is_deleted=False)
+    posts_get_filter = PostsGetFilter(
+        owner_ids=owner_ids, owner_type=owner_type, ids=ids, is_deleted=False
+    )
 
     posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
     posts = posts_get_result.posts
@@ -163,9 +167,9 @@ def post_attachments_get():
 def get_profiles_posts(profile_id: int):
     """Get all posts for a user. This includes posts they created, posts they are tagged in and posts they have featured in their profile (depending on the filters applied)."""
 
-    include_tagged = process_bool_request_param("include_tagged", optional=True)
-    include_owned = process_bool_request_param("include_owned", optional=True)
-    include_featured = process_bool_request_param("include_featured", optional=True)
+    include_tagged = process_bool_request_param("include_tagged")
+    include_owned = process_bool_request_param("include_owned")
+    include_featured = process_bool_request_param("include_featured")
     profile_type = process_enum_request_param("profile_type", ProfileType)
 
     profile_posts_get_filter = ProfilePostsGetFilter(

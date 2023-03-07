@@ -9,6 +9,7 @@ from api.typings.posts import (
     PostAttachmentsCreateResult,
     PostAttachmentsGetResult,
     PostCreateResult,
+    PostOwnerType,
     PostsGetResult,
 )
 
@@ -33,6 +34,7 @@ class PostApiTest(PostAPITestCase):
         json = {
             "content": "This is a test post!",
             "owner_id": 555,
+            "owner_type": "user",
         }
 
         post = Post(
@@ -40,6 +42,7 @@ class PostApiTest(PostAPITestCase):
             create_time=now,
             update_time=None,
             owner_id=555,
+            owner_type=PostOwnerType.USER.value,
             content="This is a test post!",
         )
 
@@ -63,6 +66,7 @@ class PostApiTest(PostAPITestCase):
         json = {
             "content": "This is a test post!",
             "owner_id": 555,
+            "owner_type": "user",
             "attachment_file_ids": [888],
         }
 
@@ -71,6 +75,7 @@ class PostApiTest(PostAPITestCase):
             create_time=now,
             update_time=None,
             owner_id=555,
+            owner_type=PostOwnerType.USER.value,
             content="This is a test post!",
         )
 
@@ -109,7 +114,12 @@ class PostApiTest(PostAPITestCase):
         self.app.conns.midlayer = Mock()
 
         expected_post = Post(
-            id=111, owner_id=222, content="Just a test post!", create_time=now, update_time=None
+            id=123,
+            owner_id=222,
+            owner_type=PostOwnerType.USER.value,
+            content="Just a test post!",
+            create_time=now,
+            update_time=None,
         )
 
         expected_posts_get_result = PostsGetResult(posts=[expected_post])
@@ -142,7 +152,13 @@ class PostApiTest(PostAPITestCase):
         self.app.conns.midlayer = Mock()
 
         now = time.time()
-        expected_post = Post(id=123, owner_id=555, content="My great test post", create_time=now)
+        expected_post = Post(
+            id=123,
+            owner_id=555,
+            owner_type=PostOwnerType.USER.value,
+            content="My great test post",
+            create_time=now,
+        )
         expected_post_attachment = PostAttachment(id=111, post_id=123, file_id=888, create_time=now)
 
         expected_posts_get_result = PostsGetResult(posts=[expected_post])

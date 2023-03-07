@@ -46,9 +46,12 @@ def process_int_request_param(parameter_name: str) -> int:
     return parameter
 
 
-def process_enum_request_param(parameter_name: str, enum: Enum) -> str | int:
+def process_enum_request_param(parameter_name: str, enum: Enum, optional=True) -> str | int:
 
     parameter = flask.request.values.get(parameter_name, None)
+
+    if parameter is None and optional:
+        return None
 
     if not parameter:
         raise Exception(f"Missing required request parameter '{parameter_name}'")
@@ -61,14 +64,17 @@ def process_enum_request_param(parameter_name: str, enum: Enum) -> str | int:
     return parameter
 
 
-def process_bool_request_param(parameter_name: str, optional=False) -> bool:
+def process_bool_request_param(parameter_name: str, optional=True) -> bool:
     """Validates and returns a flask request body boolean parameter"""
     parameter = flask.request.values.get(parameter_name, None)
 
-    if not parameter and not optional:
+    if parameter is None and optional:
+        return None
+
+    if not parameter:
         raise Exception(f"Missing required request parameter '{parameter_name}'")
 
-    if parameter and parameter not in ["true", "false"]:
+    if parameter not in ["true", "false"]:
         raise Exception(
             f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean"
         )
@@ -76,13 +82,16 @@ def process_bool_request_param(parameter_name: str, optional=False) -> bool:
     return parameter
 
 
-def get_set_request_param(parameter_name: str, type: any) -> List[str | int] | None:
+def get_set_request_param(parameter_name: str, type: any, optional=True) -> List[str | int] | None:
     """Validates and returns a flask request body array parameter"""
+
+    if optional and not parameter_name in flask.request.values:
+        return None
 
     if parameter_name in flask.request.values:
         return flask.request.values.getlist(parameter_name, type)
 
-    return None
+    raise Exception(f"Missing required request parameter '{parameter_name}'")
 
 
 def class_to_dict(class_instance: object):

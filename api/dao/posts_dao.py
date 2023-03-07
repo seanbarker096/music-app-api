@@ -21,6 +21,7 @@ from api.utils import date_time_to_unix_time
 class PostDBAlias:
     POST_ID = "post_id"
     POST_OWNER_ID = "post_owner_id"
+    POST_OWNER_TYPE = "post_owner_type"
     POST_CONTENT = "post_content"
     POST_CREATE_TIME = "post_create_time"
     POST_UPDATE_TIME = "post_update_time"
@@ -33,6 +34,7 @@ class PostsDAO(object):
     POST_SELECTS = [
         "id as " + PostDBAlias.POST_ID,
         "owner_id as " + PostDBAlias.POST_OWNER_ID,
+        "owner_type as " + PostDBAlias.POST_OWNER_TYPE,
         "content as " + PostDBAlias.POST_CONTENT,
         "create_time as " + PostDBAlias.POST_CREATE_TIME,
         "update_time as " + PostDBAlias.POST_UPDATE_TIME,
@@ -44,8 +46,8 @@ class PostsDAO(object):
 
     def post_create(self, request: PostCreateRequest) -> Post:
         sql = """
-            INSERT INTO post(owner_id, content, create_time, update_time, is_deleted)
-            VALUES(%s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
+            INSERT INTO post(owner_id, owner_type, content, create_time, update_time, is_deleted)
+            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
         """
         now = time.time()
 
@@ -107,8 +109,10 @@ class PostsDAO(object):
 
     def profile_posts_get(self, filter: ProfilePostsGetFilter) -> List[Post]:
         # IF THIS QUERY IS SLOW CONSIDER USING A UNION ALL
+
+        # We are using the posts table twice in this query, so we append the table name to the selects to avoid MYSQL ambiguity errors
         selects = f"""
-            SELECT {', '.join(self.POST_SELECTS)} 
+            SELECT {', '.join(['post.'+ select for select in self.POST_SELECTS])} 
             FROM post
         """
 
@@ -119,7 +123,7 @@ class PostsDAO(object):
         if not filter.include_featured and not filter.include_owned and not filter.include_tagged:
             raise Exception(f"Unbounded request made to profile_posts_get. Request: {vars(filter)}")
 
-        wheres.append("is_deleted = %s")
+        wheres.append(f"post.is_deleted = %s")
         binds.append(False)
 
         ## Before converting the ProfileType enum value to corresponding values for features and tags, ensure its valid
@@ -128,16 +132,17 @@ class PostsDAO(object):
 
         # If include_owned set, we want to grab all posts the user owns, along with ones they have featured on their profile, or hav ebeen tagged in (if those filters are set). If we use where here, we will filter out tagged and featured posts this query finds, because the user will not own any of these. We therefore LEFT JOIN the posts table on itself.
         if filter.include_owned is True and filter.profile_id and filter.profile_type:
-            if filter.profile_type == ProfileType.ARTIST:
-                owner_type = PostOwnerType.ARTIST
-            if filter.profile_type == ProfileType.USER:
-                owner_type = PostOwnerType.USER
+            if filter.profile_type == ProfileType.ARTIST.value:
+                owner_type = PostOwnerType.ARTIST.value
+            if filter.profile_type == ProfileType.USER.value:
+                owner_type = PostOwnerType.USER.value
             joins.append(
                 """
-            LEFT JOIN post as post_two
-                ON post_two.id = post.id
-                AND post_two.owner_id = %s
-                AND post_two.owner_type %s"""
+            LEFT JOIN post owned_post
+                ON owned_post.id = post.id
+                AND owned_post.owner_id = %s
+                AND owned_post.owner_type = %s
+            """
             )
 
             binds.append(filter.profile_id)
@@ -146,10 +151,10 @@ class PostsDAO(object):
         # Join to get all posts this profile has featured on their profile. I.e. get all posts
         # that this profile owns/created.
         if filter.include_featured is True:
-            if filter.profile_type == ProfileType.USER:
-                feature_owner_type = FeatureOwnerType.USER
-            if filter.profile_type == ProfileType.ARTIST:
-                feature_owner_type = FeatureOwnerType.ARTIST
+            if filter.profile_type == ProfileType.USER.value:
+                feature_owner_type = FeatureOwnerType.USER.value
+            if filter.profile_type == ProfileType.ARTIST.value:
+                feature_owner_type = FeatureOwnerType.ARTIST.value
 
             joins.append(
                 """
@@ -157,43 +162,54 @@ class PostsDAO(object):
                 ON  feature.context_id = post.id
                 AND feature.context_type = %s
                 AND feature.owner_type = %s
-                AND feature.owner_id = %s"""
+                AND feature.owner_id = %s
+            """
             )
 
             binds.append(FeatureContextType.POST.value)
             binds.append(feature_owner_type)
             binds.append(filter.profile_id)
 
+        # Join to get all posts this profile has been tagged in.
         if filter.include_tagged is True:
-            if filter.profile_type == ProfileType.USER:
-                tagged_entity_type = TaggedEntityType.USER
-            if filter.profile_type == ProfileType.ARTIST:
-                tagged_entity_type = TaggedEntityType.ARTIST
+            if filter.profile_type == ProfileType.USER.value:
+                tagged_entity_type = TaggedEntityType.USER.value
+            if filter.profile_type == ProfileType.ARTIST.value:
+                tagged_entity_type = TaggedEntityType.ARTIST.value
 
             joins.append(
                 """
             LEFT JOIN tag 
                 ON tag.tagged_entity_id = post.id
                 AND tag.tagged_entity_id = %s
-                AND tag.tagged_entity_type = %s"""
+                AND tag.tagged_entity_type = %s
+            """
             )
 
             binds.append(filter.profile_id)
             binds.append(tagged_entity_type)
 
         join_wheres = []
-        join_wheres.append("post_two IS NOT NULL")
+        join_wheres.append("owned_post.id IS NOT NULL")
         join_wheres.append("feature.id IS NOT NULL")
         join_wheres.append("tag.id IS NOT NULL")
 
-        join_wheres_string = build_where_query_string(wheres, "OR", prepend_where_string=False)
+        join_wheres_string = build_where_query_string(join_wheres, "OR", prepend_where_string=False)
 
         wheres.append(f"({join_wheres_string})")
         wheres_string = build_where_query_string(wheres, "AND")
 
         final_wheres_string = wheres_string
-        # Now filter out any rows where there is a null in all 3 columns
-        sql = selects + f"".join(joins) + final_wheres_string
+
+        # Now filter out any rows where there is a null in all 3 columns. We dont need to add any new line escape characters here because of our use of triple strings above.
+        sql = (
+            selects
+            + f"".join(joins)
+            + final_wheres_string
+            + f" ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC"
+        )
+
+        print("QUERY STRING: ", sql)
 
         db_result = self.db.run_query(sql, binds)
 
@@ -214,6 +230,9 @@ class PostsDAO(object):
         assert_row_key_exists(db_row, PostDBAlias.POST_OWNER_ID)
         owner_id = int(db_row[PostDBAlias.POST_OWNER_ID])
 
+        assert_row_key_exists(db_row, PostDBAlias.POST_OWNER_TYPE)
+        owner_type = db_row[PostDBAlias.POST_OWNER_TYPE]
+
         assert_row_key_exists(db_row, PostDBAlias.POST_CONTENT)
         content = db_row[PostDBAlias.POST_CONTENT]
 
@@ -233,6 +252,7 @@ class PostsDAO(object):
         return Post(
             id=post_id,
             owner_id=owner_id,
+            owner_type=owner_type,
             content=content,
             create_time=create_time,
             update_time=update_time,

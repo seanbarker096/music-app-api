@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS gigs.post;
 CREATE TABLE gigs.post (
     id int(10) unsigned auto_increment,
     owner_id int(10) unsigned NOT NULL,
+    owner_type enum('user', 'artist') NOT NULL,
     content text NULL,
     create_time datetime NOT NULL,
     update_time datetime DEFAULT NULL,
