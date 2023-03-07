@@ -138,7 +138,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         result = post_mid.profile_posts_get(filter=filter)
 
         posts = result.posts
-        print(json.dumps(posts))
         owned_post_result = result.posts[2]
         tagged_post_result = result.posts[1]
         featured_post_result = result.posts[0]
@@ -210,8 +209,8 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
             profile_type=ProfileType.ARTIST.value,
-            include_featured=True,
-            include_tagged=True,
+            include_featured=False,
+            include_tagged=False,
             include_owned=True,
         )
 
@@ -279,9 +278,9 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
             profile_type=ProfileType.ARTIST.value,
-            include_featured=True,
+            include_featured=False,
             include_tagged=True,
-            include_owned=True,
+            include_owned=False,
         )
 
         result = post_mid.profile_posts_get(filter=filter)
@@ -349,8 +348,8 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             profile_id=requesting_profile_id,
             profile_type=ProfileType.ARTIST.value,
             include_featured=True,
-            include_tagged=True,
-            include_owned=True,
+            include_tagged=False,
+            include_owned=False,
         )
 
         result = post_mid.profile_posts_get(filter=filter)

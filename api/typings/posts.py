@@ -106,9 +106,9 @@ class ProfilePostsGetFilter(object):
     ) -> None:
         self.profile_id = profile_id
         self.profile_type = profile_type
-        self.include_tagged = include_tagged if include_tagged else True
-        self.include_featured = include_featured if include_featured else True
-        self.include_owned = include_owned if include_owned else True
+        self.include_tagged = True if include_tagged is None else include_tagged
+        self.include_featured = True if include_featured is None else include_featured
+        self.include_owned = True if include_owned is None else include_owned
 
 
 # ********* POST ATTACHMENTS ************* #

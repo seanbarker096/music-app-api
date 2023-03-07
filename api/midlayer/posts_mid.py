@@ -38,7 +38,7 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
         super().__init__(config, conns)
 
     def post_create(self, request: PostCreateRequest) -> PostCreateResult:
-        if not isinstance(request.owner_id, int) or not str:
+        if not request.owner_id or not isinstance(request.owner_id, int):
             raise InvalidArgumentException(
                 f"Invalid value {request.owner_id} for argument owner_id", "owner_id"
             )
@@ -58,9 +58,9 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             post = self.posts_dao.post_create(request)
             return PostCreateResult(post=post)
 
-        except Exception:
+        except Exception as err:
             raise Exception(
-                f"Failed to create post with content {request.content} for user with id {request.owner_id}"
+                f"Failed to create post with content {request.content} for user with id {request.owner_id} because {str(err)}. Request: {vars(request)}"
             )
 
     def posts_get(self, filter=PostsGetFilter) -> PostsGetResult:
@@ -87,6 +87,14 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             raise InvalidArgumentException(
                 f"Invalid value {filter.owner_type} for filter field owner_type. A valid member of the PostOwnerType enum must be provided",
                 "filter.owner_type",
+            )
+
+        if (filter.owner_ids and not filter.owner_type) or (
+            filter.owner_type and not filter.owner_ids
+        ):
+            raise InvalidArgumentException(
+                "Must provide both owner_type and owner_ids when filtering by owner_type or owner_ids",
+                "filter.owner_type or filter.owner_ids",
             )
 
         posts = self.posts_dao.posts_get(filter)
@@ -124,6 +132,12 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             raise InvalidArgumentException(
                 f"Invalid value {filter.include_tagged} for argument include_tagged. Must be a valid boolean.",
                 "filter.include_tagged",
+            )
+
+        if not filter.include_featured and not filter.include_owned and not filter.include_tagged:
+            raise InvalidArgumentException(
+                f"Must include at least one of include_featured, include_owned, or include_tagged.",
+                "filter.include_featured, filter.include_owned, filter.include_tagged",
             )
 
         try:

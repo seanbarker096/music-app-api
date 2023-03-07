@@ -54,6 +54,7 @@ class PostsDAO(object):
 
         binds = (
             request.owner_id,
+            request.owner_type,
             request.content,
             now,
             None,
@@ -67,6 +68,7 @@ class PostsDAO(object):
         return Post(
             id=post_id,
             owner_id=request.owner_id,
+            owner_type=request.owner_type,
             content=request.content,
             create_time=now,
             update_time=None,
@@ -93,6 +95,10 @@ class PostsDAO(object):
             wheres.append("owner_id in %s")
             binds.append(filter.owner_ids)
 
+        if filter.owner_type:
+            wheres.append("owner_type = %s")
+            binds.append(filter.owner_type)
+
         where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string
@@ -110,7 +116,7 @@ class PostsDAO(object):
 
     def profile_posts_get(self, filter: ProfilePostsGetFilter) -> List[Post]:
         # IF THIS QUERY IS SLOW CONSIDER USING A UNION ALL
-        print(json.dumps(vars(filter)))
+
         # We are using the posts table twice in this query, so we append the table name to the selects to avoid MYSQL ambiguity errors
         selects = f"""
             SELECT {', '.join(['post.'+ select for select in self.POST_SELECTS])} 
@@ -120,12 +126,10 @@ class PostsDAO(object):
         wheres = []
         binds = []
         joins = []
+        join_wheres = []
 
         if not filter.include_featured and not filter.include_owned and not filter.include_tagged:
             raise Exception(f"Unbounded request made to profile_posts_get. Request: {vars(filter)}")
-
-        wheres.append(f"post.is_deleted = %s")
-        binds.append(0)
 
         ## Before converting the ProfileType enum value to corresponding values for features and tags, ensure its valid
         if filter.profile_type not in set(item.value for item in ProfileType):
@@ -149,6 +153,8 @@ class PostsDAO(object):
             binds.append(filter.profile_id)
             binds.append(owner_type)
 
+            join_wheres.append("owned_post.id IS NOT NULL")
+
         # Join to get all posts this profile has featured on their profile. I.e. get all posts
         # that this profile owns/created.
         if filter.include_featured is True:
@@ -171,6 +177,8 @@ class PostsDAO(object):
             binds.append(feature_owner_type)
             binds.append(filter.profile_id)
 
+            join_wheres.append("feature.id IS NOT NULL")
+
         # Join to get all posts this profile has been tagged in.
         if filter.include_tagged is True:
             if filter.profile_type == ProfileType.USER.value:
@@ -181,21 +189,23 @@ class PostsDAO(object):
             joins.append(
                 """
             LEFT JOIN tag 
-                ON tag.tagged_entity_id = post.id
+                ON tag.tagged_in_entity_id = post.id
+                AND tag.tagged_in_entity_type = %s
                 AND tag.tagged_entity_id = %s
                 AND tag.tagged_entity_type = %s
             """
             )
 
+            binds.append(TaggedInEntityType.POST.value)
             binds.append(filter.profile_id)
             binds.append(tagged_entity_type)
 
-        join_wheres = []
-        join_wheres.append("owned_post.id IS NOT NULL")
-        join_wheres.append("feature.id IS NOT NULL")
-        join_wheres.append("tag.id IS NOT NULL")
+            join_wheres.append("tag.id IS NOT NULL")
 
         join_wheres_string = build_where_query_string(join_wheres, "OR", prepend_where_string=False)
+
+        wheres.append(f"post.is_deleted = %s")
+        binds.append(0)
 
         wheres.append(f"({join_wheres_string})")
         wheres_string = build_where_query_string(wheres, "AND")
@@ -209,9 +219,6 @@ class PostsDAO(object):
             + final_wheres_string
             + f" ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC"
         )
-
-        print("QUERY STRING: ", sql)
-        print("BINDS: ", binds)
 
         db_result = self.db.run_query(sql, binds)
 
