@@ -11,6 +11,7 @@ from api.typings.posts import (
     PostCreateResult,
     PostsGetFilter,
     PostsGetResult,
+    UserPostsGetFilter,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -74,6 +75,35 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             )
 
         posts = self.posts_dao.posts_get(filter)
+
+        return PostsGetResult(posts=posts)
+
+    def user_posts_get(self, filter=UserPostsGetFilter) -> PostsGetResult:
+        if not filter.user_id or not isinstance(filter.user_id, int):
+            raise InvalidArgumentException(
+                f"Invalid value {filter.user_id} for argument user_id. Must be a valid integer.",
+                "filter.user_id",
+            )
+
+        if not isinstance(filter.include_featured, bool):
+            raise InvalidArgumentException(
+                f"Invalid value {filter.is_deleted} for argument is_deleted. Must be a valid boolean.",
+                "filter.is_deleted",
+            )
+
+        if not isinstance(filter.include_owned, bool):
+            raise InvalidArgumentException(
+                f"Invalid value {filter.include_owned} for argument include_owned. Must be a valid boolean.",
+                "filter.include_owned",
+            )
+
+        if not isinstance(filter.include_tagged, bool):
+            raise InvalidArgumentException(
+                f"Invalid value {filter.include_tagged} for argument include_tagged. Must be a valid boolean.",
+                "filter.include_tagged",
+            )
+
+        posts = self.posts_dao.user_posts_get(filter)
 
         return PostsGetResult(posts=posts)
 

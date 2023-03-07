@@ -1,5 +1,6 @@
 import functools
 import json
+from enum import Enum
 from typing import Dict, List
 
 import flask
@@ -20,7 +21,57 @@ def process_string_request_param(request_body: Dict[str, any], parameter_name: s
         raise Exception(f"Missing required request parameter '{parameter_name}'")
 
     if not isinstance(parameter, str) or len(parameter) == 0:
-        raise Exception(f"Invalid value {parameter} for parameter '{parameter_name}'")
+        raise Exception(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid string"
+        )
+
+    return parameter
+
+
+def process_int_request_param(parameter_name: str) -> int:
+    """Validates and returns a flask request body integer parameter"""
+    parameter = flask.request.values.get(parameter_name, None)
+
+    if not parameter:
+        raise Exception(f"Missing required request parameter '{parameter_name}'")
+
+    ## Cast to int because flask.request.values return dict of type of CombinedMultiDict[str, str]
+    parameter = int(parameter)
+
+    if not isinstance(parameter, int):
+        raise Exception(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid integer"
+        )
+
+    return parameter
+
+
+def process_enum_request_param(parameter_name: str, enum: Enum) -> str | int:
+
+    parameter = flask.request.values.get(parameter_name, None)
+
+    if not parameter:
+        raise Exception(f"Missing required request parameter '{parameter_name}'")
+
+    if parameter not in set(item.value for item in enum):
+        raise Exception(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter} does not exist in enum {enum.__class__.__name__}"
+        )
+
+    return parameter
+
+
+def process_bool_request_param(parameter_name: str, optional=False) -> bool:
+    """Validates and returns a flask request body boolean parameter"""
+    parameter = flask.request.values.get(parameter_name, None)
+
+    if not parameter and not optional:
+        raise Exception(f"Missing required request parameter '{parameter_name}'")
+
+    if parameter and parameter not in ["true", "false"]:
+        raise Exception(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean"
+        )
 
     return parameter
 

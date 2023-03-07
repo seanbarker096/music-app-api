@@ -9,6 +9,7 @@ from api.typings.posts import (
     PostAttachmentsGetFilter,
     PostCreateRequest,
     PostsGetFilter,
+    UserPostsGetFilter,
 )
 from api.utils import date_time_to_unix_time
 
@@ -86,6 +87,41 @@ class PostsDAO(object):
             binds.append(filter.owner_ids)
 
         where_string = build_where_query_string(wheres, "AND")
+
+        sql = selects + where_string
+
+        db_result = self.db.run_query(sql, binds)
+
+        rows = db_result.get_rows()
+
+        posts = []
+        for row in rows:
+            post = self._build_post_from_db_row(row)
+            posts.append(post)
+
+        return posts
+
+    def user_posts_get(self, filter: UserPostsGetFilter) -> List[Post]:
+        selects = f"""
+            SELECT {', '.join(self.POST_SELECTS)} 
+            FROM post
+        """
+
+        wheres = []
+        binds = []
+        joins = []
+
+        wheres.append("is_deleted = %s")
+        binds.append(False)
+
+        if filter.user_id and filter.include_owned:
+            wheres.append("owner_id in %s")
+            binds.append(filter.user_id)
+
+        where_string = build_where_query_string(wheres, "AND")
+
+        if filter.include_featured:
+            joins.append("LEFT JOIN ")
 
         sql = selects + where_string
 

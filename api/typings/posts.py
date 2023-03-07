@@ -70,6 +70,25 @@ class PostsGetResult(object):
         self.posts = posts
 
 
+class UserPostsGetFilter(object):
+    user_id: int = ...
+    include_tagged: Optional[bool] = ...
+    include_featured: Optional[bool] = ...
+    include_owned: Optional[bool] = ...
+
+    def __init__(
+        self,
+        user_id: int,
+        include_tagged: Optional[bool] = None,
+        include_featured: Optional[bool] = None,
+        include_owned: Optional[bool] = None,
+    ) -> None:
+        self.user_id = user_id
+        self.include_tagged = include_tagged if include_tagged else True
+        self.include_featured = include_featured if include_featured else True
+        self.include_owned = include_owned if include_owned else True
+
+
 # ********* POST ATTACHMENTS ************* #
 class PostAttachment(object):
     id: int = ...

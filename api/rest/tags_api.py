@@ -2,8 +2,13 @@ import json
 
 import flask
 
-from api.typings.tags import TagCreateRequest
-from api.utils.rest_utils import auth, class_to_dict
+from api.typings.tags import TagCreateRequest, TaggedEntityType, TagsGetFilter
+from api.utils.rest_utils import (
+    auth,
+    class_to_dict,
+    process_enum_request_param,
+    process_int_request_param,
+)
 from exceptions.exceptions import InvalidArgumentException
 
 blueprint = flask.Blueprint("tags", __name__)
@@ -44,6 +49,24 @@ def tag_create():
 
     response = {}
     response["tag"] = class_to_dict(tag)
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+
+@blueprint.route("/tags/", methods=["GET"])
+@auth
+def tags_get():
+    tagged_entiy_id = process_int_request_param("tagged_entity_id")
+    tagged_entity_type = process_enum_request_param("tagged_entity_type", TaggedEntityType)
+
+    request = TagsGetFilter(tagged_entity_id=tagged_entiy_id, tagged_entity_type=tagged_entity_type)
+
+    tags = flask.current_app.conns.midlayer.tags_get(request).tags
+
+    response = {}
+    response["tags"] = [class_to_dict(tag) for tag in tags]
 
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"

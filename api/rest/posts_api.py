@@ -10,9 +10,10 @@ from api.typings.posts import (
     PostAttachmentsGetFilter,
     PostCreateRequest,
     PostsGetFilter,
+    UserPostsGetFilter,
 )
 from api.utils import rest_utils
-from api.utils.rest_utils import get_set_request_param
+from api.utils.rest_utils import get_set_request_param, process_bool_request_param
 
 blueprint = flask.Blueprint("posts", __name__)
 
@@ -152,6 +153,42 @@ def post_attachments_get():
     )
 
 
-# posts_dicts = []
-#     for post in posts:
-#         posts_dicts.append(rest_utils.class_to_dict(post))
+@blueprint.route("/users/<int:user_id>/posts", methods=["GET"])
+@auth
+def get_users_posts(user_id: int):
+    """Get all posts for a user. This includes posts they created, posts they are tagged in and posts they have featured in their profile (depending on the filters applied)."""
+
+    include_tagged = process_bool_request_param("include_tagged", optional=True)
+    include_owned = process_bool_request_param("include_owned", optional=True)
+    include_featured = process_bool_request_param("include_featured", optional=True)
+
+    user_posts_get_filter = UserPostsGetFilter(
+        user_id=user_id,
+        include_tagged=include_tagged,
+        include_owned=include_owned,
+        include_featured=include_featured,
+    )
+
+    posts = flask.current_app.conns.midlayer.user_posts_get(user_posts_get_filter).posts
+
+    attachment_dicts = []
+
+    if len(posts) > 0:
+        post_ids = [post.id for post in posts]
+        post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
+
+        post_attachments_get_result = flask.current_app.conns.midlayer.post_attachments_get(
+            post_attachments_get_filter
+        )
+
+        attachments = post_attachments_get_result.post_attachments
+
+        attachment_dicts = [rest_utils.class_to_dict(attachment) for attachment in attachments]
+
+    response = {}
+    response["posts"] = [rest_utils.class_to_dict(post) for post in posts]
+    response["attachments"] = attachment_dicts
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )

@@ -51,10 +51,10 @@ def feature_create():
 
     data = flask.request.get_json()
 
-    context_type = data.get("context_type", None, str)
-    context_id = data.get("context_id", None, int)
-    owner_type = data.get("owner_type", None, str)
-    owner_id = data.get("owner_id", None, int)
+    context_type = data.get("context_type", None)
+    context_id = data.get("context_id", None)
+    owner_type = data.get("owner_type", None)
+    owner_id = data.get("owner_id", None)
 
     if not context_type or not context_id or not owner_type or not owner_id:
         raise InvalidArgumentException("Missing required field in request", json.dumps(data))

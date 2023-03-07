@@ -9,6 +9,8 @@ from api.typings.tags import (
     TagCreatorType,
     TaggedEntityType,
     TaggedInEntityType,
+    TagsGetFilter,
+    TagsGetResult,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -86,4 +88,29 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
         except Exception as err:
             raise Exception(
                 f"Failed to create tag because {json.dumps(str(err))}. Request: {json.dumps(vars(request))}"
+            )
+
+    def tags_get(self, request: TagsGetFilter) -> TagsGetResult:
+
+        if not request.tagged_entity_type or request.tagged_entity_type not in set(
+            item.value for item in TaggedEntityType
+        ):
+            raise InvalidArgumentException(
+                f"Invalid argument tagged_entity_type. Request: {json.dumps(vars(request))}",
+                "request.tagged_entity_type",
+            )
+
+        if not request.tagged_entity_id or not isinstance(request.tagged_entity_id, int):
+            raise InvalidArgumentException(
+                f"Invalid argument tagged_entity_id. Request: {json.dumps(vars(request))}",
+                "request.tagged_entity_id",
+            )
+
+        try:
+            tags = self.tags_dao.tags_get(request)
+            return TagsGetResult(tags=tags)
+
+        except Exception as err:
+            raise Exception(
+                f"Failed to get tags because {json.dumps(str(err))}. Request: {json.dumps(vars(request))}"
             )
