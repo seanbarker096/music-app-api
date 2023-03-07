@@ -1,3 +1,4 @@
+import json
 import time
 from typing import Dict, List, Optional
 
@@ -56,7 +57,7 @@ class PostsDAO(object):
             request.content,
             now,
             None,
-            False,
+            0,
         )
 
         db_result = self.db.run_query(sql, binds)
@@ -109,7 +110,7 @@ class PostsDAO(object):
 
     def profile_posts_get(self, filter: ProfilePostsGetFilter) -> List[Post]:
         # IF THIS QUERY IS SLOW CONSIDER USING A UNION ALL
-
+        print(json.dumps(vars(filter)))
         # We are using the posts table twice in this query, so we append the table name to the selects to avoid MYSQL ambiguity errors
         selects = f"""
             SELECT {', '.join(['post.'+ select for select in self.POST_SELECTS])} 
@@ -124,7 +125,7 @@ class PostsDAO(object):
             raise Exception(f"Unbounded request made to profile_posts_get. Request: {vars(filter)}")
 
         wheres.append(f"post.is_deleted = %s")
-        binds.append(False)
+        binds.append(0)
 
         ## Before converting the ProfileType enum value to corresponding values for features and tags, ensure its valid
         if filter.profile_type not in set(item.value for item in ProfileType):
@@ -210,6 +211,7 @@ class PostsDAO(object):
         )
 
         print("QUERY STRING: ", sql)
+        print("BINDS: ", binds)
 
         db_result = self.db.run_query(sql, binds)
 
@@ -247,7 +249,7 @@ class PostsDAO(object):
         )
 
         assert_row_key_exists(db_row, PostDBAlias.POST_IS_DELETED)
-        is_deleted = db_row[PostDBAlias.POST_IS_DELETED]
+        is_deleted = bool(db_row[PostDBAlias.POST_IS_DELETED])
 
         return Post(
             id=post_id,
