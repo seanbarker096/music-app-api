@@ -9,7 +9,11 @@ from api.midlayer.artists_mid import ArtistsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerMixin
 from api.typings.artists import ArtistCreateRequest
 from api.typings.features import FeatureCreateRequest
-from api.typings.posts import PostAttachmentsCreateRequest, PostCreateRequest
+from api.typings.posts import (
+    PostAttachmentsCreateRequest,
+    PostCreateRequest,
+    PostOwnerType,
+)
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
 
@@ -90,7 +94,9 @@ users_dao.user_update(user_update_request)
 ################### CREATE POSTS ####################
 
 # 1
-post_create_request = PostCreateRequest(owner_id=user.id, content="This is a new post")
+post_create_request = PostCreateRequest(
+    owner_id=user.id, owner_type=PostOwnerType.USER, content="This is a new post"
+)
 
 post = posts_dao.post_create(post_create_request)
 
@@ -99,7 +105,9 @@ post_attachment = post_attachments_dao.post_attachment_create(
 )
 
 # 2
-post_create_request = PostCreateRequest(owner_id=user.id, content="This is a second post")
+post_create_request = PostCreateRequest(
+    owner_id=user.id, owner_type=PostOwnerType.ARTIST, content="This is a second post"
+)
 
 post = posts_dao.post_create(post_create_request)
 

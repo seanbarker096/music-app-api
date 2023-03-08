@@ -104,12 +104,12 @@ def post_get_by_id(post_id: int):
 def posts_get():
 
     owner_ids = rest_utils.get_set_request_param("owner_ids[]", type=int)
-    owner_type = rest_utils.process_enum_request_param("owner_type", PostOwnerType, optional=True)
+    owner_types = rest_utils.process_enum_set_request_param("owner_types[]", PostOwnerType)
 
     ids = rest_utils.get_set_request_param("ids[]", type=int)
 
     posts_get_filter = PostsGetFilter(
-        owner_ids=owner_ids, owner_type=owner_type, ids=ids, is_deleted=False
+        owner_ids=owner_ids, owner_type=owner_types, ids=ids, is_deleted=False
     )
 
     posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)

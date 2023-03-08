@@ -64,6 +64,33 @@ def process_enum_request_param(parameter_name: str, enum: Enum, optional=True) -
     return parameter
 
 
+def process_enum_set_api_request_param(
+    parameter_name: str, enum: Enum, type: str | int = str, optional=True
+) -> str | int:
+    if not optional and parameter_name not in flask.request.values:
+        raise Exception(f"Missing required request parameter '{parameter_name}'")
+
+    if optional and not parameter_name in flask.request.values:
+        return None
+
+    list = flask.request.values.getlist(parameter_name, type)
+
+    return process_enum_set_param(parameter_name, list, enum)
+
+
+def process_enum_set_param(parameter_name, set: List[str | int], enum: Enum) -> List[str | int]:
+    enum_set = set(item.value for item in enum)
+
+    for parameter in set:
+        if parameter not in enum_set:
+            raise InvalidArgumentException(
+                f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter} does not exist in enum {enum.__class__.__name__}",
+                parameter_name,
+            )
+
+    return set
+
+
 def process_bool_request_param(parameter_name: str, optional=True) -> bool:
     """Validates and returns a flask request body boolean parameter"""
     parameter = flask.request.values.get(parameter_name, None)

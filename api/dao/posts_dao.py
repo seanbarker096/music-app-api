@@ -95,7 +95,7 @@ class PostsDAO(object):
             wheres.append("owner_id in %s")
             binds.append(filter.owner_ids)
 
-        if filter.owner_type:
+        if filter.owner_types:
             wheres.append("owner_type = %s")
             binds.append(filter.owner_type)
 

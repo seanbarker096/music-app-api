@@ -15,7 +15,7 @@ from api.typings.posts import (
     ProfilePostsGetFilter,
     ProfileType,
 )
-from api.utils.rest_utils import process_enum_request_param
+from api.utils.rest_utils import process_enum_set_param
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -83,11 +83,8 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 "filter.owner_ids",
             )
 
-        if filter.owner_type and filter.owner_type not in set(item.value for item in PostOwnerType):
-            raise InvalidArgumentException(
-                f"Invalid value {filter.owner_type} for filter field owner_type. A valid member of the PostOwnerType enum must be provided",
-                "filter.owner_type",
-            )
+        if filter.owner_types:
+            process_enum_set_param("owner_types", filter.owner_types, PostOwnerType)
 
         if (filter.owner_ids and not filter.owner_type) or (
             filter.owner_type and not filter.owner_ids
