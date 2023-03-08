@@ -78,17 +78,21 @@ def process_enum_set_api_request_param(
     return process_enum_set_param(parameter_name, list, enum)
 
 
-def process_enum_set_param(parameter_name, set: List[str | int], enum: Enum) -> List[str | int]:
+def process_enum_set_param(
+    parameter_name: str, list_param: List[str | int], enum: Enum
+) -> List[str | int]:
+
     enum_set = set(item.value for item in enum)
 
-    for parameter in set:
+    for parameter in list_param:
+        print(parameter)
         if parameter not in enum_set:
             raise InvalidArgumentException(
-                f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter} does not exist in enum {enum.__class__.__name__}",
+                f"Invalid value {parameter} in parameter '{parameter_name}'. {parameter} does not exist in enum {enum.__class__.__name__}",
                 parameter_name,
             )
 
-    return set
+    return list_param
 
 
 def process_bool_request_param(parameter_name: str, optional=True) -> bool:

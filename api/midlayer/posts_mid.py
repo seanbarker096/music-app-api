@@ -84,14 +84,15 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             )
 
         if filter.owner_types:
+            print(filter.owner_types)
             process_enum_set_param("owner_types", filter.owner_types, PostOwnerType)
 
-        if (filter.owner_ids and not filter.owner_type) or (
-            filter.owner_type and not filter.owner_ids
+        if (filter.owner_ids and not filter.owner_types) or (
+            filter.owner_types and not filter.owner_ids
         ):
             raise InvalidArgumentException(
-                "Must provide both owner_type and owner_ids when filtering by owner_type or owner_ids",
-                "filter.owner_type or filter.owner_ids",
+                "Must provide both owner_types and owner_ids when filtering by owner_types or owner_ids",
+                "filter.owner_types or filter.owner_ids",
             )
 
         posts = self.posts_dao.posts_get(filter)
@@ -225,5 +226,7 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
             post_attachments = self.posts_attachments_dao.post_attachments_get(filter=filter)
             return PostAttachmentsGetResult(post_attachments=post_attachments)
 
-        except Exception:
-            raise Exception("Failed to get post attachments")
+        except Exception as err:
+            raise Exception(
+                f"Failed to get post attachments because {str(err)}. Request: {vars(filter)}"
+            )

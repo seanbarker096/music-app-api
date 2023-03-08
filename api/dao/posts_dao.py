@@ -97,7 +97,7 @@ class PostsDAO(object):
 
         if filter.owner_types:
             wheres.append("owner_type = %s")
-            binds.append(filter.owner_type)
+            binds.append(filter.owner_types)
 
         where_string = build_where_query_string(wheres, "AND")
 

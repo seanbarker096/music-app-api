@@ -95,7 +95,7 @@ users_dao.user_update(user_update_request)
 
 # 1
 post_create_request = PostCreateRequest(
-    owner_id=user.id, owner_type=PostOwnerType.USER, content="This is a new post"
+    owner_id=user.id, owner_type=PostOwnerType.USER.value, content="This is a new post"
 )
 
 post = posts_dao.post_create(post_create_request)
@@ -106,7 +106,7 @@ post_attachment = post_attachments_dao.post_attachment_create(
 
 # 2
 post_create_request = PostCreateRequest(
-    owner_id=user.id, owner_type=PostOwnerType.ARTIST, content="This is a second post"
+    owner_id=user.id, owner_type=PostOwnerType.ARTIST.value, content="This is a second post"
 )
 
 post = posts_dao.post_create(post_create_request)

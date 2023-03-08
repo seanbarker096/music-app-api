@@ -19,6 +19,7 @@ from api.utils.rest_utils import (
     get_set_request_param,
     process_bool_request_param,
     process_enum_request_param,
+    process_enum_set_api_request_param,
 )
 
 blueprint = flask.Blueprint("posts", __name__)
@@ -33,6 +34,7 @@ def post_create():
 
     post_create_request = PostCreateRequest(
         owner_id=data.get("owner_id", None),
+        owner_type=data.get("owner_type", None),
         content=data.get("content", None),
     )
 
@@ -104,12 +106,12 @@ def post_get_by_id(post_id: int):
 def posts_get():
 
     owner_ids = rest_utils.get_set_request_param("owner_ids[]", type=int)
-    owner_types = rest_utils.process_enum_set_request_param("owner_types[]", PostOwnerType)
+    owner_types = rest_utils.process_enum_set_api_request_param("owner_types[]", PostOwnerType)
 
     ids = rest_utils.get_set_request_param("ids[]", type=int)
 
     posts_get_filter = PostsGetFilter(
-        owner_ids=owner_ids, owner_type=owner_types, ids=ids, is_deleted=False
+        owner_ids=owner_ids, owner_types=owner_types, ids=ids, is_deleted=False
     )
 
     posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
