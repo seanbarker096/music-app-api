@@ -44,10 +44,12 @@ class ArtistSearchArtist:
 
 
 class ArtistsGetFilter:
+    ids: Optional[List[int]] = ...
     uuids: Optional[List[int]] = ...
 
-    def __init__(self, uuids: Optional[List[int]] = None) -> None:
+    def __init__(self, ids: Optional[List[int]] = None, uuids: Optional[List[int]] = None) -> None:
         self.uuids = uuids
+        self.ids = ids
 
 
 class ArtistsGetResult:

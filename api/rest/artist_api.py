@@ -13,9 +13,10 @@ blueprint = flask.Blueprint("artists", __name__)
 @blueprint.route("/artists/", methods=["GET"])
 @auth
 def artists_get():
-    uuids = get_set_request_param(parameter_name="uuid[]", type=str)
+    uuids = get_set_request_param(parameter_name="uuids[]", type=str)
+    ids = get_set_request_param(parameter_name="ids[]", type=int)
 
-    artists_get_filter = ArtistsGetFilter(uuids=uuids)
+    artists_get_filter = ArtistsGetFilter(uuids=uuids, ids=ids)
 
     artists = flask.current_app.conns.midlayer.artists_get(artists_get_filter).artists
 

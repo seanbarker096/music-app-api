@@ -51,8 +51,11 @@ class ArtistsMidlayerMixin(BaseMidlayerMixin):
                 filter.uuids,
             )
 
-        if not filter.uuids:
-            raise InvalidArgumentException("Must provide at least one filter field", filter)
+        if not filter.uuids and not filter.ids:
+            raise InvalidArgumentException(
+                f"Must provide at least one filter field. Filter: {json.dumps(vars(filter))}",
+                "filter",
+            )
 
         artists = self.artists_dao.artists_get(filter)
         return ArtistsGetResult(artists=artists)

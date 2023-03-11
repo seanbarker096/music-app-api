@@ -48,6 +48,10 @@ class ArtistsDAO(object):
             wheres.append("uuid in %s")
             binds.append(filter.uuids)
 
+        if filter.ids:
+            wheres.append("id in %s")
+            binds.append(filter.ids)
+
         where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string

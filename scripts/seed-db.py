@@ -189,13 +189,29 @@ feature = features_mid.feature_create(feature_create_request).feature
 ###################### CREATE ARTISTS ######################
 
 artist_create_request = ArtistCreateRequest(
-    name="Sean Barker",
-    biography="I am a software developer",
-    uuid="asdaskjflkhw",
-    owner_id=user_one.id,
+    name="Eminem",
+    biography="I'm a rapper",
+    uuid="7dGJo4pcD2V6oG8kP0tJRR",
+    owner_id=user_two.id,
+    image_url="https://i.scdn.co/image/ab6761610000f178a00b11c129b27a88fc72f36b",
 )
 
 artist = aritsts_mid.artist_create(artist_create_request).artist
+
+
+# Create a post for him
+
+post_create_request = PostCreateRequest(
+    owner_id=artist.id,
+    owner_type=PostOwnerType.ARTIST.value,
+    content="Eminems first post",
+)
+
+post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post.id, file_id=dog_video_file.id
+)
 
 
 ################### CREATE FEATURES ####################
