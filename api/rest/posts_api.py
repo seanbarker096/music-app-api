@@ -164,10 +164,13 @@ def post_attachments_get():
     )
 
 
-@blueprint.route("/profiles/<int:profile_id>/posts", methods=["GET"])
+@blueprint.route("/profiles/<string:profile_id>/posts", methods=["GET"])
 @auth
-def get_profiles_posts(profile_id: int):
+def get_profiles_posts(profile_id: str):
     """Get all posts for a user. This includes posts they created, posts they are tagged in and posts they have featured in their profile (depending on the filters applied)."""
+
+    # Because profile_id is in the middle of the url, it is a string. We need to convert it to an int
+    profile_id = int(profile_id)
 
     include_tagged = process_bool_request_param("include_tagged")
     include_owned = process_bool_request_param("include_owned")

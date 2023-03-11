@@ -7,12 +7,23 @@ from api.file_service.api import FileService
 from api.file_service.typings.typings import FileCreateRequest
 from api.midlayer.artists_mid import ArtistsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerMixin
+from api.midlayer.tags_mid import TagsMidlayerMixin
 from api.typings.artists import ArtistCreateRequest
-from api.typings.features import FeatureCreateRequest
+from api.typings.features import (
+    FeatureContextType,
+    FeatureCreateRequest,
+    FeatureOwnerType,
+)
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostCreateRequest,
     PostOwnerType,
+)
+from api.typings.tags import (
+    TagCreateRequest,
+    TagCreatorType,
+    TaggedEntityType,
+    TaggedInEntityType,
 )
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
@@ -39,8 +50,10 @@ aritsts_mid = ArtistsMidlayerMixin(config_dict)
 
 file_service = FileService(config_dict)
 
+tags_mid = TagsMidlayerMixin(config_dict)
 
-## Create user
+
+## Create user 1 and their avatar image
 password_hash = hash_password("password")
 request = UserCreateRequest(
     username="sean",
@@ -50,7 +63,7 @@ request = UserCreateRequest(
     password="password",
 )
 
-user = users_dao.user_create(request=request, password_hash=password_hash)
+user_one = users_dao.user_create(request=request, password_hash=password_hash)
 
 
 # Create avatar file
@@ -86,16 +99,30 @@ with open(
 
 
 # set it on the user
-user_update_request = UserUpdateRequest(user.id, avatar_file_uuid=avatar_file_uuid)
+user_update_request = UserUpdateRequest(user_one.id, avatar_file_uuid=avatar_file_uuid)
 
 users_dao.user_update(user_update_request)
 
 
+## Create user 2
+
+password_hash = hash_password("password")
+request = UserCreateRequest(
+    username="tim14",
+    first_name="Tim",
+    second_name="Smith",
+    email="timsmith@sky.com",
+    password="password",
+)
+
+user_two = users_dao.user_create(request=request, password_hash=password_hash)
+
+
 ################### CREATE POSTS ####################
 
-# 1
+# 1 - Post uploaded by the user we created
 post_create_request = PostCreateRequest(
-    owner_id=user.id, owner_type=PostOwnerType.USER.value, content="This is a new post"
+    owner_id=user_one.id, owner_type=PostOwnerType.USER.value, content="This is a new post"
 )
 
 post = posts_dao.post_create(post_create_request)
@@ -104,9 +131,11 @@ post_attachment = post_attachments_dao.post_attachment_create(
     post_id=post.id, file_id=dog_video_file.id
 )
 
-# 2
+# 2 Post uploaded by second user, and tags the first user
 post_create_request = PostCreateRequest(
-    owner_id=user.id, owner_type=PostOwnerType.ARTIST.value, content="This is a second post"
+    owner_id=user_two.id,
+    owner_type=PostOwnerType.USER.value,
+    content="This is a post which user one will be tagged in",
 )
 
 post = posts_dao.post_create(post_create_request)
@@ -115,17 +144,40 @@ post_attachment = post_attachments_dao.post_attachment_create(
     post_id=post.id, file_id=dog_video_file.id
 )
 
-# # 3
-# post_create_request = PostCreateRequest(owner_id=user.id, content="This is a thrid post")
+tag_create_request = TagCreateRequest(
+    tagged_in_entity_id=post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    tagged_entity_type=TaggedEntityType.USER.value,
+    tagged_entity_id=user_one.id,
+    creator_id=user_two.id,
+    creator_type=TagCreatorType.USER.value,
+)
+tag = tags_mid.tag_create(tag_create_request)
 
-# post = posts_dao.post_create(post_create_request)
+# # 3 Post uploaded be second user, featured by first user
+post_create_request = PostCreateRequest(
+    owner_id=user_two.id,
+    owner_type=PostOwnerType.USER.value,
+    content="This is a thrid post which user one will feature on their profile",
+)
 
-# post_attachment = post_attachments_dao.post_attachment_create(
-#     post_id=post.id, file_id=avatar_file.id
-# )
+post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post.id, file_id=avatar_file.id
+)
+
+feature_create_request = FeatureCreateRequest(
+    owner_id=user_one.id,
+    owner_type=FeatureOwnerType.USER.value,
+    context_type=FeatureContextType.POST.value,
+    context_id=post.id,
+)
+
+feature = features_mid.feature_create(feature_create_request).feature
 
 # # 4
-# post_create_request = PostCreateRequest(owner_id=user.id, content="This is a fourth post")
+# post_create_request = PostCreateRequest(owner_id=user_one.id, content="This is a fourth post")
 
 # post = posts_dao.post_create(post_create_request)
 
@@ -140,18 +192,10 @@ artist_create_request = ArtistCreateRequest(
     name="Sean Barker",
     biography="I am a software developer",
     uuid="asdaskjflkhw",
-    owner_id=user.id,
+    owner_id=user_one.id,
 )
 
 artist = aritsts_mid.artist_create(artist_create_request).artist
 
 
 ################### CREATE FEATURES ####################
-
-feature_create_request = FeatureCreateRequest(
-    owner_id=2, owner_type="artist", context_type="post", context_id=post.id
-)
-
-print("artist.id", artist.id)
-
-feature = features_mid.feature_create(feature_create_request).feature

@@ -116,8 +116,8 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
 
         if not isinstance(filter.include_featured, bool):
             raise InvalidArgumentException(
-                f"Invalid value {filter.is_deleted} for argument is_deleted. Must be a valid boolean.",
-                "filter.is_deleted",
+                f"Invalid value {filter.include_featured} for argument include_featured. Must be a valid boolean.",
+                "filter.include_featured",
             )
 
         if not isinstance(filter.include_owned, bool):

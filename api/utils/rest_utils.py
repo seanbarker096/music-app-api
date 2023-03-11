@@ -105,7 +105,9 @@ def process_bool_request_param(parameter_name: str, optional=True) -> bool:
     if not parameter:
         raise Exception(f"Missing required request parameter '{parameter_name}'")
 
-    if parameter not in ["true", "false"]:
+    parameter = parameter.lower() == "true"
+
+    if parameter not in [True, False]:
         raise Exception(
             f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean"
         )
