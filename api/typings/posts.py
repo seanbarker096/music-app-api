@@ -23,6 +23,7 @@ class Post(object):
         owner_id: int,
         owner_type: PostOwnerType,
         content: str,
+        creator_id: int,
         create_time: int,
         update_time: Optional[int] = None,
         is_deleted: Optional[bool] = False,
@@ -30,6 +31,7 @@ class Post(object):
         self.id = id
         self.owner_id = owner_id
         self.owner_type = owner_type
+        self.creator_id = creator_id
         self.content = content
         self.create_time = create_time
         self.is_deleted = is_deleted
@@ -37,16 +39,19 @@ class Post(object):
 
 
 class PostCreateRequest(object):
+    creator_id: int = ...
     owner_id: int = ...
     owner_type: PostOwnerType = ...
     content: str = ...
 
     def __init__(
         self,
+        creator_id: int,
         owner_id: int,
         owner_type: PostOwnerType,
         content: str,
     ):
+        self.creator_id = creator_id
         self.owner_id = owner_id
         self.owner_type = owner_type
         self.content = content

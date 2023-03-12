@@ -15,12 +15,7 @@ from api.typings.posts import (
     PostCreateRequest,
     PostOwnerType,
 )
-from api.typings.tags import (
-    TagCreateRequest,
-    TagCreatorType,
-    TaggedEntityType,
-    TaggedInEntityType,
-)
+from api.typings.tags import TagCreateRequest, TaggedEntityType, TaggedInEntityType
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
 
@@ -118,7 +113,10 @@ user_two = users_dao.user_create(request=request, password_hash=password_hash)
 
 # 1 - Post uploaded by the user we created
 post_create_request = PostCreateRequest(
-    owner_id=user_one.id, owner_type=PostOwnerType.USER.value, content="This is a new post"
+    owner_id=user_one.id,
+    owner_type=PostOwnerType.USER.value,
+    content="This is a new post",
+    creator_id=user_one.id,
 )
 
 post = posts_dao.post_create(post_create_request)
@@ -132,6 +130,7 @@ post_create_request = PostCreateRequest(
     owner_id=user_two.id,
     owner_type=PostOwnerType.USER.value,
     content="This is a post which user one will be tagged in",
+    creator_id=user_two.id,
 )
 
 post = posts_dao.post_create(post_create_request)
@@ -154,6 +153,7 @@ post_create_request = PostCreateRequest(
     owner_id=user_two.id,
     owner_type=PostOwnerType.USER.value,
     content="This is a thrid post which user one will feature on their profile",
+    creator_id=user_two.id,
 )
 
 post = posts_dao.post_create(post_create_request)
@@ -163,10 +163,11 @@ post_attachment = post_attachments_dao.post_attachment_create(
 )
 
 feature_create_request = FeatureCreateRequest(
-    owner_id=user_one.id,
-    owner_type=FeaturerType.USER.value,
-    context_type=FeaturedEntityType.POST.value,
-    context_id=post.id,
+    featured_entity_type=FeaturedEntityType.POST.value,
+    featured_entity_id=post.id,
+    featurer_type=FeaturerType.USER.value,
+    featurer_id=user_one.id,
+    creator_id=user_one.id,
 )
 
 feature = features_mid.feature_create(feature_create_request).feature
@@ -200,6 +201,7 @@ post_create_request = PostCreateRequest(
     owner_id=artist.id,
     owner_type=PostOwnerType.ARTIST.value,
     content="Eminems first post",
+    creator_id=user_two.id,
 )
 
 post = posts_dao.post_create(post_create_request)

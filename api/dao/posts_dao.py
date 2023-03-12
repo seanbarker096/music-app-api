@@ -24,6 +24,7 @@ class PostDBAlias:
     POST_OWNER_ID = "post_owner_id"
     POST_OWNER_TYPE = "post_owner_type"
     POST_CONTENT = "post_content"
+    POST_CREATOR_ID = "post_creator_id"
     POST_CREATE_TIME = "post_create_time"
     POST_UPDATE_TIME = "post_update_time"
     POST_IS_DELETED = "post_is_deleted"
@@ -37,6 +38,7 @@ class PostsDAO(object):
         "owner_id as " + PostDBAlias.POST_OWNER_ID,
         "owner_type as " + PostDBAlias.POST_OWNER_TYPE,
         "content as " + PostDBAlias.POST_CONTENT,
+        "creator_id as " + PostDBAlias.POST_CREATOR_ID,
         "create_time as " + PostDBAlias.POST_CREATE_TIME,
         "update_time as " + PostDBAlias.POST_UPDATE_TIME,
         "is_deleted as " + PostDBAlias.POST_IS_DELETED,
@@ -47,8 +49,8 @@ class PostsDAO(object):
 
     def post_create(self, request: PostCreateRequest) -> Post:
         sql = """
-            INSERT INTO post(owner_id, owner_type, content, create_time, update_time, is_deleted)
-            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
+            INSERT INTO post(owner_id, owner_type, content, creator_id, create_time, update_time, is_deleted)
+            VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
         """
         now = time.time()
 
@@ -56,6 +58,7 @@ class PostsDAO(object):
             request.owner_id,
             request.owner_type,
             request.content,
+            request.creator_id,
             now,
             None,
             0,
@@ -70,6 +73,7 @@ class PostsDAO(object):
             owner_id=request.owner_id,
             owner_type=request.owner_type,
             content=request.content,
+            creator_id=request.creator_id,
             create_time=now,
             update_time=None,
         )
@@ -245,6 +249,9 @@ class PostsDAO(object):
         assert_row_key_exists(db_row, PostDBAlias.POST_CONTENT)
         content = db_row[PostDBAlias.POST_CONTENT]
 
+        assert_row_key_exists(db_row, PostDBAlias.POST_CREATOR_ID)
+        creator_id = int(db_row[PostDBAlias.POST_CREATOR_ID])
+
         assert_row_key_exists(db_row, PostDBAlias.POST_CREATE_TIME)
         create_time = float(date_time_to_unix_time(db_row[PostDBAlias.POST_CREATE_TIME]))
 
@@ -263,6 +270,7 @@ class PostsDAO(object):
             owner_id=owner_id,
             owner_type=owner_type,
             content=content,
+            creator_id=creator_id,
             create_time=create_time,
             update_time=update_time,
             is_deleted=is_deleted,

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from api.typings.tags import TagCreatorType, TaggedEntityType, TaggedInEntityType
+from api.typings.tags import TaggedEntityType, TaggedInEntityType
 
 
 class TagFixtureDTO:

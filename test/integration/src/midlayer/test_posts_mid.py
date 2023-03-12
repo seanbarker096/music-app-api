@@ -22,7 +22,7 @@ from api.typings.posts import (
     ProfilePostsGetFilter,
     ProfileType,
 )
-from api.typings.tags import TagCreatorType, TaggedEntityType, TaggedInEntityType
+from api.typings.tags import TaggedEntityType, TaggedInEntityType
 
 
 class PostsMidIntegrationTest(IntegrationTestCase):
@@ -36,7 +36,10 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         post_mid = PostsMidlayerMixin(config=self.config)
 
         request = PostCreateRequest(
-            owner_id=555, owner_type=PostOwnerType.USER.value, content="A test post"
+            owner_id=555,
+            owner_type=PostOwnerType.USER.value,
+            content="A test post",
+            creator_id=555,
         )
 
         post = post_mid.post_create(request).post
@@ -56,6 +59,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="My great post",
             create_time=self.current_time,
+            creator_id=555,
         )
 
         post_id = self.fixture_factory.post_fixture_create(post_dto)
@@ -83,6 +87,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.ARTIST.value,
             content="User 555 created this post",
             create_time=self.current_time,
+            creator_id=requesting_profile_id,
         )
 
         owned_post_id = self.fixture_factory.post_fixture_create(owned_post)
@@ -92,6 +97,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="User 555 will not be tagged in this post",
             create_time=self.current_time + 1000,
+            creator_id=32,
         )
 
         tagged_post_id = self.fixture_factory.post_fixture_create(tagged_post)
@@ -101,6 +107,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="User 555 feature this post in their profile",
             create_time=self.current_time + 2000,
+            creator_id=32,
         )
 
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)
@@ -162,6 +169,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.ARTIST.value,
             content="User 555 created this post",
             create_time=self.current_time,
+            creator_id=323,  # mock the user id of the person who owns the artist profile
         )
 
         owned_post_id = self.fixture_factory.post_fixture_create(owned_post)
@@ -171,6 +179,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="User 555 will not be tagged in this post",
             create_time=self.current_time + 1000,
+            creator_id=other_user_id,
         )
 
         tagged_post_id = self.fixture_factory.post_fixture_create(tagged_post)
@@ -180,6 +189,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="User 555 will not feature this post in their profile",
             create_time=self.current_time + 2000,
+            creator_id=other_user_id,
         )
 
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)
@@ -231,6 +241,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="Some other user created this post",
             create_time=self.current_time,
+            creator_id=other_user_id,
         )
 
         owned_post_id = self.fixture_factory.post_fixture_create(owned_post)
@@ -240,6 +251,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="User 555 will be tagged in this post",
             create_time=self.current_time + 1000,
+            creator_id=32,
         )
 
         tagged_post_id = self.fixture_factory.post_fixture_create(tagged_post)
@@ -249,6 +261,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="User 555 will not feature this post in their profile",
             create_time=self.current_time + 2000,
+            creator_id=32,
         )
 
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)
@@ -300,6 +313,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="Some other user created this post",
             create_time=self.current_time,
+            creator_id=other_user_id,
         )
 
         self.fixture_factory.post_fixture_create(owned_post)
@@ -309,6 +323,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="Some other user will be tagged in this post",
             create_time=self.current_time + 1000,
+            creator_id=32,
         )
 
         tagged_post_id = self.fixture_factory.post_fixture_create(tagged_post)
@@ -318,6 +333,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             owner_type=PostOwnerType.USER.value,
             content="User 555 will not feature this post in their profile",
             create_time=self.current_time + 2000,
+            creator_id=32,
         )
 
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)

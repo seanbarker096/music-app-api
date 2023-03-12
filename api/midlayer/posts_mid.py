@@ -38,6 +38,11 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
         super().__init__(config, conns)
 
     def post_create(self, request: PostCreateRequest) -> PostCreateResult:
+        if not request.creator_id or not isinstance(request.creator_id, int):
+            raise InvalidArgumentException(
+                f"Invalid value {request.creator_id} for argument creator_id", "creator_id"
+            )
+
         if not request.owner_id or not isinstance(request.owner_id, int):
             raise InvalidArgumentException(
                 f"Invalid value {request.owner_id} for argument owner_id", "owner_id"

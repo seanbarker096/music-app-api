@@ -6,7 +6,6 @@ from api.midlayer import BaseMidlayerMixin
 from api.typings.tags import (
     TagCreateRequest,
     TagCreateResult,
-    TagCreatorType,
     TaggedEntityType,
     TaggedInEntityType,
     TagsGetFilter,

@@ -9,6 +9,7 @@ class PostFixtureDTO(object):
         self,
         owner_id: int,
         owner_type: PostOwnerType,
+        creator_id: int,
         content: Optional[str] = "A test",
         create_time: Optional[int] = None,
         update_time: Optional[int] = None,
@@ -17,12 +18,16 @@ class PostFixtureDTO(object):
         self.content = content
         self.owner_id = owner_id
         self.owner_type = owner_type
+        self.creator_id = creator_id
         self.create_time = create_time if create_time else time.time()
         self.update_time = update_time
         self.is_deleted = is_deleted
 
     def get_content(self) -> str:
         return self.content
+
+    def get_creator_id(self) -> int:
+        return self.creator_id
 
     def get_owner_id(self) -> int:
         return self.owner_id

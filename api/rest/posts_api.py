@@ -32,10 +32,13 @@ auth = rest_utils.auth
 def post_create():
     data = flask.request.json
 
+    creator_id = int(flask.g.auth_user.user_id)
+
     post_create_request = PostCreateRequest(
         owner_id=data.get("owner_id", None),
         owner_type=data.get("owner_type", None),
         content=data.get("content", None),
+        creator_id=creator_id,
     )
 
     post_result = flask.current_app.conns.midlayer.post_create(post_create_request)

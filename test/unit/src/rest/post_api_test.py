@@ -1,8 +1,10 @@
+import json as JSON
 import time
 from test.test_utils import set_up_patches
 from test.unit.src.rest.base import APITestCase
 from unittest.mock import Mock
 
+from api.authentication_service.typings import AuthUser, AuthUserRole
 from api.typings.posts import (
     Post,
     PostAttachment,
@@ -29,85 +31,94 @@ class PostAPITestCase(APITestCase):
 
 class PostApiTest(PostAPITestCase):
     def test_post_create(self):
-        now = time.time()
+        with self.app_context as app_context:
 
-        json = {
-            "content": "This is a test post!",
-            "owner_id": 555,
-            "owner_type": "user",
-        }
+            now = time.time()
 
-        post = Post(
-            id=123,
-            create_time=now,
-            update_time=None,
-            owner_id=555,
-            owner_type=PostOwnerType.USER.value,
-            content="This is a test post!",
-        )
+            json = {
+                "content": "This is a test post!",
+                "owner_id": 555,
+                "owner_type": "user",
+            }
 
-        expected_response = PostCreateResult(post=post)
+            post = Post(
+                id=123,
+                create_time=now,
+                update_time=None,
+                owner_id=555,
+                owner_type=PostOwnerType.USER.value,
+                creator_id=555,
+                content="This is a test post!",
+            )
 
-        self.app.conns.midlayer = Mock()
-        self.app.conns.midlayer.post_create = Mock(return_value=expected_response)
+            app_context.g.auth_user = AuthUser(user_id=555, role=AuthUserRole.USER.value)
 
-        response = self.test_client.post("/posts/", json=json)
+            expected_response = PostCreateResult(post=post)
 
-        response_dict = {}
-        response_dict["post"] = vars(expected_response.post)
-        response_dict["attachments"] = []
+            self.app.conns.midlayer = Mock()
+            self.app.conns.midlayer.post_create = Mock(return_value=expected_response)
 
-        self.assertEqual(response.status_code, 200, "Should return 200 status code")
-        self.assertEqual(response.json, response_dict, "Should return the correct post")
+            response = self.test_client.post("/posts/", json=json)
+
+            response_dict = {}
+            response_dict["post"] = vars(expected_response.post)
+            response_dict["attachments"] = []
+
+            self.assertEqual(response.status_code, 200, "Should return 200 status code")
+            self.assertEqual(response.json, response_dict, "Should return the correct post")
 
     def test_post_create_with_attachment(self):
-        now = time.time()
+        with self.app_context as app_context:
+            now = time.time()
 
-        json = {
-            "content": "This is a test post!",
-            "owner_id": 555,
-            "owner_type": "user",
-            "attachment_file_ids": [888],
-        }
+            json = {
+                "content": "This is a test post!",
+                "owner_id": 555,
+                "owner_type": "user",
+                "attachment_file_ids": [888],
+            }
 
-        post = Post(
-            id=123,
-            create_time=now,
-            update_time=None,
-            owner_id=555,
-            owner_type=PostOwnerType.USER.value,
-            content="This is a test post!",
-        )
+            post = Post(
+                id=123,
+                create_time=now,
+                update_time=None,
+                owner_id=555,
+                owner_type=PostOwnerType.USER.value,
+                content="This is a test post!",
+                creator_id=555,
+            )
 
-        post_attachments = [
-            PostAttachment(id=456, post_id=123, file_id=888, create_time=now),
-        ]
+            app_context.g.auth_user = AuthUser(user_id=555, role=AuthUserRole.USER.value)
 
-        expected_post_create_response = PostCreateResult(post=post)
-        expected_post_attachments_create_response = PostAttachmentsCreateResult(
-            post_attachments=post_attachments
-        )
+            post_attachments = [
+                PostAttachment(id=456, post_id=123, file_id=888, create_time=now),
+            ]
 
-        self.app.conns.midlayer = Mock()
-        self.app.conns.midlayer.post_create = Mock(return_value=expected_post_create_response)
+            expected_post_create_response = PostCreateResult(post=post)
+            expected_post_attachments_create_response = PostAttachmentsCreateResult(
+                post_attachments=post_attachments
+            )
 
-        self.app.conns.midlayer.post_attachments_create = Mock(
-            return_value=expected_post_attachments_create_response
-        )
+            self.app.conns.midlayer = Mock()
+            self.app.conns.midlayer.post_create = Mock(return_value=expected_post_create_response)
 
-        response = self.test_client.post("/posts/", json=json)
+            self.app.conns.midlayer.post_attachments_create = Mock(
+                return_value=expected_post_attachments_create_response
+            )
 
-        response_dict = {}
-        response_dict["post"] = vars(expected_post_create_response.post)
+            response = self.test_client.post("/posts/", json=json)
 
-        attachment_dicts = []
-        for attachment in expected_post_attachments_create_response.post_attachments:
-            attachment_dicts.append(vars(attachment))
+            response_dict = {}
+            response_dict["post"] = vars(expected_post_create_response.post)
 
-        response_dict["attachments"] = attachment_dicts
+            attachment_dicts = []
+            for attachment in expected_post_attachments_create_response.post_attachments:
+                attachment_dicts.append(vars(attachment))
 
-        self.assertEqual(response.status_code, 200, "Should return 200 status code")
-        self.assertEqual(response.json, response_dict, "Should return the correct post")
+            response_dict["attachments"] = attachment_dicts
+
+            self.assertEqual(response.status_code, 200, "Should return 200 status code")
+            self.assertEqual(response.json, response_dict, "Should return the correct post")
 
     def test_post_get_by_id_without_attachments(self):
         now = time.time()
@@ -117,6 +128,7 @@ class PostApiTest(PostAPITestCase):
             id=123,
             owner_id=222,
             owner_type=PostOwnerType.USER.value,
+            creator_id=222,
             content="Just a test post!",
             create_time=now,
             update_time=None,
@@ -157,6 +169,7 @@ class PostApiTest(PostAPITestCase):
             owner_id=555,
             owner_type=PostOwnerType.USER.value,
             content="My great test post",
+            creator_id=555,
             create_time=now,
         )
         expected_post_attachment = PostAttachment(id=111, post_id=123, file_id=888, create_time=now)

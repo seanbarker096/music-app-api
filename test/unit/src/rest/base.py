@@ -39,4 +39,6 @@ class APITestCase(TestCase):
 
         self.test_client = self.app.test_client()
 
+        self.app_context = self.app.app_context()
+
         super().setUp()

@@ -6,6 +6,7 @@ CREATE TABLE gigs.post (
     owner_id int(10) unsigned NOT NULL,
     owner_type enum('user', 'artist') NOT NULL,
     content text NULL,
+    creator_id int(10) unsigned NOT NULL,
     create_time datetime NOT NULL,
     update_time datetime DEFAULT NULL,
     is_deleted tinyint(1) NOT NULL DEFAULT 0,

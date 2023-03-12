@@ -18,14 +18,15 @@ class FixtureFactory:
             dto.get_owner_id(),
             dto.get_owner_type(),
             dto.get_content(),
+            dto.get_creator_id(),
             dto.get_create_time(),
             dto.get_update_time(),
             dto.get_is_deleted(),
         )
 
         sql = """
-                INSERT INTO post(owner_id, owner_type, content, create_time, update_time, is_deleted)
-                VALUES(%s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
+                INSERT INTO post(owner_id, owner_type, content, creator_id, create_time, update_time, is_deleted)
+                VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
             """
 
         db_result = self.db.run_query(sql, binds)
