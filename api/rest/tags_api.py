@@ -23,7 +23,6 @@ def tag_create():
     tagged_in_entity_id = data.get("tagged_in_entity_id", None)
     tagged_entity_type = data.get("tagged_entity_type", None)
     tagged_entity_id = data.get("tagged_entity_id", None)
-    creator_type = data.get("creator_type", None)
     creator_id = data.get("creator_id", None)
 
     if (
@@ -31,7 +30,6 @@ def tag_create():
         or not tagged_in_entity_id
         or not tagged_entity_type
         or not tagged_entity_id
-        or not creator_type
         or not creator_id
     ):
         raise InvalidArgumentException("Missing required field in request", json.dumps(data))
@@ -41,7 +39,6 @@ def tag_create():
         tagged_in_entity_id=tagged_in_entity_id,
         tagged_entity_type=tagged_entity_type,
         tagged_entity_id=tagged_entity_id,
-        creator_type=creator_type,
         creator_id=creator_id,
     )
 

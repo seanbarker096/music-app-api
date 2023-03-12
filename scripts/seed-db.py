@@ -146,7 +146,6 @@ tag_create_request = TagCreateRequest(
     tagged_entity_type=TaggedEntityType.USER.value,
     tagged_entity_id=user_one.id,
     creator_id=user_two.id,
-    creator_type=TagCreatorType.USER.value,
 )
 tag = tags_mid.tag_create(tag_create_request)
 

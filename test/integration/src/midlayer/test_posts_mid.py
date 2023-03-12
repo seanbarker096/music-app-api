@@ -121,7 +121,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
-            creator_type=TagCreatorType.USER.value,
         )
 
         self.fixture_factory.tag_fixture_create(tag_dto)
@@ -201,7 +200,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
-            creator_type=TagCreatorType.USER.value,
         )
 
         self.fixture_factory.tag_fixture_create(tag_dto)
@@ -271,7 +269,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
-            creator_type=TagCreatorType.USER.value,
         )
 
         self.fixture_factory.tag_fixture_create(tag_dto)
@@ -341,7 +338,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
-            creator_type=TagCreatorType.USER.value,
         )
 
         self.fixture_factory.tag_fixture_create(tag_dto)

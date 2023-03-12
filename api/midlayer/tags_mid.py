@@ -67,14 +67,6 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
                 "request.tagged_entity_id",
             )
 
-        if not isinstance(request.creator_type, str) or request.creator_type not in set(
-            item.value for item in TagCreatorType
-        ):
-            raise InvalidArgumentException(
-                f"Invalid argument creator_type. Request: {json.dumps(vars(request))}",
-                "request.creator_type",
-            )
-
         if not isinstance(request.creator_id, int) or not request.creator_id:
             raise InvalidArgumentException(
                 f"Invalid argument creator_id. Request: {json.dumps(vars(request))}",

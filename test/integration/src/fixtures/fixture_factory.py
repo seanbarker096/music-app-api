@@ -49,7 +49,7 @@ class FixtureFactory:
 
     def tag_fixture_create(self, dto: TagFixtureDTO) -> int:
         sql = """
-            INSERT INTO tag(tagged_in_entity_type, tagged_in_entity_id, tagged_entity_type, tagged_entity_id, creator_type, creator_id) VALUES(%s, %s, %s, %s, %s, %s)
+            INSERT INTO tag(tagged_in_entity_type, tagged_in_entity_id, tagged_entity_type, tagged_entity_id, creator_id) VALUES(%s, %s, %s, %s, %s)
         """
 
         binds = (
@@ -57,7 +57,6 @@ class FixtureFactory:
             dto.get_tagged_in_entity_id(),
             dto.get_tagged_entity_type(),
             dto.get_tagged_entity_id(),
-            dto.get_creator_type(),
             dto.get_creator_id(),
         )
 

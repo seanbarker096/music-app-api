@@ -12,18 +12,13 @@ class TaggedInEntityType(Enum):
     POST = "post"
 
 
-class TagCreatorType(Enum):
-    USER = "user"
-
-
 class Tag:
     id: int = ...
     tagged_entity_type: TaggedEntityType = ...
     tagged_entity_id: int = ...
     tagged_in_entity_type: TaggedInEntityType = ...
     tagged_in_entity_id: int = ...
-    creator_type: TagCreatorType = ...
-    creator_id: int = ...
+    creator_id: int = ...  # The user who created the tag object
 
     def __init__(
         self,
@@ -32,7 +27,6 @@ class Tag:
         tagged_entity_id: int,
         tagged_in_entity_type: TaggedInEntityType,
         tagged_in_entity_id: int,
-        creator_type: TagCreatorType,
         creator_id: int,
     ) -> None:
         self.id = id
@@ -40,7 +34,6 @@ class Tag:
         self.tagged_entity_id = tagged_entity_id
         self.tagged_in_entity_type = tagged_in_entity_type
         self.tagged_in_entity_id = tagged_in_entity_id
-        self.creator_type = creator_type
         self.creator_id = creator_id
 
 
@@ -49,7 +42,6 @@ class TagCreateRequest:
     tagged_entity_id: int = ...
     tagged_in_entity_type: TaggedInEntityType = ...
     tagged_in_entity_id: int = ...
-    creator_type: TagCreatorType = ...
     creator_id: int = ...
 
     def __init__(
@@ -58,14 +50,12 @@ class TagCreateRequest:
         tagged_entity_id: int,
         tagged_in_entity_type: TaggedInEntityType,
         tagged_in_entity_id: int,
-        creator_type: TagCreatorType,
         creator_id: int,
     ) -> None:
         self.tagged_entity_type = tagged_entity_type
         self.tagged_entity_id = tagged_entity_id
         self.tagged_in_entity_type = tagged_in_entity_type
         self.tagged_in_entity_id = tagged_in_entity_id
-        self.creator_type = creator_type
         self.creator_id = creator_id
 
 
