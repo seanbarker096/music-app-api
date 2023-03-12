@@ -2,54 +2,57 @@ from enum import Enum
 from typing import List, Optional
 
 
-class FeatureOwnerType(Enum):
+class FeaturerType(Enum):
     USER = "user"
     ARTIST = "artist"
 
 
-class FeatureContextType(Enum):
+class FeaturedEntityType(Enum):
     POST = "post"
 
 
 class Feature:
     id: int = ...
-    context_type: FeatureContextType = ...
-    context_id: int = ...
-    owner_type: FeatureOwnerType = ...
-    owner_id: int = ...
+    featured_entity_type: FeaturedEntityType = ...  # The object that has been featured. E.g. a post
+    featured_entity_id: int = ...
+    featurer_type: FeaturerType  # The object which has featured the featured entity. E.g. a artist, or a user
+    featurer_id: int
+    creator_id: int  # The auth user who created the feature object
 
     def __init__(
         self,
         id: int,
-        context_type: str,
-        context_id: int,
-        owner_type: str,
-        owner_id: int,
+        featured_entity_type: FeaturedEntityType,
+        featured_entity_id: int,
+        featurer_type: FeaturerType,
+        featurer_id: int,
+        creator_id: int,
     ):
         self.id = id
-        self.context_type = context_type
-        self.context_id = context_id
-        self.owner_type = owner_type
-        self.owner_id = owner_id
+        self.featured_entity_type = featured_entity_type
+        self.featured_entity_id = featured_entity_id
+        self.featurer_type = featurer_type
+        self.featurer_id = featurer_id
+        self.creator_id = creator_id
 
 
 class FeaturesGetFilter:
-    context_type: Optional[FeatureContextType] = ...
-    context_id: Optional[int] = ...
-    owner_type: Optional[FeatureOwnerType] = ...
-    owner_id: Optional[int] = ...
+    featured_entity_type: Optional[FeaturedEntityType] = ...
+    featured_entity_id: Optional[int] = ...
+    featurer_type: Optional[FeaturerType] = ...
+    featurer_id: Optional[int] = ...
 
     def __init__(
         self,
-        context_type: Optional[str] = None,
-        context_id: Optional[int] = None,
-        owner_type: Optional[str] = None,
-        owner_id: Optional[int] = None,
+        featured_entity_type: Optional[str] = None,
+        featured_entity_id: Optional[int] = None,
+        featurer_type: Optional[str] = None,
+        featurer_id: Optional[int] = None,
     ):
-        self.context_type = context_type
-        self.context_id = context_id
-        self.owner_type = owner_type
-        self.owner_id = owner_id
+        self.featured_entity_type = featured_entity_type
+        self.featured_entity_id = featured_entity_id
+        self.featurer_type = featurer_type
+        self.featurer_id = featurer_id
 
 
 class FeaturesGetResult:
@@ -60,22 +63,25 @@ class FeaturesGetResult:
 
 
 class FeatureCreateRequest:
-    context_type: FeatureContextType = ...
-    context_id: int = ...
-    owner_type: FeatureOwnerType = ...
-    owner_id: int = ...
+    featured_entity_type: FeaturedEntityType = ...
+    featured_entity_id: int = ...
+    featurer_type: FeaturerType = ...
+    featurer_id: int = ...
+    creator_id: int = ...
 
     def __init__(
         self,
-        context_type: str,
-        context_id: int,
-        owner_type: str,
-        owner_id: int,
+        featured_entity_type: str,
+        featured_entity_id: int,
+        featurer_type: str,
+        featurer_id: int,
+        creator_id: int,
     ):
-        self.context_type = context_type
-        self.context_id = context_id
-        self.owner_type = owner_type
-        self.owner_id = owner_id
+        self.featured_entity_type = featured_entity_type
+        self.featured_entity_id = featured_entity_id
+        self.featurer_type = featurer_type
+        self.featurer_id = featurer_id
+        self.creator_id = creator_id
 
 
 class FeatureCreateResult:

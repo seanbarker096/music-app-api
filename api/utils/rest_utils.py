@@ -179,7 +179,7 @@ def auth(func):
             try:
                 decoded_token = flask.current_app.conns.auth_service.validate_token(auth_token)
                 auth_user = build_auth_user_from_token_payload(decoded_token)
-                flask.g.req_user = auth_user
+                flask.g.auth_user = auth_user
                 ## If auth token valid return
                 return func(*args, **kwargs)
 
@@ -199,7 +199,7 @@ def auth(func):
             decoded_token = flask.current_app.conns.auth_service.validate_token(refresh_token)
 
             auth_user = build_auth_user_from_token_payload(decoded_token)
-            flask.g.req_user = auth_user
+            flask.g.auth_user = auth_user
 
             new_auth_token = flask.current_app.conns.auth_service.create_token(
                 auth_user=auth_user,

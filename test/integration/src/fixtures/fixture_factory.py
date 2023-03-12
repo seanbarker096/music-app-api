@@ -67,15 +67,16 @@ class FixtureFactory:
 
     def feature_fixture_create(self, dto: FeatureFixtureDTO) -> int:
         sql = """
-            INSERT INTO feature(context_type, context_id, owner_type, owner_id)
-            VALUES(%s, %s, %s, %s)
+            INSERT INTO feature(featured_entity_type, featured_entity_id, featurer_type, featurer_id, creator_id)
+            VALUES(%s, %s, %s, %s, %s)
         """
 
         binds = (
-            dto.get_context_type(),
-            dto.get_context_id(),
-            dto.get_owner_type(),
-            dto.get_owner_id(),
+            dto.get_featured_entity_type(),
+            dto.get_featured_entity_id(),
+            dto.get_featurer_type(),
+            dto.get_featurer_id(),
+            dto.get_creator_id(),
         )
 
         db_result = self.db.run_query(sql, binds)

@@ -15,24 +15,24 @@ def features_get():
     data = flask.request.values
     print(data)
 
-    owner_type = data.get("owner_type", None, str)
+    featurer_type = data.get("featurer_type", None, str)
 
-    owner_id = data.get("owner_id", None, int)
+    featurer_id = data.get("featurer_id", None, int)
 
-    if not owner_id and not owner_type:
+    if not featurer_id and not featurer_type:
         raise InvalidArgumentException("Must provide at least one filter field", json.dumps(data))
 
-    if owner_type and (not isinstance(owner_type, str) or owner_type == ""):
+    if featurer_type and (not isinstance(featurer_type, str) or featurer_type == ""):
         raise InvalidArgumentException(
-            "Invalid request. owner_type must be a valid string", owner_type
+            "Invalid request. featurer_type must be a valid string", featurer_type
         )
 
-    if owner_id and not isinstance(owner_id, int):
+    if featurer_id and not isinstance(featurer_id, int):
         raise InvalidArgumentException(
-            "Invalid request. owner_id must be a valid integer", owner_id
+            "Invalid request. featurer_id must be a valid integer", featurer_id
         )
 
-    features_get_filter = FeaturesGetFilter(owner_type=owner_type, owner_id=owner_id)
+    features_get_filter = FeaturesGetFilter(featurer_type=featurer_type, featurer_id=featurer_id)
 
     features = flask.current_app.conns.midlayer.features_get(features_get_filter).features
 
@@ -47,23 +47,27 @@ def features_get():
 
 
 @blueprint.route("/features/", methods=["POST"])
+@auth
 def feature_create():
 
     data = flask.request.get_json()
 
-    context_type = data.get("context_type", None)
-    context_id = data.get("context_id", None)
-    owner_type = data.get("owner_type", None)
-    owner_id = data.get("owner_id", None)
+    featured_entity_type = data.get("featured_entity_type", None)
+    featured_entity_id = data.get("featured_entity_id", None)
+    featurer_type = data.get("featurer_type", None)
+    featurer_id = data.get("featurer_id", None)
 
-    if not context_type or not context_id or not owner_type or not owner_id:
+    if not featured_entity_type or not featured_entity_id or not featurer_type or not featurer_id:
         raise InvalidArgumentException("Missing required field in request", json.dumps(data))
 
+    creator_id = int(flask.g.auth_user.user_id)
+
     feature_create_request = FeatureCreateRequest(
-        context_type=context_type,
-        context_id=context_id,
-        owner_type=owner_type,
-        owner_id=owner_id,
+        featured_entity_type=featured_entity_type,
+        featured_entity_id=featured_entity_id,
+        featurer_type=featurer_type,
+        featurer_id=featurer_id,
+        creator_id=creator_id,
     )
 
     feature = flask.current_app.conns.midlayer.feature_create(feature_create_request).feature

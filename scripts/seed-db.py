@@ -9,11 +9,7 @@ from api.midlayer.artists_mid import ArtistsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerMixin
 from api.midlayer.tags_mid import TagsMidlayerMixin
 from api.typings.artists import ArtistCreateRequest
-from api.typings.features import (
-    FeatureContextType,
-    FeatureCreateRequest,
-    FeatureOwnerType,
-)
+from api.typings.features import FeatureCreateRequest, FeaturedEntityType, FeaturerType
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostCreateRequest,
@@ -169,8 +165,8 @@ post_attachment = post_attachments_dao.post_attachment_create(
 
 feature_create_request = FeatureCreateRequest(
     owner_id=user_one.id,
-    owner_type=FeatureOwnerType.USER.value,
-    context_type=FeatureContextType.POST.value,
+    owner_type=FeaturerType.USER.value,
+    context_type=FeaturedEntityType.POST.value,
     context_id=post.id,
 )
 

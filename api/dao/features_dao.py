@@ -7,10 +7,11 @@ from api.typings.features import Feature, FeatureCreateRequest, FeaturesGetFilte
 
 class FeaturesDBAlias:
     FEATURE_ID = "feature_id"
-    FEATURE_CONTEXT_TYPE = "feature_context_type"
-    FEATURE_CONTEXT_ID = "feature_context_id"
-    FEATURE_OWNER_TYPE = "feature_owner_type"
-    FEATURE_OWNER_ID = "feature_owner_id"
+    FEATURE_FEATURED_ENTITY_TYPE = "feature_featured_entity_type"
+    FEATURE_FEATURED_ENTITY_ID = "feature_featured_entity_id"
+    FEATURE_FEATURER_TYPE = "feature_featurer_type"
+    FEATURE_FEATURER_ID = "feature_featurer_id"
+    FEATURE_CREATOR_ID = "feature_creator_id"
 
 
 class FeaturesDAO:
@@ -18,10 +19,11 @@ class FeaturesDAO:
 
     FEATURE_SELECTS = [
         "id as " + FeaturesDBAlias.FEATURE_ID,
-        "context_type as " + FeaturesDBAlias.FEATURE_CONTEXT_TYPE,
-        "context_id as " + FeaturesDBAlias.FEATURE_CONTEXT_ID,
-        "owner_type as " + FeaturesDBAlias.FEATURE_OWNER_TYPE,
-        "owner_id as " + FeaturesDBAlias.FEATURE_OWNER_ID,
+        "featured_entity_type as " + FeaturesDBAlias.FEATURE_FEATURED_ENTITY_TYPE,
+        "featured_entity_id as " + FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID,
+        "featurer_type as " + FeaturesDBAlias.FEATURE_FEATURER_TYPE,
+        "featurer_id as " + FeaturesDBAlias.FEATURE_FEATURER_ID,
+        "creator_id as " + FeaturesDBAlias.FEATURE_CREATOR_ID,
     ]
 
     def __init__(self, config, db: Optional[DB] = None):
@@ -29,15 +31,16 @@ class FeaturesDAO:
 
     def feature_create(self, request: FeatureCreateRequest) -> Feature:
         sql = """
-            INSERT INTO feature(context_type, context_id, owner_type, owner_id)
-            VALUES(%s, %s, %s, %s)
+            INSERT INTO feature(featured_entity_type, featured_entity_id, featurer_type, featurer_id, creator_id)
+            VALUES(%s, %s, %s, %s, %s)
         """
 
         binds = (
-            request.context_type,
-            request.context_id,
-            request.owner_type,
-            request.owner_id,
+            request.featured_entity_type,
+            request.featured_entity_id,
+            request.featurer_type,
+            request.featurer_id,
+            request.creator_id,
         )
 
         db_result = self.db.run_query(sql, binds)
@@ -46,10 +49,11 @@ class FeaturesDAO:
 
         return Feature(
             id=feature_id,
-            context_type=request.context_type,
-            context_id=request.context_id,
-            owner_type=request.owner_type,
-            owner_id=request.owner_id,
+            featured_entity_type=request.featured_entity_type,
+            featured_entity_id=request.featured_entity_id,
+            featurer_type=request.featurer_type,
+            featurer_id=request.featurer_id,
+            creator_id=request.creator_id,
         )
 
     def features_get(self, filter: FeaturesGetFilter) -> List[Feature]:
@@ -60,21 +64,21 @@ class FeaturesDAO:
         wheres = []
         binds = []
 
-        if filter.context_id:
-            wheres.append("context_id = %s")
-            binds.append(int(filter.context_id))
+        if filter.featured_entity_id:
+            wheres.append("featured_entity_id = %s")
+            binds.append(int(filter.featured_entity_id))
 
-        if filter.context_type:
-            wheres.append("context_type = %s")
-            binds.append(filter.context_type)
+        if filter.featured_entity_type:
+            wheres.append("featured_entity_type = %s")
+            binds.append(filter.featured_entity_type)
 
-        if filter.owner_id:
-            wheres.append("owner_id = %s")
-            binds.append(int(filter.owner_id))
+        if filter.featurer_id:
+            wheres.append("featurer_id = %s")
+            binds.append(int(filter.featurer_id))
 
-        if filter.owner_type:
-            wheres.append("owner_type = %s")
-            binds.append(filter.owner_type)
+        if filter.featurer_type:
+            wheres.append("featurer_type = %s")
+            binds.append(filter.featurer_type)
 
         where_string = build_where_query_string(wheres, "AND")
 
@@ -96,22 +100,26 @@ class FeaturesDAO:
         assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_ID)
         feature_id = int(db_row[FeaturesDBAlias.FEATURE_ID])
 
-        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_CONTEXT_TYPE)
-        feature_context_type = db_row[FeaturesDBAlias.FEATURE_CONTEXT_TYPE]
+        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_FEATURED_ENTITY_TYPE)
+        feature_featured_entity_type = db_row[FeaturesDBAlias.FEATURE_FEATURED_ENTITY_TYPE]
 
-        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_CONTEXT_ID)
-        feature_context_id = int(db_row[FeaturesDBAlias.FEATURE_CONTEXT_ID])
+        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID)
+        feature_featured_entity_id = int(db_row[FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID])
 
-        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_OWNER_TYPE)
-        feature_owner_type = db_row[FeaturesDBAlias.FEATURE_OWNER_TYPE]
+        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_FEATURER_TYPE)
+        feature_featurer_type = db_row[FeaturesDBAlias.FEATURE_FEATURER_TYPE]
 
-        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_OWNER_ID)
-        feature_owner_id = int(db_row[FeaturesDBAlias.FEATURE_OWNER_ID])
+        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_FEATURER_ID)
+        feature_featurer_id = int(db_row[FeaturesDBAlias.FEATURE_FEATURER_ID])
+
+        assert_row_key_exists(db_row, FeaturesDBAlias.FEATURE_CREATOR_ID)
+        feature_creator_id = int(db_row[FeaturesDBAlias.FEATURE_CREATOR_ID])
 
         return Feature(
             id=feature_id,
-            context_type=feature_context_type,
-            context_id=feature_context_id,
-            owner_type=feature_owner_type,
-            owner_id=feature_owner_id,
+            featured_entity_type=feature_featured_entity_type,
+            featured_entity_id=feature_featured_entity_id,
+            featurer_type=feature_featurer_type,
+            featurer_id=feature_featurer_id,
+            creator_id=feature_creator_id,
         )

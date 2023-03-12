@@ -1,27 +1,32 @@
-from api.typings.features import FeatureContextType, FeatureOwnerType
+from api.typings.features import FeaturedEntityType, FeaturerType
 
 
 class FeatureFixtureDTO:
     def __init__(
         self,
-        context_type: FeatureContextType,
-        context_id: int,
-        owner_type: FeatureOwnerType,
-        owner_id: int,
+        featured_entity_type: FeaturedEntityType,
+        featured_entity_id: int,
+        featurer_type: FeaturerType,
+        featurer_id: int,
+        creator_id: int,
     ):
-        self.context_type = context_type
-        self.context_id = context_id
-        self.owner_type = owner_type
-        self.owner_id = owner_id
+        self.featured_entity_type = featured_entity_type
+        self.featured_entity_id = featured_entity_id
+        self.featurer_type = featurer_type
+        self.featurer_id = featurer_id
+        self.creator_id = creator_id
 
-    def get_context_type(self) -> str:
-        return self.context_type
+    def get_featured_entity_type(self) -> str:
+        return self.featured_entity_type
 
-    def get_context_id(self) -> int:
-        return self.context_id
+    def get_featured_entity_id(self) -> int:
+        return self.featured_entity_id
 
-    def get_owner_type(self) -> str:
-        return self.owner_type
+    def get_featurer_type(self) -> str:
+        return self.featurer_type
 
-    def get_owner_id(self) -> int:
-        return self.owner_id
+    def get_featurer_id(self) -> int:
+        return self.featurer_id
+
+    def get_creator_id(self) -> int:
+        return self.creator_id

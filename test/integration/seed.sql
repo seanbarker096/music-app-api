@@ -88,12 +88,13 @@ CREATE TABLE gigs.artists (
 DROP TABLE IF EXISTS gigs.feature;
 CREATE TABLE gigs.feature (
   id int(10) unsigned auto_increment,
-  context_type varchar(60) NOT NULL,
-  context_id int(10) unsigned NOT NULL,
-  owner_type varchar(60) NOT NULL,
-  owner_id int(10) unsigned NOT NULL,
+  featured_entity_type varchar(60) NOT NULL,
+  featured_entity_id int(10) unsigned NOT NULL,
+  featurer_type varchar(60) NOT NULL,
+  featurer_id int(10) unsigned NOT NULL,
+  creator_id int(10) unsigned NOT NULL,
   PRIMARY KEY (id),
-  INDEX owner_type_owner_id_context_id_idx(owner_type, owner_id, context_id)
+  INDEX ft_type_ft_id_ftured_entity_type_ftured_entity_id_idx(featurer_type, featurer_id, featured_entity_type, featured_entity_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 

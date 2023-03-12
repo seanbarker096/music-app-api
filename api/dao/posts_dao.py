@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
-from api.typings.features import FeatureContextType, FeatureOwnerType
+from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.posts import (
     Post,
     PostAttachment,
@@ -159,22 +159,22 @@ class PostsDAO(object):
         # that this profile owns/created.
         if filter.include_featured is True:
             if filter.profile_type == ProfileType.USER.value:
-                feature_owner_type = FeatureOwnerType.USER.value
+                featurer_type = FeaturerType.USER.value
             if filter.profile_type == ProfileType.ARTIST.value:
-                feature_owner_type = FeatureOwnerType.ARTIST.value
+                featurer_type = FeaturerType.ARTIST.value
 
             joins.append(
                 """
             LEFT JOIN feature
-                ON  feature.context_id = post.id
-                AND feature.context_type = %s
-                AND feature.owner_type = %s
-                AND feature.owner_id = %s
+                ON  feature.featured_entity_id = post.id
+                AND feature.featured_entity_type = %s
+                AND feature.featurer_type = %s
+                AND feature.featurer_id = %s
             """
             )
 
-            binds.append(FeatureContextType.POST.value)
-            binds.append(feature_owner_type)
+            binds.append(FeaturedEntityType.POST.value)
+            binds.append(featurer_type)
             binds.append(filter.profile_id)
 
             join_wheres.append("feature.id IS NOT NULL")

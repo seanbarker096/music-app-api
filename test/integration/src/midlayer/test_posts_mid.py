@@ -12,7 +12,7 @@ from unittest.mock import patch
 import pytest
 
 from api.midlayer.posts_mid import PostAttachmentsMidlayerMixin, PostsMidlayerMixin
-from api.typings.features import FeatureContextType, FeatureOwnerType
+from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostAttachmentsGetFilter,
@@ -106,10 +106,11 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)
 
         feature_dto = FeatureFixtureDTO(
-            context_type=FeatureContextType.POST.value,
-            context_id=featured_post_id,
-            owner_type=FeatureOwnerType.ARTIST.value,
-            owner_id=requesting_profile_id,
+            featured_entity_type=FeaturedEntityType.POST.value,
+            featured_entity_id=featured_post_id,
+            featurer_type=FeaturerType.ARTIST.value,
+            featurer_id=requesting_profile_id,
+            creator_id=requesting_profile_id,
         )
 
         self.fixture_factory.feature_fixture_create(feature_dto)
@@ -185,10 +186,11 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)
 
         feature_dto = FeatureFixtureDTO(
-            context_type=FeatureContextType.POST.value,
-            context_id=featured_post_id,
-            owner_type=FeatureOwnerType.ARTIST.value,
-            owner_id=other_user_id,
+            featured_entity_type=FeaturedEntityType.POST.value,
+            featured_entity_id=featured_post_id,
+            featurer_type=FeaturerType.ARTIST.value,
+            featurer_id=other_user_id,
+            creator_id=other_user_id,
         )
 
         self.fixture_factory.feature_fixture_create(feature_dto)
@@ -254,10 +256,11 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)
 
         feature_dto = FeatureFixtureDTO(
-            context_type=FeatureContextType.POST.value,
-            context_id=featured_post_id,
-            owner_type=FeatureOwnerType.ARTIST.value,
-            owner_id=other_user_id,
+            featured_entity_type=FeaturedEntityType.POST.value,
+            featured_entity_id=featured_post_id,
+            featurer_type=FeaturerType.ARTIST.value,
+            featurer_id=other_user_id,
+            creator_id=other_user_id,
         )
 
         self.fixture_factory.feature_fixture_create(feature_dto)
@@ -323,10 +326,11 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         featured_post_id = self.fixture_factory.post_fixture_create(featured_post)
 
         feature_dto = FeatureFixtureDTO(
-            context_type=FeatureContextType.POST.value,
-            context_id=featured_post_id,
-            owner_type=FeatureOwnerType.ARTIST.value,
-            owner_id=requesting_profile_id,
+            featured_entity_type=FeaturedEntityType.POST.value,
+            featured_entity_id=featured_post_id,
+            featurer_type=FeaturerType.ARTIST.value,
+            featurer_id=requesting_profile_id,
+            creator_id=requesting_profile_id,
         )
 
         self.fixture_factory.feature_fixture_create(feature_dto)
