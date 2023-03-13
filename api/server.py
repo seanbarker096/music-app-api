@@ -11,6 +11,7 @@ from api.rest import (
     auth_api,
     features_api,
     file_service_api,
+    performances_api,
     posts_api,
     tags_api,
     users_api,
@@ -40,6 +41,7 @@ app.register_blueprint(users_api.blueprint, url_prefix="/api/users/0.1")
 app.register_blueprint(artist_api.blueprint, url_prefix="/api/artists/0.1")
 app.register_blueprint(features_api.blueprint, url_prefix="/api/features/0.1")
 app.register_blueprint(tags_api.blueprint, url_prefix="/api/tags/0.1")
+app.register_blueprint(performances_api.blueprint, url_prefix="/api/performances/0.1")
 
 
 @app.after_request

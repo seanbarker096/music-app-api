@@ -7,7 +7,7 @@ from api.utils.rest_utils import (
     auth,
     class_to_dict,
     process_enum_request_param,
-    process_int_request_param,
+    process_int_api_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -55,7 +55,7 @@ def tag_create():
 @blueprint.route("/tags/", methods=["GET"])
 @auth
 def tags_get():
-    tagged_entiy_id = process_int_request_param("tagged_entity_id")
+    tagged_entiy_id = process_int_api_request_param("tagged_entity_id")
     tagged_entity_type = process_enum_request_param("tagged_entity_type", TaggedEntityType)
 
     request = TagsGetFilter(tagged_entity_id=tagged_entiy_id, tagged_entity_type=tagged_entity_type)

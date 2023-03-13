@@ -28,14 +28,20 @@ def process_string_request_param(request_body: Dict[str, any], parameter_name: s
     return parameter
 
 
-def process_int_request_param(parameter_name: str) -> int:
+def process_int_api_request_param(parameter_name: str, optional=True) -> int:
     """Validates and returns a flask request body integer parameter"""
     parameter = flask.request.values.get(parameter_name, None)
 
-    if not parameter:
+    return process_int_request_param(parameter_name, parameter, optional)
+
+
+def process_int_request_param(parameter_name: str, parameter: any, optional=True) -> int:
+    if parameter is None and optional:
+        return None
+
+    if parameter is None and not optional:
         raise Exception(f"Missing required request parameter '{parameter_name}'")
 
-    ## Cast to int because flask.request.values return dict of type of CombinedMultiDict[str, str]
     parameter = int(parameter)
 
     if not isinstance(parameter, int):
@@ -85,7 +91,6 @@ def process_enum_set_param(
     enum_set = set(item.value for item in enum)
 
     for parameter in list_param:
-        print(parameter)
         if parameter not in enum_set:
             raise InvalidArgumentException(
                 f"Invalid value {parameter} in parameter '{parameter_name}'. {parameter} does not exist in enum {enum.__class__.__name__}",

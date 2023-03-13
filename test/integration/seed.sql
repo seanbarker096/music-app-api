@@ -112,3 +112,29 @@ CREATE TABLE gigs.tag (
   INDEX tagged_entity_id_tagged_entity_type_idx(tagged_entity_id, tagged_entity_type)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
+
+
+DROP TABLE IF EXISTS gigs.performance;
+CREATE TABLE gigs.performance (
+  id int(10) unsigned auto_increment,
+  venue_id int(10) unsigned default NULL,
+  performer_id int(10) unsigned NOT NULL,
+  performance_date datetime NOT NULL,
+  create_time datetime NOT NULL,
+  update_time datetime default NULL,
+  PRIMARY KEY (id),
+  UNIQUE INDEX performer_id_performance_date_idx(performer_id, performance_date)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
+
+DROP TABLE IF EXISTS gigs.performance_attendance;
+CREATE TABLE gigs.performance_attendance (
+  id int(10) unsigned auto_increment,
+  performance_id int(10) unsigned NOT NULL,
+  attendee_id int(10) unsigned NOT NULL,
+  create_time datetime NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE INDEX performance_id_attendee_id_idx(performance_id, attendee_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
+

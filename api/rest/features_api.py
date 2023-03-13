@@ -2,8 +2,19 @@ import json
 
 import flask
 
-from api.typings.features import FeatureCreateRequest, FeaturesGetFilter
-from api.utils.rest_utils import auth, class_to_dict, get_set_request_param
+from api.typings.features import (
+    FeatureCreateRequest,
+    FeaturedEntityType,
+    FeaturerType,
+    FeaturesGetFilter,
+)
+from api.utils.rest_utils import (
+    auth,
+    class_to_dict,
+    get_set_request_param,
+    process_enum_request_param,
+    process_int_api_request_param,
+)
 from exceptions.exceptions import InvalidArgumentException
 
 blueprint = flask.Blueprint("features", __name__)
@@ -12,27 +23,27 @@ blueprint = flask.Blueprint("features", __name__)
 @blueprint.route("/features/", methods=["GET"])
 @auth
 def features_get():
-    data = flask.request.values
-    print(data)
+    featurer_type = process_enum_request_param("featurer_type", FeaturerType)
+    featurer_id = process_int_api_request_param("featurer_id")
+    featured_entity_type = process_enum_request_param("featured_entity_type", FeaturedEntityType)
+    featured_entity_id = process_int_api_request_param("featured_entity_id")
 
-    featurer_type = data.get("featurer_type", None, str)
-
-    featurer_id = data.get("featurer_id", None, int)
-
-    if not featurer_id and not featurer_type:
-        raise InvalidArgumentException("Must provide at least one filter field", json.dumps(data))
-
-    if featurer_type and (not isinstance(featurer_type, str) or featurer_type == ""):
+    if (
+        not featurer_id
+        and not featurer_type
+        and not featured_entity_id
+        and not featured_entity_type
+    ):
         raise InvalidArgumentException(
-            "Invalid request. featurer_type must be a valid string", featurer_type
+            "Must provide at least one filter field", json.dumps(flask.request.values)
         )
 
-    if featurer_id and not isinstance(featurer_id, int):
-        raise InvalidArgumentException(
-            "Invalid request. featurer_id must be a valid integer", featurer_id
-        )
-
-    features_get_filter = FeaturesGetFilter(featurer_type=featurer_type, featurer_id=featurer_id)
+    features_get_filter = FeaturesGetFilter(
+        featurer_type=featurer_type,
+        featurer_id=featurer_id,
+        featured_entity_type=featured_entity_type,
+        featured_entity_id=featured_entity_id,
+    )
 
     features = flask.current_app.conns.midlayer.features_get(features_get_filter).features
 
