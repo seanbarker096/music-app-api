@@ -1,0 +1,6 @@
+class EventConsumer:
+    def __init__(self):
+        ...
+
+    def consume(self):
+        ...

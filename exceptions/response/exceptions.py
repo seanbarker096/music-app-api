@@ -119,3 +119,13 @@ class InvalidAuthTokenException(ResponseBaseException):
 
     def __init__(self, message: str):
         super().__init__(message=message)
+
+
+class PerformanceNotFoundException(ResponseBaseException):
+    _http_code = 404
+    _name = "PERFORMANCE_NOT_FOUND"
+    _code = ErrorCodes.PERFORMANCE_NOT_FOUND.value
+    _detail = "Failed to find performance"
+
+    def __init__(self, message: str):
+        super().__init__(message=message)

@@ -16,3 +16,6 @@ class ErrorCodes(Enum):
     # Resource - User
     USER_ALREADY_EXISTS = 2000
     USER_NOT_FOUND = 2001
+
+    # Resource = Performance
+    PERFORMANCE_NOT_FOUND = 3000

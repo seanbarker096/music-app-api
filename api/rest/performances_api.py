@@ -40,3 +40,31 @@ def performance_create():
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
     )
+
+
+@blueprint.route("/attendances/", method=["POST"])
+def attendance_create():
+    request = flask.request.json
+
+    performance_id = process_int_request_param(
+        parameter_name="performance_id",
+        parameter=request.get("performance_id", None),
+        optional=False,
+    )
+
+    attendee_id = process_int_request_param(
+        parameter_name="attendee_id",
+        parameter=request.get("attendee_id", None),
+        optional=False,
+    )
+
+    attendance = flask.current_app.conns.midlayer.attendance_create(
+        performance_id=performance_id, attendee_id=attendee_id
+    ).attendance
+
+    response = {}
+    response["attendance"] = vars(attendance)
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )

@@ -74,6 +74,19 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
 
         try:
             tag = self.tags_dao.tag_create(request)
+
+            # Emit tag created event
+            # performanceAttendanceObserver.next(tag info)
+            # I performance code define a function which reacts to
+            # this observer.next() firing. E.g. it will create a
+            # perormance attednance record.
+
+            # create observable and define when a observer.next runs
+            # then when we subscribe we pass in the observer with this next method
+
+            # first define when it happends via new Observable. Then define what happends
+            # later via passing in observer when calling subscribe
+
             return TagCreateResult(tag=tag)
 
         except Exception as err:
