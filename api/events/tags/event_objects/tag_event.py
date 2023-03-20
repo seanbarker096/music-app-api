@@ -19,4 +19,4 @@ class TagCreatedEvent(TagEvent):
 
     def __init__(self, tag: Tag):
         super().__init__(tag)
-        self.type = TagEventType.CREATED
+        self.type = TagEventType.CREATED.value

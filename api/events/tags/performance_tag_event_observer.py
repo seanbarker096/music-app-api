@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Optional
 
 from api.events.tags.event_objects.tag_event import (
@@ -15,6 +16,7 @@ from api.typings.performances import (
 )
 from api.typings.posts import PostsGetFilter
 from api.typings.tags import TaggedEntityType, TaggedInEntityType
+from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import PostNotFoundException
 
 
@@ -22,8 +24,8 @@ class PerformanceTagEventObserver(TagEventObserver):
     def __init__(
         self,
         config,
-        performance_attendances_midlayer: Optional[PerformanceAttendancesMidlayerMixin],
-        posts_midlayer: Optional[PostsMidlayerMixin],
+        performance_attendances_midlayer: Optional[PerformanceAttendancesMidlayerMixin] = None,
+        posts_midlayer: Optional[PostsMidlayerMixin] = None,
     ) -> None:
         super().__init__(config)
 
@@ -36,13 +38,11 @@ class PerformanceTagEventObserver(TagEventObserver):
 
     def process_event(self, event: TagEvent) -> any:
         try:
-            print(f"Consuming event: {json.dumps((event))}")
-
             if event.type == TagEventType.CREATED.value:
                 return self._handle_tag_created_event(event)
 
         except Exception as e:
-            self.handle_exception(e)
+            return self.handle_exception(e)
 
     def _handle_tag_created_event(self, event: TagCreatedEvent) -> PerformanceAttendance:
         """
@@ -59,8 +59,9 @@ class PerformanceTagEventObserver(TagEventObserver):
             tag.tagged_entity_type != TaggedEntityType.PERFORMANCE.value
             and tag.tagged_in_entity_type != TaggedInEntityType.POST.value
         ):
-            raise Exception(
-                f"Invalid tag event. Currently only tagging perforamnces in posts is supported. Please extend these checks if you want to support other tag events. Tag event: {json.dumps(vars(event))}"
+            raise InvalidArgumentException(
+                f"Invalid tag event. Currently only tagging perforamnces in posts is supported. Please extend these checks if you want to support other tag events. Tag event: {json.dumps(vars(event))}",
+                "event",
             )
 
         post_id = tag.tagged_in_entity_id

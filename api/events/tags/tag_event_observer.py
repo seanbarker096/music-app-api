@@ -14,6 +14,6 @@ class TagEventObserver(ABC):
     def process_event(self, event: TagEvent):
         ...
 
-    def handle_exception(self, exception):
+    def handle_exception(self, exception) -> bool:
         # TODO: Add logging for the exception in here
-        ...
+        return False
