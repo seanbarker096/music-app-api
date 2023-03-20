@@ -5,6 +5,7 @@ from typing import List
 class TaggedEntityType(Enum):
     USER = "user"
     ARTIST = "artist"
+    PERFORMANCE = "performance"
 
 
 # I.e. 'A user has been tagged IN a post'

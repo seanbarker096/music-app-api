@@ -19,3 +19,6 @@ class ErrorCodes(Enum):
 
     # Resource = Performance
     PERFORMANCE_NOT_FOUND = 3000
+
+    # Resource = Post
+    POST_NOT_FOUND = 4000

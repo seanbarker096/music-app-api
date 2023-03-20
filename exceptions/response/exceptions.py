@@ -129,3 +129,13 @@ class PerformanceNotFoundException(ResponseBaseException):
 
     def __init__(self, message: str):
         super().__init__(message=message)
+
+
+class PostNotFoundException(ResponseBaseException):
+    _http_code = 404
+    _name = "POST_NOT_FOUND"
+    _code = ErrorCodes.POST_NOT_FOUND.value
+    _detail = "Failed to find post"
+
+    def __init__(self, message: str):
+        super().__init__(message=message)
