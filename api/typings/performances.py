@@ -42,6 +42,16 @@ class PerformancesGetFilter:
         self.performance_date = performance_date
 
 
+class PerformancesGetResult:
+    performances: List[Performance] = ...
+
+    def __init__(
+        self,
+        performances: List[Performance],
+    ) -> None:
+        self.performances = performances
+
+
 class PerformanceCreateRequest:
     venue_id: Optional[int] = ...
     performer_id: int = ...

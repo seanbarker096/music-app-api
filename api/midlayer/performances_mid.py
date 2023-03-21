@@ -9,6 +9,7 @@ from api.typings.performances import (
     PerformanceCreateRequest,
     PerformanceCreateResult,
     PerformancesGetFilter,
+    PerformancesGetResult,
 )
 from api.utils.rest_utils import process_int_request_param
 from exceptions.exceptions import InvalidArgumentException
@@ -23,8 +24,8 @@ class PerformancesMidlayerConnections:
 class PerformancesMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional["MidlayerConnections"] = None):
         connections = (
-            conns.performances_mid_conns
-            if conns and conns.performances_mid_conns
+            conns.performance_mid_conns
+            if conns and conns.performance_mid_conns
             else PerformancesMidlayerConnections(config)
         )
 
@@ -35,7 +36,7 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
 
     def performance_create(self, request: PerformanceCreateRequest):
         venue_id = process_int_request_param(
-            parameter_name="venue_id", parameter=request.venue_id, optional=False
+            parameter_name="venue_id", parameter=request.venue_id, optional=True
         )
         performer_id = process_int_request_param(
             parameter_name="performer_id", parameter=request.performer_id, optional=False
@@ -47,11 +48,12 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
         )
 
         try:
-            performance = self.performances_dao.performance_create(
+            request = PerformanceCreateRequest(
                 venue_id=venue_id,
                 performer_id=performer_id,
                 performance_date=performance_date,
             )
+            performance = self.performances_dao.performance_create(request)
 
             return PerformanceCreateResult(performance=performance)
 
@@ -69,7 +71,7 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
 
         if filter.performer_ids and len(filter.performer_ids) == 0:
             raise InvalidArgumentException(
-                f"Invalid value provided for filter field performer_ids: {filter.performer_ids}. At least one artist_id must be provided",
+                f"Invalid value provided for filter field performer_ids: {filter.performer_ids}. At least one performer_id must be provided",
                 "filter.performer_ids",
             )
 
@@ -84,7 +86,7 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
         try:
             performances = self.performances_dao.performances_get(filter=filter)
 
-            return performances
+            return PerformancesGetResult(performances=performances)
 
         except Exception as e:
             raise Exception(
@@ -110,18 +112,19 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
         connections: Optional["MidlayerConnections"] = None,
         performances_mid: Optional[PerformancesMidlayerMixin] = None,
     ):
+        self.performances_mid = (
+            performances_mid if performances_mid else PerformancesMidlayerMixin(config, connections)
+        )
+
         connections = (
-            connections.performance_attendances_mid_conns
-            if connections and connections.performance_attendances_mid_conns
+            connections.performance_attendance_mid_conns
+            if connections and connections.performance_attendance_mid_conns
             else PerformanceAttendancesMidlayerConnections(config)
         )
 
         self.performance_attendances_dao = connections.performance_attendances_dao
 
-        self.performances_mid = (
-            performances_mid if performances_mid else PerformancesMidlayerMixin(config, connections)
-        )
-
+        ## Call the next mixins constructor
         super().__init__(config, connections)
 
     def performance_attendance_create(

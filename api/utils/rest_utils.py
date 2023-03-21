@@ -132,7 +132,7 @@ def process_api_set_request_param(
         processed_list = flask.request.values.getlist(parameter_name, type)
 
         # werkzeug.datastructures.MultiDict will remove values from the list if they can't be converted to the type
-        if len(processed_list) != len(flask.request.values.getlist()):
+        if len(processed_list) != len(flask.request.values.getlist(parameter_name)):
             raise InvalidArgumentException(
                 f"Invalid value found in set parameter {parameter_name}", parameter_name
             )

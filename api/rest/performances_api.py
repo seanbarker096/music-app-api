@@ -13,11 +13,9 @@ from api.utils.rest_utils import (
 blueprint = flask.Blueprint("performances", __name__)
 
 
-@blueprint.route("/performances/", method=["GET"])
+@blueprint.route("/performances/", methods=["GET"])
 def performances_get():
-    performance_ids = process_api_set_request_param(
-        parameter_name="performance_ids[]", type=int, optional=True
-    )
+    performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=True)
 
     performer_ids = process_api_set_request_param(
         parameter_name="performer_ids[]", type=int, optional=True
@@ -41,12 +39,12 @@ def performances_get():
     )
 
 
-@blueprint.route("/performances/", method=["POST"])
+@blueprint.route("/performances/", methods=["POST"])
 def performance_create():
     data = flask.request.json
 
     venue_id = process_int_request_param(
-        parameter_name="venue_id", parameter=data.get("venue_id", None), optional=False
+        parameter_name="venue_id", parameter=data.get("venue_id", None), optional=True
     )
     performer_id = process_int_request_param(
         parameter_name="performer_id", parameter=data.get("performer_id", None), optional=False
@@ -75,7 +73,7 @@ def performance_create():
     )
 
 
-@blueprint.route("/attendances/", method=["POST"])
+@blueprint.route("/attendances/", methods=["POST"])
 def attendance_create():
     request = flask.request.json
 

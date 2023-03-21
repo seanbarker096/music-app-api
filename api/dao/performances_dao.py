@@ -49,7 +49,7 @@ class PerformancesDAO:
             request.performer_id,
             request.performance_date,
             now,
-            now,
+            None,
         )
 
         db_result = self.db.run_query(sql, binds)
@@ -62,7 +62,7 @@ class PerformancesDAO:
             performer_id=request.performer_id,
             performance_date=request.performance_date,
             create_time=now,
-            update_time=now,
+            update_time=None,
         )
 
     def performances_get(self, filter: PerformancesGetFilter) -> List[Performance]:
@@ -78,9 +78,9 @@ class PerformancesDAO:
             wheres.append("id in %s")
             binds.append(filter.ids)
 
-        if filter.artist_ids:
+        if filter.performer_ids:
             wheres.append("performer_id in %s")
-            binds.append(filter.artist_ids)
+            binds.append(filter.performer_ids)
 
         if filter.performance_date:
             wheres.append("performance_date = FROM_UNIXTIME(%s)")
@@ -109,13 +109,19 @@ class PerformancesDAO:
         performance_id = int(db_row[PerformancesDBAlias.PERFORMANCE_ID])
 
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_VENUE_ID)
-        venue_id = int(db_row[PerformancesDBAlias.PERFORMANCE_VENUE_ID])
+        venue_id = (
+            int(db_row[PerformancesDBAlias.PERFORMANCE_VENUE_ID])
+            if db_row[PerformancesDBAlias.PERFORMANCE_VENUE_ID]
+            else None
+        )
 
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_PERFORMER_ID)
         performer_id = int(db_row[PerformancesDBAlias.PERFORMANCE_PERFORMER_ID])
 
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_DATE)
-        performance_date = int(db_row[PerformancesDBAlias.PERFORMANCE_DATE])
+        performance_date = float(
+            date_time_to_unix_time(db_row[PerformancesDBAlias.PERFORMANCE_DATE])
+        )
 
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_CREATE_TIME)
         create_time = float(
