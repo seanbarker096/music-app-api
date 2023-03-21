@@ -6,7 +6,7 @@ import flask
 from api.typings.users import UsersGetFilter, UserUpdateRequest
 from api.utils.rest_utils import (
     auth,
-    get_set_request_param,
+    process_api_set_request_param,
     process_string_request_param,
 )
 
@@ -41,7 +41,7 @@ def user_update(user_id: int):
 @blueprint.route("/users", methods=["GET"])
 @auth
 def users_get():
-    user_ids = get_set_request_param(parameter_name="user_ids[]", type=int)
+    user_ids = process_api_set_request_param(parameter_name="user_ids[]", type=int)
 
     filter = UsersGetFilter(user_ids=user_ids)
     result = flask.current_app.conns.midlayer.users_get(filter)

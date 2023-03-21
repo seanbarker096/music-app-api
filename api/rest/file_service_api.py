@@ -6,7 +6,7 @@ import flask
 
 import api
 from api.file_service.typings.typings import FileCreateRequest, FilesGetFilter
-from api.utils.rest_utils import class_to_dict, get_set_request_param
+from api.utils.rest_utils import class_to_dict, process_api_set_request_param
 
 blueprint = flask.Blueprint("file_service", __name__)
 
@@ -70,9 +70,9 @@ def get_file_bytes(file_uuid: str):
 def get_files():
     """Get file from the file service"""
 
-    file_uuids = get_set_request_param(parameter_name="uuids[]", type=str)
+    file_uuids = process_api_set_request_param(parameter_name="uuids[]", type=str)
 
-    file_ids = get_set_request_param(parameter_name="ids[]", type=int)
+    file_ids = process_api_set_request_param(parameter_name="ids[]", type=int)
 
     if file_ids and len(file_ids) == 0:
         raise Exception("Invalid request. Must provide at least one file id")

@@ -120,14 +120,24 @@ def process_bool_request_param(parameter_name: str, optional=True) -> bool:
     return parameter
 
 
-def get_set_request_param(parameter_name: str, type: any, optional=True) -> List[str | int] | None:
+def process_api_set_request_param(
+    parameter_name: str, type: any, optional=True
+) -> List[str | int] | None:
     """Validates and returns a flask request body array parameter"""
 
     if optional and not parameter_name in flask.request.values:
         return None
 
     if parameter_name in flask.request.values:
-        return flask.request.values.getlist(parameter_name, type)
+        processed_list = flask.request.values.getlist(parameter_name, type)
+
+        # werkzeug.datastructures.MultiDict will remove values from the list if they can't be converted to the type
+        if len(processed_list) != len(flask.request.values.getlist()):
+            raise InvalidArgumentException(
+                f"Invalid value found in set parameter {parameter_name}", parameter_name
+            )
+
+        return processed_list
 
     raise Exception(f"Missing required request parameter '{parameter_name}'")
 

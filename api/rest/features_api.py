@@ -11,7 +11,7 @@ from api.typings.features import (
 from api.utils.rest_utils import (
     auth,
     class_to_dict,
-    get_set_request_param,
+    process_api_set_request_param,
     process_enum_request_param,
     process_int_api_request_param,
 )

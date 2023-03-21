@@ -35,12 +35,6 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
         ## Call the next mixins constructor
         super().__init__(config, conns)
 
-    # def tags_get(self, filter=TagsGetFilter) -> TagsGetResult:
-
-    #     tags = self.tags_dao.tags_get(filter)
-
-    #     return TagsGetResult(tags=tags)
-
     def tag_create(self, request: TagCreateRequest) -> TagCreateResult:
         if not isinstance(
             request.tagged_in_entity_type, str

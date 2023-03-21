@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from api.dao.performances_dao import PerformanceAttendancesDAO, PerformancesDAO
@@ -10,6 +11,7 @@ from api.typings.performances import (
     PerformancesGetFilter,
 )
 from api.utils.rest_utils import process_int_request_param
+from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import PerformanceNotFoundException
 
 
@@ -56,6 +58,37 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
         except Exception as e:
             raise Exception(
                 f"Failed to create performance because {str(e)}. Request: {vars(request)}"
+            )
+
+    def performances_get(self, filter: PerformancesGetFilter):
+        if filter.ids and len(filter.ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field ids: {filter.ids}. At least one post_id must be provided",
+                "filter.ids",
+            )
+
+        if filter.performer_ids and len(filter.performer_ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field performer_ids: {filter.performer_ids}. At least one artist_id must be provided",
+                "filter.performer_ids",
+            )
+
+        process_int_request_param("performance_date", filter.performance_date)
+
+        if not filter.ids and not filter.performer_ids and not filter.performance_date:
+            raise InvalidArgumentException(
+                f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",
+                "filter",
+            )
+
+        try:
+            performances = self.performances_dao.performances_get(filter=filter)
+
+            return performances
+
+        except Exception as e:
+            raise Exception(
+                f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
             )
 
 

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 
 class Performance:
@@ -28,17 +28,17 @@ class Performance:
 
 class PerformancesGetFilter:
     ids: Optional[list[int]] = ...
-    artist_ids: Optional[list[int]] = ...
+    performer_ids: Optional[list[int]] = ...
     performance_date: Optional[int] = ...
 
     def __init__(
         self,
         ids: Optional[list[int]] = None,
-        artist_ids: Optional[list[int]] = None,
+        performer_ids: Optional[list[int]] = None,
         performance_date: Optional[int] = None,
     ) -> None:
         self.ids = ids
-        self.artist_ids = artist_ids
+        self.performer_ids = performer_ids
         self.performance_date = performance_date
 
 

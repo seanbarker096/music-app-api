@@ -16,7 +16,7 @@ from api.typings.posts import (
 )
 from api.utils import rest_utils
 from api.utils.rest_utils import (
-    get_set_request_param,
+    process_api_set_request_param,
     process_bool_request_param,
     process_enum_request_param,
     process_enum_set_api_request_param,
@@ -108,10 +108,10 @@ def post_get_by_id(post_id: int):
 @auth
 def posts_get():
 
-    owner_ids = rest_utils.get_set_request_param("owner_ids[]", type=int)
+    owner_ids = rest_utils.process_api_set_request_param("owner_ids[]", type=int)
     owner_types = rest_utils.process_enum_set_api_request_param("owner_types[]", PostOwnerType)
 
-    ids = rest_utils.get_set_request_param("ids[]", type=int)
+    ids = rest_utils.process_api_set_request_param("ids[]", type=int)
 
     posts_get_filter = PostsGetFilter(
         owner_ids=owner_ids, owner_types=owner_types, ids=ids, is_deleted=False
@@ -147,7 +147,7 @@ def posts_get():
 @blueprint.route("/attachments/", methods=["GET"])
 @auth
 def post_attachments_get():
-    post_ids = rest_utils.get_set_request_param("post_ids[]", type=int)
+    post_ids = rest_utils.process_api_set_request_param("post_ids[]", type=int)
 
     post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
 
