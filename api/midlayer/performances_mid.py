@@ -35,24 +35,19 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
         super().__init__(config, conns)
 
     def performance_create(self, request: PerformanceCreateRequest):
-        venue_id = process_int_request_param(
+        process_int_request_param(
             parameter_name="venue_id", parameter=request.venue_id, optional=True
         )
-        performer_id = process_int_request_param(
+        process_int_request_param(
             parameter_name="performer_id", parameter=request.performer_id, optional=False
         )
-        performance_date = process_int_request_param(
+        process_int_request_param(
             parameter_name="performance_date",
             parameter=request.performance_date,
             optional=False,
         )
 
         try:
-            request = PerformanceCreateRequest(
-                venue_id=venue_id,
-                performer_id=performer_id,
-                performance_date=performance_date,
-            )
             performance = self.performances_dao.performance_create(request)
 
             return PerformanceCreateResult(performance=performance)

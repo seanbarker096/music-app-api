@@ -44,6 +44,8 @@ class PerformancesDAO:
 
         now = time.time()
 
+        print(request.performance_date)
+
         binds = (
             request.venue_id,
             request.performer_id,
