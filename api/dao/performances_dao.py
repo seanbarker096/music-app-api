@@ -1,3 +1,4 @@
+import datetime
 import time
 from typing import Dict, List, Optional
 
@@ -17,7 +18,7 @@ class PerformancesDBAlias:
     PERFORMANCE_ID = "performance_id"
     PERFORMANCE_VENUE_ID = "performance_venue_id"
     PERFORMANCE_PERFORMER_ID = "performance_performer_id"
-    PERFORMANCE_DATE = "performance_date"
+    PERFORMANCE_DATE = "performance_date"  # users can create performances, so we don't want a unique performance if two usres input a different time of day but the same artist. We therefore store the date only
     PERFORMANCE_CREATE_TIME = "performance_create_time"
     PERFORMANCE_UPDATE_TIME = "performance_update_time"
 
@@ -39,12 +40,10 @@ class PerformancesDAO:
 
         sql = """
             INSERT INTO performance (venue_id, performer_id, performance_date, create_time, update_time)
-            VALUES  (%s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), FROM_UNIXTIME(%s))
+            VALUES  (%s, %s, DATE(FROM_UNIXTIME(%s)), FROM_UNIXTIME(%s), FROM_UNIXTIME(%s))
             """
 
         now = time.time()
-
-        print(request.performance_date)
 
         binds = (
             request.venue_id,
@@ -85,7 +84,7 @@ class PerformancesDAO:
             binds.append(filter.performer_ids)
 
         if filter.performance_date:
-            wheres.append("performance_date = FROM_UNIXTIME(%s)")
+            wheres.append("performance_date = DATE(FROM_UNIXTIME(%s))")
             binds.append(filter.performance_date)
 
         if len(wheres) == 0:
@@ -95,6 +94,7 @@ class PerformancesDAO:
 
         sql = selects + where_string
 
+        print(sql, binds)
         db_result = self.db.run_query(sql, binds)
 
         rows = db_result.get_rows()

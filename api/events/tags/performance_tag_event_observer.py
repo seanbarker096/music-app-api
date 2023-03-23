@@ -42,9 +42,9 @@ class PerformanceTagEventObserver(TagEventObserver):
                 return self._handle_tag_created_event(event)
 
         except Exception as e:
-            return self.handle_exception(e)
+            return self.handle_exception(e, event)
 
-    def _handle_tag_created_event(self, event: TagCreatedEvent) -> PerformanceAttendance:
+    def _handle_tag_created_event(self, event: TagCreatedEvent) -> PerformanceAttendance | None:
         """
         Marks the post owner as having attended a performance, whenever a performance is tagged in a post.
 
@@ -57,12 +57,13 @@ class PerformanceTagEventObserver(TagEventObserver):
 
         if (
             tag.tagged_entity_type != TaggedEntityType.PERFORMANCE.value
-            and tag.tagged_in_entity_type != TaggedInEntityType.POST.value
+            or tag.tagged_in_entity_type != TaggedInEntityType.POST.value
         ):
-            raise InvalidArgumentException(
-                f"Invalid tag event. Currently only tagging perforamnces in posts is supported. Please extend these checks if you want to support other tag events. Tag event: {json.dumps(vars(event))}",
-                "event",
-            )
+            # raise InvalidArgumentException(
+            #     f"Invalid tag event. Currently only tagging perforamnces in posts is supported. Please extend these checks if you want to support other tag events. Tag event: {json.dumps(vars(event))}",
+            #     "event",
+            # )
+            return None
 
         post_id = tag.tagged_in_entity_id
         posts_get_filter = PostsGetFilter(ids=[post_id])

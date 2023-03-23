@@ -131,8 +131,8 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
             parameter=request.performance_id,
             optional=False,
         )
-        user_id = process_int_request_param(
-            parameter_name="user_id", parameter=request.user_id, optional=False
+        attendee_id = process_int_request_param(
+            parameter_name="attendee_id", parameter=request.attendee_id, optional=False
         )
 
         try:
@@ -157,7 +157,7 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
                 )
 
             performance_attendance = self.performance_attendances_dao.performance_attendance_create(
-                performance_id=performance_id, user_id=user_id
+               request=request
             )
 
             return PerformanceAttendanceCreateResult(performance_attendance=performance_attendance)

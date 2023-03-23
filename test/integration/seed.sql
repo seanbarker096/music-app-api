@@ -119,7 +119,7 @@ CREATE TABLE gigs.performance (
   id int(10) unsigned auto_increment,
   venue_id int(10) unsigned default NULL,
   performer_id int(10) unsigned NOT NULL,
-  performance_date datetime NOT NULL,
+  performance_date date NOT NULL,
   create_time datetime NOT NULL,
   update_time datetime default NULL,
   PRIMARY KEY (id),
