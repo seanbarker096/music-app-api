@@ -101,34 +101,3 @@ def attendance_create():
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
     )
-
-# @blueprint.route('attendees/<int:attendee_id>/performers', methods=['GET'])
-# def attendee_performers_get(attendee_id: int):
-#     """
-#     Get all performers whos performances the user has attended
-#     """
-    
-#     get_counts = process_bool_api_request_param('count', optional=True)
-#     get_counts = get_counts if get_counts else False
-
-#     sort = process_string_api_request_param('sort', optional=True)
-
-
-#     if sort not in ['count']:
-#         raise Exception(f"Invalid sort parameter: {sort}. Valid values are: 'count'")
-    
-
-#     filter = AttendeePerformersGetFilter(
-#         attendee_id=attendee_id,
-#         get_counts=get_counts,
-#         sort=sort
-#     )
-
-#     performers = flask.current_app.conns.midlayer.attendee_performers_get(filter=filter).performers
-
-#     response = {}
-#     response['performers'] = [class_to_dict(performer) for performer in performers]
-
-#     return flask.current_app.response_class(
-#         response=json.dumps(response), status=200, mimetype='application/json'
-#     )

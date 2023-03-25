@@ -86,3 +86,14 @@ class PerformerCreateResult:
 
     def __init__(self, performer: Performer) -> None:
         self.performer = performer
+
+class AttendeePerformersGetFilter:
+    attendee_id: int = ...
+    get_count: bool = ...
+    limit: int = ...
+
+    def __init__(self, attendee_id: int, get_count: bool = False, limit: int = 10) -> None:
+        self.attendee_id = attendee_id
+        self.get_count = get_count
+        self.limit = limit
+

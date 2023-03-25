@@ -1,14 +1,17 @@
+import json
 import time
 from typing import Dict, List, Optional
 
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.performers import (
+    AttendeePerformersGetFilter,
     Performer,
     PerformerCreateRequest,
     PerformersGetFilter,
 )
 from api.utils import date_time_to_unix_time
+from exceptions.exceptions import InvalidArgumentException
 
 
 class PerformerDBAlias:
@@ -102,6 +105,79 @@ class PerformersDAO(object):
             owner_id=request.owner_id,
             image_url=request.image_url,
         )
+    
+
+    def attendee_performers_get(self, filter: AttendeePerformersGetFilter) -> Dict[str, List[Performer] | Dict[str, int]]:
+        # selects = f"""
+        #     SELECT {', '.join(self.PERFORMER_SELECTS)}, COUNT(pa.id) as performance_count, 
+        #     INNER JOIN performance_attendance as pa
+        #         ON pa.performer_id = performers.id
+        #         AND pa.attendee_id = {filter.attendee_id}
+        #     FROM performers
+        #     GROUP BY {', '.join(self.PERFORMER_SELECTS)} 
+        #     ORDER BY performance_count DESC
+        #     LIMIT {filter.limit}
+        # """
+
+        selects = self.PERFORMER_SELECTS
+
+        wheres = []
+        binds = []
+        joins = []
+        orders = []
+        limit = filter.limit if filter.limit else 10
+
+        if not filter.attendee_id:
+            raise InvalidArgumentException("attendee_id is required for attendee_performers_get")
+        
+        if filter.get_count:
+            selects.append("COUNT(pa.id) as performance_count")
+            joins.append(
+            """
+            INNER JOIN performance_attendance as pa
+                ON pa.performer_id = performers.id
+                AND pa.attendee_id = %s
+            """
+            )
+            binds.append(filter.attendee_id)
+            orders.append('performance_count DESC')
+
+        if filter.attendee_id:
+            wheres.append("attendee_id = %s")
+            binds.append(filter.attendee_id)
+
+        final_selects = ', '.join(selects)
+
+        wheres_string = build_where_query_string(wheres, "AND")
+
+        order_by_string = f"ORDER BY {', '.join(orders)}" if len(orders) > 0 else ''
+
+
+        sql = f"""
+            {selects}
+            {"".join(joins)}
+            {wheres}
+            {order_by_string}
+            LIMIT {limit}
+        """
+        
+        db_result = self.db.run_query(sql, binds)
+
+        rows = db_result.get_rows()
+
+        performers = []
+        counts = []
+
+        for row in rows:
+            performer = self._build_performer_from_row(row)
+            performers.append(performer)
+            counts.append({
+                "performer_id": performer.id, 
+                 "attendee_id": filter.attendee_id,
+                 "count": row["performance_count"]
+            })
+
+        return {'performers': performers, 'counts': counts}
 
     def _build_performer_from_row(self, db_row: Dict[str, any]) -> Performer:
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_ID)

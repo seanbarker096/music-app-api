@@ -105,9 +105,6 @@ class PerformancesDAO:
             performances.append(performance)
 
         return performances
-    
-
-    # def attendee_performers(self, filter: AttendeePerformersGetFilter) -> List[Performer]:
 
 
     def _build_performance_from_row(self, db_row: Dict[str, any]) -> Performance:
