@@ -105,16 +105,17 @@ class PerformersDAO(object):
             owner_id=request.owner_id,
             image_url=request.image_url,
         )
-    
 
-    def attendee_performers_get(self, filter: AttendeePerformersGetFilter) -> Dict[str, List[Performer] | Dict[str, int]]:
+    def attendee_performers_get(
+        self, filter: AttendeePerformersGetFilter
+    ) -> Dict[str, List[Performer] | Dict[str, int]]:
         # selects = f"""
-        #     SELECT {', '.join(self.PERFORMER_SELECTS)}, COUNT(pa.id) as performance_count, 
+        #     SELECT {', '.join(self.PERFORMER_SELECTS)}, COUNT(pa.id) as performance_count,
         #     INNER JOIN performance_attendance as pa
         #         ON pa.performer_id = performers.id
         #         AND pa.attendee_id = {filter.attendee_id}
         #     FROM performers
-        #     GROUP BY {', '.join(self.PERFORMER_SELECTS)} 
+        #     GROUP BY {', '.join(self.PERFORMER_SELECTS)}
         #     ORDER BY performance_count DESC
         #     LIMIT {filter.limit}
         # """
@@ -129,38 +130,37 @@ class PerformersDAO(object):
 
         if not filter.attendee_id:
             raise InvalidArgumentException("attendee_id is required for attendee_performers_get")
-        
+
         if filter.get_count:
             selects.append("COUNT(pa.id) as performance_count")
             joins.append(
-            """
+                """
+            INNER JOIN performances performance
+                ON performance.performer_id = performers.id
             INNER JOIN performance_attendance as pa
-                ON pa.performer_id = performers.id
+                ON pa.performance_id = performance.id
                 AND pa.attendee_id = %s
             """
             )
             binds.append(filter.attendee_id)
-            orders.append('performance_count DESC')
+            orders.append("performance_count DESC")
 
         if filter.attendee_id:
             wheres.append("attendee_id = %s")
             binds.append(filter.attendee_id)
 
-        final_selects = ', '.join(selects)
-
         wheres_string = build_where_query_string(wheres, "AND")
 
-        order_by_string = f"ORDER BY {', '.join(orders)}" if len(orders) > 0 else ''
-
+        order_by_string = f"ORDER BY {', '.join(orders)}" if len(orders) > 0 else ""
 
         sql = f"""
-            {selects}
+            SELECT {', '.join(selects)} FROM performers
             {"".join(joins)}
-            {wheres}
+            {wheres_string}
             {order_by_string}
             LIMIT {limit}
         """
-        
+
         db_result = self.db.run_query(sql, binds)
 
         rows = db_result.get_rows()
@@ -171,13 +171,15 @@ class PerformersDAO(object):
         for row in rows:
             performer = self._build_performer_from_row(row)
             performers.append(performer)
-            counts.append({
-                "performer_id": performer.id, 
-                 "attendee_id": filter.attendee_id,
-                 "count": row["performance_count"]
-            })
+            counts.append(
+                {
+                    "performer_id": performer.id,
+                    "attendee_id": filter.attendee_id,
+                    "count": row["performance_count"],
+                }
+            )
 
-        return {'performers': performers, 'counts': counts}
+        return {"performers": performers, "counts": counts}
 
     def _build_performer_from_row(self, db_row: Dict[str, any]) -> Performer:
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_ID)
@@ -190,7 +192,9 @@ class PerformersDAO(object):
         performer_name = db_row[PerformerDBAlias.PERFORMER_NAME]
 
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_CREATE_TIME)
-        performer_create_time = float(date_time_to_unix_time(db_row[PerformerDBAlias.PERFORMER_CREATE_TIME]))
+        performer_create_time = float(
+            date_time_to_unix_time(db_row[PerformerDBAlias.PERFORMER_CREATE_TIME])
+        )
 
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_BIOGRAPHY)
         performer_biography = (

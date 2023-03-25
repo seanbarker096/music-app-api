@@ -1,4 +1,11 @@
 from test.integration.src.fixtures.DTO.feature_fixture_dto import FeatureFixtureDTO
+from test.integration.src.fixtures.DTO.performance_attendance_fixture_dto import (
+    PerformanceAttendanceFixtureDTO,
+)
+from test.integration.src.fixtures.DTO.performance_fixture_dto import (
+    PerformanceFixtureDTO,
+)
+from test.integration.src.fixtures.DTO.performer_fixture_dto import PerformerFixtureDTO
 from test.integration.src.fixtures.DTO.post_attachment_fixture_dto import (
     PostAttachmentFixtureDTO,
 )
@@ -82,3 +89,56 @@ class FixtureFactory:
         db_result = self.db.run_query(sql, binds)
 
         return db_result.get_last_row_id()
+
+    def performer_fixture_create(self, dto: PerformerFixtureDTO) -> int:
+        sql = """
+            INSERT INTO performers(uuid, performer_name, create_time, biography, update_time, owner_id, image_url) VALUES(%s, %s, FROM_UNIXTIME(%s), %s, FROM_UNIXTIME(%s), %s, %s)
+        """
+
+        binds = (
+            dto.get_uuid(),
+            dto.get_name(),
+            dto.get_create_time(),
+            dto.get_biography(),
+            dto.get_update_time(),
+            dto.get_owner_id(),
+            dto.get_image_url(),
+        )
+
+        db_result = self.db.run_query(sql, binds)
+
+        return db_result.get_last_row_id()
+    
+
+    def performance_attendance_fixture_create(self, dto: PerformanceAttendanceFixtureDTO) -> int:
+        sql = """
+            INSERT INTO performance_attendance(performance_id, user_id, create_time) VALUES(%s, %s, FROM_UNIXTIME(%s))
+        """
+
+        binds = (
+            dto.get_performance_id(),
+            dto.get_user_id(),
+            dto.get_create_time(),
+        )
+
+        db_result = self.db.run_query(sql, binds)
+
+        return db_result.get_last_row_id()
+    
+    def performance_fixture_create(self, dto: PerformanceFixtureDTO) -> int:
+        sql = """
+            INSERT INTO performance(performer_id, performance_date, create_time, update_time, venue_id) VALUES(%s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
+        """
+
+        binds = (
+            dto.get_performer_id(),
+            dto.get_performance_date(),
+            dto.get_create_time(),
+            dto.get_update_time(),
+            dto.get_venue_id(),
+        )
+
+        db_result = self.db.run_query(sql, binds)
+
+        return db_result.get_last_row_id()
+    
