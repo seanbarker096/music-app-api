@@ -87,8 +87,18 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
             )
+        
+    def atendee_performers_get(self, filters: AttendeePerformersGetFilter):
+        try:
+            performances = self.performances_dao.atendee_performers_get(filter=filter)
 
+            return PerformancesGetResult(performances=performances)
 
+        except Exception as e:
+            raise Exception(
+                f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
+            )
+        
 class PerformanceAttendancesMidlayerConnections:
     def __init__(
         self, config, performance_attendances_dao: Optional[PerformanceAttendancesDAO] = None

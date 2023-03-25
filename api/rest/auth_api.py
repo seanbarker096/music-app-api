@@ -21,7 +21,7 @@ from api.utils.rest_utils import (
     auth,
     build_api_error_repsonse,
     build_auth_user_from_token_payload,
-    process_string_request_param,
+    process_string_api_post_request_param,
     remove_bearer_from_token,
 )
 from exceptions.response.exceptions import UserAlreadyExistsException
@@ -82,11 +82,11 @@ def login():
 def signup():
     request = flask.request.json
 
-    password = process_string_request_param(request_body=request, parameter_name="password")
-    username = process_string_request_param(request_body=request, parameter_name="username")
-    first_name = process_string_request_param(request_body=request, parameter_name="first_name")
-    second_name = process_string_request_param(request_body=request, parameter_name="second_name")
-    email = process_string_request_param(request_body=request, parameter_name="email")
+    password = process_string_api_post_request_param(request_body=request, parameter_name="password")
+    username = process_string_api_post_request_param(request_body=request, parameter_name="username")
+    first_name = process_string_api_post_request_param(request_body=request, parameter_name="first_name")
+    second_name = process_string_api_post_request_param(request_body=request, parameter_name="second_name")
+    email = process_string_api_post_request_param(request_body=request, parameter_name="email")
 
     user_create_request = UserCreateRequest(
         username=username,
@@ -155,7 +155,7 @@ def validate_auth_session():
 def get_token():
     request = flask.request.json
 
-    token_type = process_string_request_param(request_body=request, parameter_name="token_type")
+    token_type = process_string_api_post_request_param(request_body=request, parameter_name="token_type")
 
     if token_type == "access":
         refresh_token = flask.request.headers.get("Refresh-Token")

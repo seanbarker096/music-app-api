@@ -17,7 +17,7 @@ from api.typings.posts import (
 from api.utils import rest_utils
 from api.utils.rest_utils import (
     process_api_set_request_param,
-    process_bool_request_param,
+    process_bool_api_request_param,
     process_enum_request_param,
     process_enum_set_api_request_param,
 )
@@ -175,9 +175,9 @@ def get_profiles_posts(profile_id: str):
     # Because profile_id is in the middle of the url, it is a string. We need to convert it to an int
     profile_id = int(profile_id)
 
-    include_tagged = process_bool_request_param("include_tagged")
-    include_owned = process_bool_request_param("include_owned")
-    include_featured = process_bool_request_param("include_featured")
+    include_tagged = process_bool_api_request_param("include_tagged")
+    include_owned = process_bool_api_request_param("include_owned")
+    include_featured = process_bool_api_request_param("include_featured")
     profile_type = process_enum_request_param("profile_type", ProfileType)
 
     profile_posts_get_filter = ProfilePostsGetFilter(

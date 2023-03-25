@@ -7,7 +7,7 @@ from api.typings.users import UsersGetFilter, UserUpdateRequest
 from api.utils.rest_utils import (
     auth,
     process_api_set_request_param,
-    process_string_request_param,
+    process_string_api_post_request_param,
 )
 
 blueprint = flask.Blueprint("users", __name__)
@@ -19,7 +19,7 @@ def user_update(user_id: int):
     ## TODO: Add update time for user object and update this value in DAO
     request = flask.request.json
 
-    avatar_file_uuid = process_string_request_param(
+    avatar_file_uuid = process_string_api_post_request_param(
         request_body=request, parameter_name="avatar_file_uuid"
     )
 
