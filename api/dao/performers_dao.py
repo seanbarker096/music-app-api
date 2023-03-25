@@ -28,15 +28,29 @@ class PerformerDBAlias:
 class PerformersDAO(object):
     db: DB
 
+    """
+    Some queries such as in attendee_performers_get requires a group by on all columns in performances table. We therefore create this so we can iterate over it when adding it to group by clauses. Using PERFORMANCES_SELECTS in a group by would fail as it contains an alias
+    """
+    PERFORMER_COLUMNS = [
+        "p.id",
+        "p.uuid",
+        "p.performer_name",
+        "p.create_time",
+        "p.biography",
+        "p.update_time",
+        "p.owner_id",
+        "p.image_url",
+    ]
+
     PERFORMER_SELECTS = [
-        "id as " + PerformerDBAlias.PERFORMER_ID,
-        "uuid as " + PerformerDBAlias.PERFORMER_UUID,
-        "performer_name as " + PerformerDBAlias.PERFORMER_NAME,
-        "create_time as " + PerformerDBAlias.PERFORMER_CREATE_TIME,
-        "biography as " + PerformerDBAlias.PERFORMER_BIOGRAPHY,
-        "update_time as " + PerformerDBAlias.PERFORMER_UPDATED_TIME,
-        "owner_id as " + PerformerDBAlias.PERFORMER_OWNER_ID,
-        "image_url as " + PerformerDBAlias.PERFORMER_IMAGE_URL,
+        PERFORMER_COLUMNS[0] + ' as ' + PerformerDBAlias.PERFORMER_ID,
+        PERFORMER_COLUMNS[1] + ' as ' + PerformerDBAlias.PERFORMER_UUID,
+        PERFORMER_COLUMNS[2] + ' as ' + PerformerDBAlias.PERFORMER_NAME,
+        PERFORMER_COLUMNS[3] + ' as ' + PerformerDBAlias.PERFORMER_CREATE_TIME,
+        PERFORMER_COLUMNS[4] + ' as ' + PerformerDBAlias.PERFORMER_BIOGRAPHY,
+        PERFORMER_COLUMNS[5] + ' as ' + PerformerDBAlias.PERFORMER_UPDATED_TIME,
+        PERFORMER_COLUMNS[6] + ' as ' + PerformerDBAlias.PERFORMER_OWNER_ID,
+        PERFORMER_COLUMNS[7] + ' as ' + PerformerDBAlias.PERFORMER_IMAGE_URL,
     ]
 
     def __init__(self, config, db: Optional[DB] = None):
@@ -45,7 +59,7 @@ class PerformersDAO(object):
     def performers_get(self, filter: PerformersGetFilter) -> List[Performer]:
         selects = f"""
             SELECT {', '.join(self.PERFORMER_SELECTS)} 
-            FROM performers
+            FROM performers as p
         """
 
         wheres = []
@@ -122,6 +136,7 @@ class PerformersDAO(object):
 
         selects = self.PERFORMER_SELECTS
 
+        group_by = False
         wheres = []
         binds = []
         joins = []
@@ -132,11 +147,12 @@ class PerformersDAO(object):
             raise InvalidArgumentException("attendee_id is required for attendee_performers_get")
 
         if filter.get_count:
+            group_by = True
             selects.append("COUNT(pa.id) as performance_count")
             joins.append(
                 """
-            INNER JOIN performances performance
-                ON performance.performer_id = performers.id
+            INNER JOIN performance
+                ON performance.performer_id = p.id
             INNER JOIN performance_attendance as pa
                 ON pa.performance_id = performance.id
                 AND pa.attendee_id = %s
@@ -154,12 +170,15 @@ class PerformersDAO(object):
         order_by_string = f"ORDER BY {', '.join(orders)}" if len(orders) > 0 else ""
 
         sql = f"""
-            SELECT {', '.join(selects)} FROM performers
+            SELECT {', '.join(selects)} FROM performers as p
             {"".join(joins)}
             {wheres_string}
+            {f"GROUP BY {', '.join(self.PERFORMER_COLUMNS)}" if group_by else ""}
             {order_by_string}
             LIMIT {limit}
         """
+
+        print(sql)
 
         db_result = self.db.run_query(sql, binds)
 

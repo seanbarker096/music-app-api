@@ -112,12 +112,12 @@ class FixtureFactory:
 
     def performance_attendance_fixture_create(self, dto: PerformanceAttendanceFixtureDTO) -> int:
         sql = """
-            INSERT INTO performance_attendance(performance_id, user_id, create_time) VALUES(%s, %s, FROM_UNIXTIME(%s))
+            INSERT INTO performance_attendance(performance_id, attendee_id, create_time) VALUES(%s, %s, FROM_UNIXTIME(%s))
         """
 
         binds = (
             dto.get_performance_id(),
-            dto.get_user_id(),
+            dto.get_attendee_id(),
             dto.get_create_time(),
         )
 

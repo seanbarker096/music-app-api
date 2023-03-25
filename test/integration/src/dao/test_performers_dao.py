@@ -15,7 +15,7 @@ from api.typings.performers import AttendeePerformersGetFilter
 
 class PerformersDAOIntegrrationTest(IntegrationTestCase):
 
-    def test_attendee_performers_get(self, time):
+    def test_attendee_performers_get(self):
         attendee_id = 5555
 
         # Seed performers
@@ -107,7 +107,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
             limit=10
         )
 
-        result = dao.attendee_performers_get(attendee_id=attendee_id, filter=filter)
+        result = dao.attendee_performers_get(filter)
 
         performers = result["performers"]
         counts = result["counts"]
