@@ -7,11 +7,11 @@ from flask_cors import CORS
 from api.application import FlaskApp
 from api.debugger import initialize_flask_server_debugger_if_needed
 from api.rest import (
-    artist_api,
     auth_api,
     features_api,
     file_service_api,
     performances_api,
+    performer_api,
     posts_api,
     tags_api,
     users_api,
@@ -38,7 +38,7 @@ app.register_blueprint(file_service_api.blueprint, url_prefix="/api/fileservice/
 app.register_blueprint(posts_api.blueprint, url_prefix="/api/posts/0.1")
 app.register_blueprint(auth_api.blueprint, url_prefix="/api/auth/0.1")
 app.register_blueprint(users_api.blueprint, url_prefix="/api/users/0.1")
-app.register_blueprint(artist_api.blueprint, url_prefix="/api/artists/0.1")
+app.register_blueprint(performer_api.blueprint, url_prefix="/api/performers/0.1")
 app.register_blueprint(features_api.blueprint, url_prefix="/api/features/0.1")
 app.register_blueprint(tags_api.blueprint, url_prefix="/api/tags/0.1")
 app.register_blueprint(performances_api.blueprint, url_prefix="/api/performances/0.1")

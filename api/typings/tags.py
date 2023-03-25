@@ -4,7 +4,7 @@ from typing import List
 
 class TaggedEntityType(Enum):
     USER = "user"
-    ARTIST = "artist"
+    PERFORMER = "performer"
     PERFORMANCE = "performance"
 
 

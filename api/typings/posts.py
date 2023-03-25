@@ -3,7 +3,7 @@ from typing import List, Optional
 
 
 class PostOwnerType(Enum):
-    ARTIST = "artist"
+    PERFORMER = "performer"
     USER = "user"
 
 
@@ -91,7 +91,7 @@ class PostsGetResult(object):
 
 
 class ProfileType(Enum):
-    ARTIST = "artist"
+    PERFORMER = "performer"
     USER = "user"
 
 

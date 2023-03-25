@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS gigs.post;
 CREATE TABLE gigs.post (
     id int(10) unsigned auto_increment,
     owner_id int(10) unsigned NOT NULL,
-    owner_type enum('user', 'artist') NOT NULL,
+    owner_type enum('user', 'performer') NOT NULL,
     content text NULL,
     creator_id int(10) unsigned NOT NULL,
     create_time datetime NOT NULL,
@@ -69,10 +69,10 @@ CREATE TABLE gigs.users (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
-DROP TABLE IF EXISTS gigs.artists;
-CREATE TABLE gigs.artists (
+DROP TABLE IF EXISTS gigs.performers;
+CREATE TABLE gigs.performers (
   id int(10) unsigned auto_increment,
-  artist_name varchar(128) NOT NULL,
+  performer_name varchar(128) NOT NULL,
   biography varchar(500) default NULL,
   create_time datetime NOT NULL,
   update_time datetime default NULL,
@@ -80,7 +80,7 @@ CREATE TABLE gigs.artists (
   owner_id int(10) unsigned,
   image_url varchar(512) NULL,
   PRIMARY KEY (id),
-  INDEX artist_name_idx(artist_name),
+  INDEX performer_name_idx(performer_name),
   UNIQUE INDEX owner_id_idx(owner_id),
   UNIQUE INDEX uuid_idx(uuid)  
 ) ENGINE = InnoDB

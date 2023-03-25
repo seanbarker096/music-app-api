@@ -141,8 +141,8 @@ class PostsDAO(object):
 
         # If include_owned set, we want to grab all posts the user owns, along with ones they have featured on their profile, or hav ebeen tagged in (if those filters are set). If we use where here, we will filter out tagged and featured posts this query finds, because the user will not own any of these. We therefore LEFT JOIN the posts table on itself.
         if filter.include_owned is True and filter.profile_id and filter.profile_type:
-            if filter.profile_type == ProfileType.ARTIST.value:
-                owner_type = PostOwnerType.ARTIST.value
+            if filter.profile_type == ProfileType.PERFORMER.value:
+                owner_type = PostOwnerType.PERFORMER.value
             if filter.profile_type == ProfileType.USER.value:
                 owner_type = PostOwnerType.USER.value
             joins.append(
@@ -164,8 +164,8 @@ class PostsDAO(object):
         if filter.include_featured is True:
             if filter.profile_type == ProfileType.USER.value:
                 featurer_type = FeaturerType.USER.value
-            if filter.profile_type == ProfileType.ARTIST.value:
-                featurer_type = FeaturerType.ARTIST.value
+            if filter.profile_type == ProfileType.PERFORMER.value:
+                featurer_type = FeaturerType.PERFORMER.value
 
             joins.append(
                 """
@@ -187,8 +187,8 @@ class PostsDAO(object):
         if filter.include_tagged is True:
             if filter.profile_type == ProfileType.USER.value:
                 tagged_entity_type = TaggedEntityType.USER.value
-            if filter.profile_type == ProfileType.ARTIST.value:
-                tagged_entity_type = TaggedEntityType.ARTIST.value
+            if filter.profile_type == ProfileType.PERFORMER.value:
+                tagged_entity_type = TaggedEntityType.PERFORMER.value
 
             joins.append(
                 """

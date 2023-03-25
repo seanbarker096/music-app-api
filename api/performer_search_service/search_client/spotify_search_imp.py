@@ -4,9 +4,12 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from api.artist_search_service.search_client.search_imp import SearchImp
-from api.artist_search_service.types import ArtistsSearchRequest, ArtistsSearchResult
-from api.typings.artists import ArtistSearchArtist
+from api.performer_search_service.search_client.search_imp import SearchImp
+from api.performer_search_service.types import (
+    PerformersSearchRequest,
+    PerformersSearchResult,
+)
+from api.typings.performers import PerformerSearchPerformer
 from exceptions.exceptions import AppSearchServiceException
 
 
@@ -22,11 +25,11 @@ class SpotifySearchRequest:
 class SpotifySearchImp(SearchImp):
     def __init__(self, config):
         self.config = config
-        self.secret = config["config_file"]["artist-search-service"].get("spotity-client-secret")
-        self.client_id = config["config_file"]["artist-search-service"].get("spotify-client-id")
+        self.secret = config["config_file"]["performer-search-service"].get("spotity-client-secret")
+        self.client_id = config["config_file"]["performer-search-service"].get("spotify-client-id")
         self.client = "spotify"
 
-    def process_request(self, request: ArtistsSearchRequest) -> SpotifySearchRequest:
+    def process_request(self, request: PerformersSearchRequest) -> SpotifySearchRequest:
         ## Currently only support the q search term
         searchTerm = request.search_terms.get("q", None)
 
@@ -39,23 +42,23 @@ class SpotifySearchImp(SearchImp):
         ## TODO: Avoid calling this every time. Instead cache the token somwhere and request it
         access_token = self._spotify_get_access_token()
 
-        return self._spotify_search_artists(access_token, request.q, request.limit)
+        return self._spotify_search_performers(access_token, request.q, request.limit)
 
-    def build_search_result(self, api_result: Dict[str, Any]) -> ArtistsSearchResult:
+    def build_search_result(self, api_result: Dict[str, Any]) -> PerformersSearchResult:
 
-        dict = api_result.get("artists", None)
+        dict = api_result.get("performers", None)
 
         limit = dict.get("limit", None)
         next = dict.get("next", None)
         previous = dict.get("previous", None)
         offset = dict.get("offset", None)
         total = dict.get("total", None)
-        artists = dict.get("items", [])
+        performers = dict.get("items", [])
 
-        app_artists = [self._build_app_artist(artist) for artist in artists]
+        app_performers = [self._build_app_performer(performer) for performer in performers]
 
-        return ArtistsSearchResult(
-            artists=app_artists,
+        return PerformersSearchResult(
+            performers=app_performers,
             total=total,
             offset=offset,
             limit=limit,
@@ -91,68 +94,68 @@ class SpotifySearchImp(SearchImp):
                 f"Failed to get access token from spotify api. Error: {json.dumps(str(err))}"
             )
 
-    def _spotify_search_artists(self, access_token, search_term, limit) -> Dict[str, Any]:
+    def _spotify_search_performers(self, access_token, search_term, limit) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
-        url = f"https://api.spotify.com/v1/search?q={search_term}&type=artist&limit={limit}"
+        url = f"https://api.spotify.com/v1/search?q={search_term}&type=performer&limit={limit}"
         response = requests.get(url, headers=headers)
         try:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as err:
             raise Exception(
-                f"Error in request to spotify api when searching for artists. Error: {json.dumps(str(err))}"
+                f"Error in request to spotify api when searching for performers. Error: {json.dumps(str(err))}"
             )
 
-    def _build_app_artist(self, artist: dict) -> ArtistSearchArtist:
+    def _build_app_performer(self, performer: dict) -> PerformerSearchPerformer:
 
-        self._assert_field_exists("name", artist)
-        name = artist["name"]
+        self._assert_field_exists("name", performer)
+        name = performer["name"]
 
-        self._assert_field_exists("id", artist)
-        uuid = artist["id"]
+        self._assert_field_exists("id", performer)
+        uuid = performer["id"]
 
-        self._assert_field_exists("images", artist)
-        image_url = artist["images"][-1]["url"] if len(artist["images"]) > 0 else None
+        self._assert_field_exists("images", performer)
+        image_url = performer["images"][-1]["url"] if len(performer["images"]) > 0 else None
 
-        return ArtistSearchArtist(name=name, uuid=uuid, image_url=image_url)
+        return PerformerSearchPerformer(name=name, uuid=uuid, image_url=image_url)
 
-    def _assert_field_exists(self, field: str, artist: Dict[str, Any]):
+    def _assert_field_exists(self, field: str, performer: Dict[str, Any]):
 
-        if artist.get(field, None) is None:
+        if performer.get(field, None) is None:
             raise Exception(
-                f"Field {field} not found in in spotify api response. Response: {json.dumps(artist)}"
+                f"Field {field} not found in in spotify api response. Response: {json.dumps(performer)}"
             )
 
-    def get_artist_by_uuid(
+    def get_performer_by_uuid(
         self,
         uuid: str,
-    ) -> ArtistSearchArtist:
+    ) -> PerformerSearchPerformer:
         access_token = self._spotify_get_access_token()
-        artist_dict = self._get_artist_by_uuid(access_token, uuid)
+        performer_dict = self._get_performer_by_uuid(access_token, uuid)
 
-        self._assert_field_exists("name", artist_dict)
-        name = artist_dict["name"]
+        self._assert_field_exists("name", performer_dict)
+        name = performer_dict["name"]
 
-        self._assert_field_exists("id", artist_dict)
-        uuid = artist_dict["id"]
+        self._assert_field_exists("id", performer_dict)
+        uuid = performer_dict["id"]
 
-        self._assert_field_exists("images", artist_dict)
-        image_url = artist_dict["images"][-1]["url"] if len(artist_dict["images"]) > 0 else None
+        self._assert_field_exists("images", performer_dict)
+        image_url = performer_dict["images"][-1]["url"] if len(performer_dict["images"]) > 0 else None
 
-        return ArtistSearchArtist(name=name, uuid=uuid, image_url=image_url)
+        return PerformerSearchPerformer(name=name, uuid=uuid, image_url=image_url)
 
-    def _get_artist_by_uuid(
+    def _get_performer_by_uuid(
         self,
         access_token: str,
         uuid: str,
     ) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
-        url = f"https://api.spotify.com/v1/artists/{uuid}"
+        url = f"https://api.spotify.com/v1/performers/{uuid}"
         response = requests.get(url, headers=headers)
         try:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as err:
             raise Exception(
-                f"Error in request to spotify api when getting artist by uuid: {uuid}. Error: {json.dumps(str(err))}"
+                f"Error in request to spotify api when getting performer by uuid: {uuid}. Error: {json.dumps(str(err))}"
             )

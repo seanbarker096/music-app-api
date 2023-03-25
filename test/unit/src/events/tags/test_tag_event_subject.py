@@ -33,7 +33,7 @@ class TagEventSubjectTest(TestCase):
         #     id=post_id,
         #     owner_id=post_creator_id,
         #     owner_type=PostOwnerType.USER.value,
-        #     content="A video from an artist performance",
+        #     content="A video from an performer performance",
         #     create_time=time.time(),
         #     creator_id=post_creator_id,
         # )

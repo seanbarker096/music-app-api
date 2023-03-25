@@ -1,12 +1,15 @@
 from typing import Optional
 
-from api.midlayer.artists_mid import ArtistsMidlayerConnections, ArtistsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerConnections, FeaturesMidlayerMixin
 from api.midlayer.performances_mid import (
     PerformanceAttendancesMidlayerConnections,
     PerformanceAttendancesMidlayerMixin,
     PerformancesMidlayerConnections,
     PerformancesMidlayerMixin,
+)
+from api.midlayer.performers_mid import (
+    PerformersMidlayerConnections,
+    PerformersMidlayerMixin,
 )
 from api.midlayer.posts_mid import (
     PostAttachmentsMidlayerConnections,
@@ -25,8 +28,8 @@ class MidlayerConnections:
         post_mid_conns: Optional[PostMidlayerConnections] = None,
         post_attachments_mid_conns: Optional[PostAttachmentsMidlayerConnections] = None,
         user_mid_conns: Optional[UserMidlayerConnections] = None,
-        artist_mid_conns: Optional[ArtistsMidlayerConnections] = None,
-        feature_mid_conns: Optional[ArtistsMidlayerConnections] = None,
+        performer_mid_conns: Optional[PerformersMidlayerConnections] = None,
+        feature_mid_conns: Optional[PerformersMidlayerConnections] = None,
         tag_mid_conns: Optional[TagsMidlayerConnections] = None,
         performance_mid_conns: Optional[PerformancesMidlayerConnections] = None,
         performance_attendance_mid_conns: Optional[
@@ -40,8 +43,8 @@ class MidlayerConnections:
             else PostAttachmentsMidlayerConnections(config)
         )
         self.user_mid_conns = user_mid_conns if user_mid_conns else UserMidlayerConnections(config)
-        self.artist_mid_conns = (
-            artist_mid_conns if artist_mid_conns else ArtistsMidlayerConnections(config)
+        self.performer_mid_conns = (
+            performer_mid_conns if performer_mid_conns else PerformersMidlayerConnections(config)
         )
         self.feature_mid_conns = (
             feature_mid_conns if feature_mid_conns else FeaturesMidlayerConnections(config)
@@ -63,7 +66,7 @@ class Midlayer(
     PostsMidlayerMixin,
     PostAttachmentsMidlayerMixin,
     UsersMidlayerMixin,
-    ArtistsMidlayerMixin,
+    PerformersMidlayerMixin,
     FeaturesMidlayerMixin,
     TagsMidlayerMixin,
     PerformancesMidlayerMixin,

@@ -84,7 +84,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         owned_post = PostFixtureDTO(
             owner_id=requesting_profile_id,
-            owner_type=PostOwnerType.ARTIST.value,
+            owner_type=PostOwnerType.PERFORMER.value,
             content="User 555 created this post",
             create_time=self.current_time,
             creator_id=requesting_profile_id,
@@ -115,7 +115,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         feature_dto = FeatureFixtureDTO(
             featured_entity_type=FeaturedEntityType.POST.value,
             featured_entity_id=featured_post_id,
-            featurer_type=FeaturerType.ARTIST.value,
+            featurer_type=FeaturerType.PERFORMER.value,
             featurer_id=requesting_profile_id,
             creator_id=requesting_profile_id,
         )
@@ -124,7 +124,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         tag_dto = TagFixtureDTO(
             tagged_entity_id=requesting_profile_id,
-            tagged_entity_type=TaggedEntityType.ARTIST.value,
+            tagged_entity_type=TaggedEntityType.PERFORMER.value,
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
@@ -136,7 +136,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
-            profile_type=ProfileType.ARTIST.value,
+            profile_type=ProfileType.PERFORMER.value,
             include_featured=True,
             include_tagged=True,
             include_owned=True,
@@ -166,10 +166,10 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         owned_post = PostFixtureDTO(
             owner_id=requesting_profile_id,
-            owner_type=PostOwnerType.ARTIST.value,
+            owner_type=PostOwnerType.PERFORMER.value,
             content="User 555 created this post",
             create_time=self.current_time,
-            creator_id=323,  # mock the user id of the person who owns the artist profile
+            creator_id=323,  # mock the user id of the person who owns the performer profile
         )
 
         owned_post_id = self.fixture_factory.post_fixture_create(owned_post)
@@ -197,7 +197,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         feature_dto = FeatureFixtureDTO(
             featured_entity_type=FeaturedEntityType.POST.value,
             featured_entity_id=featured_post_id,
-            featurer_type=FeaturerType.ARTIST.value,
+            featurer_type=FeaturerType.PERFORMER.value,
             featurer_id=other_user_id,
             creator_id=other_user_id,
         )
@@ -206,7 +206,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         tag_dto = TagFixtureDTO(
             tagged_entity_id=other_user_id,
-            tagged_entity_type=TaggedEntityType.ARTIST.value,
+            tagged_entity_type=TaggedEntityType.PERFORMER.value,
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
@@ -218,7 +218,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
-            profile_type=ProfileType.ARTIST.value,
+            profile_type=ProfileType.PERFORMER.value,
             include_featured=False,
             include_tagged=False,
             include_owned=True,
@@ -269,7 +269,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         feature_dto = FeatureFixtureDTO(
             featured_entity_type=FeaturedEntityType.POST.value,
             featured_entity_id=featured_post_id,
-            featurer_type=FeaturerType.ARTIST.value,
+            featurer_type=FeaturerType.PERFORMER.value,
             featurer_id=other_user_id,
             creator_id=other_user_id,
         )
@@ -278,7 +278,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         tag_dto = TagFixtureDTO(
             tagged_entity_id=requesting_profile_id,
-            tagged_entity_type=TaggedEntityType.ARTIST.value,
+            tagged_entity_type=TaggedEntityType.PERFORMER.value,
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
@@ -290,7 +290,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
-            profile_type=ProfileType.ARTIST.value,
+            profile_type=ProfileType.PERFORMER.value,
             include_featured=False,
             include_tagged=True,
             include_owned=False,
@@ -341,7 +341,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
         feature_dto = FeatureFixtureDTO(
             featured_entity_type=FeaturedEntityType.POST.value,
             featured_entity_id=featured_post_id,
-            featurer_type=FeaturerType.ARTIST.value,
+            featurer_type=FeaturerType.PERFORMER.value,
             featurer_id=requesting_profile_id,
             creator_id=requesting_profile_id,
         )
@@ -350,7 +350,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         tag_dto = TagFixtureDTO(
             tagged_entity_id=other_user_id,
-            tagged_entity_type=TaggedEntityType.ARTIST.value,
+            tagged_entity_type=TaggedEntityType.PERFORMER.value,
             tagged_in_entity_id=tagged_post_id,
             tagged_in_entity_type=TaggedInEntityType.POST.value,
             creator_id=1111,
@@ -362,7 +362,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
-            profile_type=ProfileType.ARTIST.value,
+            profile_type=ProfileType.PERFORMER.value,
             include_featured=True,
             include_tagged=False,
             include_owned=False,

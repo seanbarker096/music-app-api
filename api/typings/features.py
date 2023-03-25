@@ -4,7 +4,7 @@ from typing import List, Optional
 
 class FeaturerType(Enum):
     USER = "user"
-    ARTIST = "artist"
+    PERFORMER = "performer"
 
 
 class FeaturedEntityType(Enum):
@@ -15,7 +15,7 @@ class Feature:
     id: int = ...
     featured_entity_type: FeaturedEntityType = ...  # The object that has been featured. E.g. a post
     featured_entity_id: int = ...
-    featurer_type: FeaturerType  # The object which has featured the featured entity. E.g. a artist, or a user
+    featurer_type: FeaturerType  # The object which has featured the featured entity. E.g. a performer, or a user
     featurer_id: int
     creator_id: int  # The auth user who created the feature object
 

@@ -1,9 +1,9 @@
 from typing import Dict, Optional
 
-from api.typings.artists import ArtistSearchArtist
+from api.typings.performers import PerformerSearchPerformer
 
 
-class ArtistsSearchRequest:
+class PerformersSearchRequest:
     search_terms: Dict[str, any] = ...
     limit: Optional[int] = ...
     offset: Optional[int] = ...
@@ -19,8 +19,8 @@ class ArtistsSearchRequest:
         self.offset = offset
 
 
-class ArtistsSearchResult:
-    artists: list[ArtistSearchArtist] = ...
+class PerformersSearchResult:
+    performers: list[PerformerSearchPerformer] = ...
     total: int = ...
     offset: int = ...
     limit: int = ...
@@ -29,14 +29,14 @@ class ArtistsSearchResult:
 
     def __init__(
         self,
-        artists: list[ArtistSearchArtist],
+        performers: list[PerformerSearchPerformer],
         total: int,
         offset: int,
         limit: int,
         next: Optional[str] = None,
         previous: Optional[str] = None,
     ):
-        self.artists = artists
+        self.performers = performers
         self.total = total
         self.offset = offset
         self.limit = limit

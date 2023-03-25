@@ -1,22 +1,24 @@
 import json
 from typing import Optional
 
-from api.artist_search_service.search_client.search_imp import SearchImp
-from api.artist_search_service.search_client.spotify_search_imp import SpotifySearchImp
-from api.artist_search_service.types import (
-    ArtistSearchArtist,
-    ArtistsSearchRequest,
-    ArtistsSearchResult,
+from api.performer_search_service.search_client.search_imp import SearchImp
+from api.performer_search_service.search_client.spotify_search_imp import (
+    SpotifySearchImp,
+)
+from api.performer_search_service.types import (
+    PerformerSearchPerformer,
+    PerformersSearchRequest,
+    PerformersSearchResult,
 )
 from exceptions.exceptions import AppSearchServiceException
 
 
-class ArtistSearchService:
+class PerformerSearchService:
     def __init__(self, config, search_imp: Optional[SearchImp] = None):
         self.config = config
 
         if not search_imp:
-            implementation_type = self.config["config_file"]["artist-search-service"].get(
+            implementation_type = self.config["config_file"]["performer-search-service"].get(
                 "search-client", "spotify"
             )
 
@@ -27,7 +29,7 @@ class ArtistSearchService:
         else:
             self.search_imp = search_imp
 
-    def search(self, request: ArtistsSearchRequest) -> ArtistsSearchResult:
+    def search(self, request: PerformersSearchRequest) -> PerformersSearchResult:
         try:
             processed_request = self.search_imp.process_request(request)
 
@@ -37,22 +39,22 @@ class ArtistSearchService:
 
         except Exception as err:
             raise AppSearchServiceException(
-                f"Failed to fetch artists from spotfy api because {json.dumps(str(err))}"
+                f"Failed to fetch performers from spotfy api because {json.dumps(str(err))}"
             )
 
-    def get_artist_by_uuid(self, uuid: str) -> ArtistSearchArtist:
+    def get_performer_by_uuid(self, uuid: str) -> PerformerSearchPerformer:
         try:
             if not isinstance(uuid, str) or not uuid:
                 raise AppSearchServiceException(f"Invalid uuid provided: {uuid}")
 
             if self.search_imp.client != "spotify":
                 raise AppSearchServiceException(
-                    "get_artist_by_uuid is only supported for spotify search inmplementation"
+                    "get_performer_by_uuid is only supported for spotify search inmplementation"
                 )
 
-            return self.search_imp.get_artist_by_uuid(uuid)
+            return self.search_imp.get_performer_by_uuid(uuid)
 
         except Exception as err:
             raise AppSearchServiceException(
-                f"Failed to get artist by uuid from spotfy api because {json.dumps(str(err))}"
+                f"Failed to get performer by uuid from spotfy api because {json.dumps(str(err))}"
             )

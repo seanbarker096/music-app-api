@@ -18,7 +18,7 @@ class PerformancesDBAlias:
     PERFORMANCE_ID = "performance_id"
     PERFORMANCE_VENUE_ID = "performance_venue_id"
     PERFORMANCE_PERFORMER_ID = "performance_performer_id"
-    PERFORMANCE_DATE = "performance_date"  # users can create performances, so we don't want a unique performance if two usres input a different time of day but the same artist. We therefore store the date only
+    PERFORMANCE_DATE = "performance_date"  # users can create performances, so we don't want a unique performance if two usres input a different time of day but the same performer. We therefore store the date only
     PERFORMANCE_CREATE_TIME = "performance_create_time"
     PERFORMANCE_UPDATE_TIME = "performance_update_time"
 
@@ -105,6 +105,10 @@ class PerformancesDAO:
             performances.append(performance)
 
         return performances
+    
+
+    # def attendee_performers(self, filter: AttendeePerformersGetFilter) -> List[Performer]:
+
 
     def _build_performance_from_row(self, db_row: Dict[str, any]) -> Performance:
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_ID)

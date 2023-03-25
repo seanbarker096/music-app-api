@@ -5,11 +5,11 @@ from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
 from api.dao.users_dao import UsersDAO
 from api.file_service.api import FileService
 from api.file_service.typings.typings import FileCreateRequest
-from api.midlayer.artists_mid import ArtistsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerMixin
+from api.midlayer.performers_mid import PerformersMidlayerMixin
 from api.midlayer.tags_mid import TagsMidlayerMixin
-from api.typings.artists import ArtistCreateRequest
 from api.typings.features import FeatureCreateRequest, FeaturedEntityType, FeaturerType
+from api.typings.performers import PerformerCreateRequest
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostCreateRequest,
@@ -37,7 +37,7 @@ features_mid = FeaturesMidlayerMixin(config_dict)
 posts_dao = PostsDAO(config_dict)
 post_attachments_dao = PostAttachmentsDAO(config_dict)
 
-aritsts_mid = ArtistsMidlayerMixin(config_dict)
+performers_mid = PerformersMidlayerMixin(config_dict)
 
 file_service = FileService(config_dict)
 
@@ -182,9 +182,9 @@ feature = features_mid.feature_create(feature_create_request).feature
 # )
 
 
-###################### CREATE ARTISTS ######################
+###################### CREATE PERFORMERS ######################
 
-artist_create_request = ArtistCreateRequest(
+performer_create_request = PerformerCreateRequest(
     name="Eminem",
     biography="I'm a rapper",
     uuid="7dGJo4pcD2V6oG8kP0tJRR",
@@ -192,14 +192,14 @@ artist_create_request = ArtistCreateRequest(
     image_url="https://i.scdn.co/image/ab6761610000f178a00b11c129b27a88fc72f36b",
 )
 
-artist = aritsts_mid.artist_create(artist_create_request).artist
+performer = performers_mid.performer_create(performer_create_request).performer
 
 
 # Create a post for him
 
 post_create_request = PostCreateRequest(
-    owner_id=artist.id,
-    owner_type=PostOwnerType.ARTIST.value,
+    owner_id=performer.id,
+    owner_type=PostOwnerType.PERFORMER.value,
     content="Eminems first post",
     creator_id=user_two.id,
 )

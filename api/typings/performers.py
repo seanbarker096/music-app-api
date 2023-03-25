@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 
-class Artist:
+class Performer:
     id: int = ...
     uuid: str = ...
     name: str = ...
@@ -32,7 +32,7 @@ class Artist:
         self.image_url = image_url
 
 
-class ArtistSearchArtist:
+class PerformerSearchPerformer:
     uuid: str = ...
     name: str = ...
     image_url: Optional[str] = ...
@@ -42,8 +42,8 @@ class ArtistSearchArtist:
         self.name = name
         self.image_url = image_url
 
-
-class ArtistsGetFilter:
+ 
+class PerformersGetFilter:
     ids: Optional[List[int]] = ...
     uuids: Optional[List[int]] = ...
 
@@ -52,14 +52,14 @@ class ArtistsGetFilter:
         self.ids = ids
 
 
-class ArtistsGetResult:
-    artists: List[Artist] = ...
+class PerformersGetResult:
+    performers: List[Performer] = ...
 
-    def __init__(self, artists: List[Artist]) -> None:
-        self.artists = artists
+    def __init__(self, performers: List[Performer]) -> None:
+        self.performers = performers
 
 
-class ArtistCreateRequest:
+class PerformerCreateRequest:
     name: str = ...
     uuid: str = ...
     biography: Optional[str] = ...
@@ -81,8 +81,8 @@ class ArtistCreateRequest:
         self.image_url = image_url
 
 
-class ArtistCreateResult:
-    artist: Artist = ...
+class PerformerCreateResult:
+    performer: Performer = ...
 
-    def __init__(self, artist: Artist) -> None:
-        self.artist = artist
+    def __init__(self, performer: Performer) -> None:
+        self.performer = performer
