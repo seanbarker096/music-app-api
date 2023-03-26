@@ -11,7 +11,6 @@ from api.typings.performances import (
     PerformanceCreateRequest,
     PerformancesGetFilter,
 )
-from api.utils import date_time_to_unix_time
 
 
 class PerformancesDBAlias:
@@ -31,9 +30,9 @@ class PerformancesDAO:
         "id as " + PerformancesDBAlias.PERFORMANCE_ID,
         "venue_id as " + PerformancesDBAlias.PERFORMANCE_VENUE_ID,
         "performer_id as " + PerformancesDBAlias.PERFORMANCE_PERFORMER_ID,
-        "performance_date as " + PerformancesDBAlias.PERFORMANCE_DATE,
-        "create_time as " + PerformancesDBAlias.PERFORMANCE_CREATE_TIME,
-        "update_time as " + PerformancesDBAlias.PERFORMANCE_UPDATE_TIME,
+        "UNIX_TIMESTAMP(performance_date) as " + PerformancesDBAlias.PERFORMANCE_DATE,
+        "UNIX_TIMESTAMP(create_time) as " + PerformancesDBAlias.PERFORMANCE_CREATE_TIME,
+        "UNIX_TIMESTAMP(update_time) as " + PerformancesDBAlias.PERFORMANCE_UPDATE_TIME,
     ]
 
     def performance_create(self, request: PerformanceCreateRequest) -> Performance:
@@ -122,18 +121,14 @@ class PerformancesDAO:
         performer_id = int(db_row[PerformancesDBAlias.PERFORMANCE_PERFORMER_ID])
 
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_DATE)
-        performance_date = float(
-            date_time_to_unix_time(db_row[PerformancesDBAlias.PERFORMANCE_DATE])
-        )
+        performance_date = int(db_row[PerformancesDBAlias.PERFORMANCE_DATE])
 
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_CREATE_TIME)
-        create_time = float(
-            date_time_to_unix_time(db_row[PerformancesDBAlias.PERFORMANCE_CREATE_TIME])
-        )
+        create_time = int(db_row[PerformancesDBAlias.PERFORMANCE_CREATE_TIME])
 
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_UPDATE_TIME)
         update_time = (
-            float(date_time_to_unix_time(db_row[PerformancesDBAlias.PERFORMANCE_UPDATE_TIME]))
+            int(db_row[PerformancesDBAlias.PERFORMANCE_UPDATE_TIME])
             if db_row[PerformancesDBAlias.PERFORMANCE_UPDATE_TIME]
             else None
         )
@@ -163,7 +158,7 @@ class PerformanceAttendancesDAO:
         "id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID,
         "performance_id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID,
         "attendee_id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID,
-        "create_time as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME,
+        "UNIX_TIMESTAMP(create_time) as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME,
     ]
 
     def performance_attendance_create(

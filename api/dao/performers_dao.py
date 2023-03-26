@@ -10,7 +10,6 @@ from api.typings.performers import (
     PerformerCreateRequest,
     PerformersGetFilter,
 )
-from api.utils import date_time_to_unix_time
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -29,7 +28,7 @@ class PerformersDAO(object):
     db: DB
 
     """
-    Some queries such as in attendee_performers_get requires a group by on all columns in performances table. We therefore create this so we can iterate over it when adding it to group by clauses. Using PERFORMANCES_SELECTS in a group by would fail as it contains an alias
+    Some queries such as in attendee_performers_get requires a GROUP BY on all columns in performances table. We therefore create this so we can iterate over it when adding it to group by clauses. Using PERFORMANCES_SELECTS in a group by would fail as it contains an alias
     """
     PERFORMER_COLUMNS = [
         "p.id",
@@ -43,14 +42,14 @@ class PerformersDAO(object):
     ]
 
     PERFORMER_SELECTS = [
-        PERFORMER_COLUMNS[0] + ' as ' + PerformerDBAlias.PERFORMER_ID,
-        PERFORMER_COLUMNS[1] + ' as ' + PerformerDBAlias.PERFORMER_UUID,
-        PERFORMER_COLUMNS[2] + ' as ' + PerformerDBAlias.PERFORMER_NAME,
-        PERFORMER_COLUMNS[3] + ' as ' + PerformerDBAlias.PERFORMER_CREATE_TIME,
-        PERFORMER_COLUMNS[4] + ' as ' + PerformerDBAlias.PERFORMER_BIOGRAPHY,
-        PERFORMER_COLUMNS[5] + ' as ' + PerformerDBAlias.PERFORMER_UPDATED_TIME,
-        PERFORMER_COLUMNS[6] + ' as ' + PerformerDBAlias.PERFORMER_OWNER_ID,
-        PERFORMER_COLUMNS[7] + ' as ' + PerformerDBAlias.PERFORMER_IMAGE_URL,
+        f"{PERFORMER_COLUMNS[0]} as {PerformerDBAlias.PERFORMER_ID}",
+        f"{PERFORMER_COLUMNS[1]} as {PerformerDBAlias.PERFORMER_UUID}",
+        f"{PERFORMER_COLUMNS[2]} as {PerformerDBAlias.PERFORMER_NAME}",
+        f"UNIX_TIMESTAMP({PERFORMER_COLUMNS[3]}) as {PerformerDBAlias.PERFORMER_CREATE_TIME}",
+        f"{PERFORMER_COLUMNS[4]} as {PerformerDBAlias.PERFORMER_BIOGRAPHY}",
+        f"UNIX_TIMESTAMP({PERFORMER_COLUMNS[5]}) as {PerformerDBAlias.PERFORMER_UPDATED_TIME}",
+        f"{PERFORMER_COLUMNS[6]} as {PerformerDBAlias.PERFORMER_OWNER_ID}",
+        f"{PERFORMER_COLUMNS[7]} as {PerformerDBAlias.PERFORMER_IMAGE_URL}",
     ]
 
     def __init__(self, config, db: Optional[DB] = None):
@@ -123,17 +122,7 @@ class PerformersDAO(object):
     def attendee_performers_get(
         self, filter: AttendeePerformersGetFilter
     ) -> Dict[str, List[Performer] | Dict[str, int]]:
-        # selects = f"""
-        #     SELECT {', '.join(self.PERFORMER_SELECTS)}, COUNT(pa.id) as performance_count,
-        #     INNER JOIN performance_attendance as pa
-        #         ON pa.performer_id = performers.id
-        #         AND pa.attendee_id = {filter.attendee_id}
-        #     FROM performers
-        #     GROUP BY {', '.join(self.PERFORMER_SELECTS)}
-        #     ORDER BY performance_count DESC
-        #     LIMIT {filter.limit}
-        # """
-
+        
         selects = self.PERFORMER_SELECTS
 
         group_by = False
@@ -211,9 +200,7 @@ class PerformersDAO(object):
         performer_name = db_row[PerformerDBAlias.PERFORMER_NAME]
 
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_CREATE_TIME)
-        performer_create_time = float(
-            date_time_to_unix_time(db_row[PerformerDBAlias.PERFORMER_CREATE_TIME])
-        )
+        performer_create_time = int(db_row[PerformerDBAlias.PERFORMER_CREATE_TIME])
 
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_BIOGRAPHY)
         performer_biography = (
@@ -224,7 +211,7 @@ class PerformersDAO(object):
 
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_UPDATED_TIME)
         performer_update_time = (
-            float(date_time_to_unix_time(db_row[PerformerDBAlias.PERFORMER_UPDATED_TIME]))
+            int(db_row[PerformerDBAlias.PERFORMER_UPDATED_TIME])
             if db_row[PerformerDBAlias.PERFORMER_UPDATED_TIME]
             else None
         )

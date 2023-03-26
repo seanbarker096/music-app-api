@@ -16,7 +16,6 @@ from api.typings.posts import (
     ProfileType,
 )
 from api.typings.tags import TaggedEntityType, TaggedInEntityType
-from api.utils import date_time_to_unix_time
 
 
 class PostDBAlias:
@@ -34,14 +33,14 @@ class PostsDAO(object):
     db: DB
 
     POST_SELECTS = [
-        "id as " + PostDBAlias.POST_ID,
-        "owner_id as " + PostDBAlias.POST_OWNER_ID,
-        "owner_type as " + PostDBAlias.POST_OWNER_TYPE,
-        "content as " + PostDBAlias.POST_CONTENT,
-        "creator_id as " + PostDBAlias.POST_CREATOR_ID,
-        "create_time as " + PostDBAlias.POST_CREATE_TIME,
-        "update_time as " + PostDBAlias.POST_UPDATE_TIME,
-        "is_deleted as " + PostDBAlias.POST_IS_DELETED,
+        "p.id as " + PostDBAlias.POST_ID,
+        "p.owner_id as " + PostDBAlias.POST_OWNER_ID,
+        "p.owner_type as " + PostDBAlias.POST_OWNER_TYPE,
+        "p.content as " + PostDBAlias.POST_CONTENT,
+        "p.creator_id as " + PostDBAlias.POST_CREATOR_ID,
+        "UNIX_TIMESTAMP(p.create_time) as " + PostDBAlias.POST_CREATE_TIME,
+        "UNIX_TIMESTAMP(p.update_time) as " + PostDBAlias.POST_UPDATE_TIME,
+        "p.is_deleted as " + PostDBAlias.POST_IS_DELETED,
     ]
 
     def __init__(self, config, db: Optional[DB] = None):
@@ -81,26 +80,26 @@ class PostsDAO(object):
     def posts_get(self, filter: PostsGetFilter) -> List[Post]:
         selects = f"""
             SELECT {', '.join(self.POST_SELECTS)} 
-            FROM post
+            FROM post as p
         """
 
         wheres = []
         binds = []
 
         if filter.ids:
-            wheres.append("id in %s")
+            wheres.append("p.id in %s")
             binds.append(filter.ids)
 
         if filter.is_deleted:
-            wheres.append("is_deleted = %s")
+            wheres.append("p.is_deleted = %s")
             binds.append(int(filter.is_deleted))
 
         if filter.owner_ids:
-            wheres.append("owner_id in %s")
+            wheres.append("p.owner_id in %s")
             binds.append(filter.owner_ids)
 
         if filter.owner_types:
-            wheres.append("owner_type = %s")
+            wheres.append("p.owner_type = %s")
             binds.append(filter.owner_types)
 
         where_string = build_where_query_string(wheres, "AND")
@@ -121,10 +120,9 @@ class PostsDAO(object):
     def profile_posts_get(self, filter: ProfilePostsGetFilter) -> List[Post]:
         # IF THIS QUERY IS SLOW CONSIDER USING A UNION ALL
 
-        # We are using the posts table twice in this query, so we append the table name to the selects to avoid MYSQL ambiguity errors
         selects = f"""
-            SELECT {', '.join(['post.'+ select for select in self.POST_SELECTS])} 
-            FROM post
+            SELECT {', '.join(self.POST_SELECTS)} 
+            FROM post as p
         """
 
         wheres = []
@@ -148,7 +146,7 @@ class PostsDAO(object):
             joins.append(
                 """
             LEFT JOIN post owned_post
-                ON owned_post.id = post.id
+                ON owned_post.id = p.id
                 AND owned_post.owner_id = %s
                 AND owned_post.owner_type = %s
             """
@@ -170,7 +168,7 @@ class PostsDAO(object):
             joins.append(
                 """
             LEFT JOIN feature
-                ON  feature.featured_entity_id = post.id
+                ON  feature.featured_entity_id = p.id
                 AND feature.featured_entity_type = %s
                 AND feature.featurer_type = %s
                 AND feature.featurer_id = %s
@@ -192,8 +190,8 @@ class PostsDAO(object):
 
             joins.append(
                 """
-            LEFT JOIN tag 
-                ON tag.tagged_in_entity_id = post.id
+            LEFT JOIN tag
+                ON tag.tagged_in_entity_id = p.id
                 AND tag.tagged_in_entity_type = %s
                 AND tag.tagged_entity_id = %s
                 AND tag.tagged_entity_type = %s
@@ -208,7 +206,7 @@ class PostsDAO(object):
 
         join_wheres_string = build_where_query_string(join_wheres, "OR", prepend_where_string=False)
 
-        wheres.append(f"post.is_deleted = %s")
+        wheres.append(f"p.is_deleted = %s")
         binds.append(0)
 
         wheres.append(f"({join_wheres_string})")
@@ -253,11 +251,11 @@ class PostsDAO(object):
         creator_id = int(db_row[PostDBAlias.POST_CREATOR_ID])
 
         assert_row_key_exists(db_row, PostDBAlias.POST_CREATE_TIME)
-        create_time = float(date_time_to_unix_time(db_row[PostDBAlias.POST_CREATE_TIME]))
+        create_time = int(db_row[PostDBAlias.POST_CREATE_TIME])
 
         assert_row_key_exists(db_row, PostDBAlias.POST_UPDATE_TIME)
         update_time = (
-            float(date_time_to_unix_time(db_row[PostDBAlias.POST_UPDATE_TIME]))
+            int(db_row[PostDBAlias.POST_UPDATE_TIME])
             if db_row[PostDBAlias.POST_UPDATE_TIME]
             else None
         )
@@ -291,7 +289,7 @@ class PostAttachmentsDAO(object):
         "id as " + PostAttachmentDBAlias.POST_ATTACHMENT_ID,
         "post_id as " + PostAttachmentDBAlias.POST_ATTACHMENT_POST_ID,
         "file_id as " + PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID,
-        "create_time as " + PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME,
+        "UNIX_TIMESTAMP(create_time) as " + PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME,
     ]
 
     def __init__(self, config, db: Optional[DB] = None):
@@ -362,9 +360,7 @@ class PostAttachmentsDAO(object):
         file_id = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID])
 
         assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME)
-        create_time = float(
-            date_time_to_unix_time(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME])
-        )
+        create_time = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME])
 
         return PostAttachment(
             id=post_attachment_id, post_id=post_id, file_id=file_id, create_time=create_time

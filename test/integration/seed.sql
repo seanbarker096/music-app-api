@@ -1,5 +1,7 @@
 USE gigs;
 
+SET TIME_ZONE = '+00:00';
+
 DROP TABLE IF EXISTS gigs.post;
 CREATE TABLE gigs.post (
     id int(10) unsigned auto_increment,

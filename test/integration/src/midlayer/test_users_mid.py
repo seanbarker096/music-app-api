@@ -1,5 +1,7 @@
 import copy
+import json
 import time
+from logging import Logger
 from test.integration import IntegrationTestCase
 from unittest.mock import Mock, patch
 
@@ -19,17 +21,17 @@ from exceptions.response.exceptions import UserAlreadyExistsException
 class UsersMidIntegrationTestCase(IntegrationTestCase):
     def setUp(self):
         super().setUp()
-        now = int(time.time())
+    
         self.test_user = User(
             id=1,
             username="testUser123",
             first_name="Mikel",
             second_name="Arteta",
-            create_time=now,
-            is_deleted=False,
+            create_time=self.current_time,
+            is_deleted=0,
             email="mikel@gmail.com",
             avatar_file_uuid=None,
-            last_login_date=now,
+            last_login_date=self.current_time,
             language_id=1,
             timezone_id=1,
         )
@@ -73,7 +75,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         self.assertIsInstance(user.id, int, "Should return valid user id")
         self.assertEqual(request.email, user.email, "Should return the new users email address")
         self.assertEqual(request.first_name, user.first_name, "Should return the users firstname")
-        self.assertFalse(user.is_deleted, "Should not mark the user as deleted")
+        self.assertEqual(0, user.is_deleted, "Should not mark the user as deleted")
         self.assertEqual(
             request.second_name, user.second_name, "Should return the users second name"
         )
@@ -148,6 +150,8 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         self._seed_user()
 
         users_mid = UsersMidlayerMixin(self.config)
+
+        print(self.current_time) 
 
         user_result = users_mid.get_user_by_username_and_password(
             password="password1", username="testUser123", projection=UsersGetProjection()

@@ -14,7 +14,7 @@ from api.typings.users import (
     UserUpdateRequest,
     UserWithPassword,
 )
-from api.utils import date_time_to_unix_time, hash_password
+from api.utils import hash_password
 from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.response.exceptions import UserNotFoundException
 
@@ -43,11 +43,11 @@ class UsersDAO(object):
         "username as " + UserDBAlias.USER_USERNAME,
         "first_name as " + UserDBAlias.USER_FIRST_NAME,
         "second_name as " + UserDBAlias.USER_SECOND_NAME,
-        "create_time as " + UserDBAlias.USER_CREATE_TIME,
+        "UNIX_TIMESTAMP(create_time) as " + UserDBAlias.USER_CREATE_TIME,
         "is_deleted as " + UserDBAlias.USER_IS_DELETED,
         "email as " + UserDBAlias.USER_EMAIL,
         "avatar_file_uuid as " + UserDBAlias.USER_AVATAR_FILE_UUID,
-        "last_login_date as " + UserDBAlias.USER_LAST_LOGIN_DATE,
+        "UNIX_TIMESTAMP(last_login_date) as " + UserDBAlias.USER_LAST_LOGIN_DATE,
         "language_id as " + UserDBAlias.USER_LANGUAGE_ID,
         "timezone_id as " + UserDBAlias.USER_TIMEZONE_ID,
     ]
@@ -141,7 +141,7 @@ class UsersDAO(object):
             request.first_name,
             request.second_name,
             now,
-            False,
+            0,
             request.email,
             None,
             now,
@@ -237,7 +237,7 @@ class UsersDAO(object):
         second_name = db_row[UserDBAlias.USER_SECOND_NAME]
 
         assert_row_key_exists(db_row, UserDBAlias.USER_CREATE_TIME)
-        create_unix_time = float(date_time_to_unix_time(db_row[UserDBAlias.USER_CREATE_TIME]))
+        create_unix_time = int(db_row[UserDBAlias.USER_CREATE_TIME])
 
         assert_row_key_exists(db_row, UserDBAlias.USER_IS_DELETED)
         is_deleted = db_row[UserDBAlias.USER_IS_DELETED]
@@ -246,9 +246,7 @@ class UsersDAO(object):
         email = db_row[UserDBAlias.USER_EMAIL]
 
         assert_row_key_exists(db_row, UserDBAlias.USER_LAST_LOGIN_DATE)
-        last_login_unix_time = float(
-            date_time_to_unix_time(db_row[UserDBAlias.USER_LAST_LOGIN_DATE])
-        )
+        last_login_unix_time = int(db_row[UserDBAlias.USER_LAST_LOGIN_DATE])
 
         assert_row_key_exists(db_row, UserDBAlias.USER_AVATAR_FILE_UUID)
         avatar_file_uuid = db_row[UserDBAlias.USER_AVATAR_FILE_UUID]

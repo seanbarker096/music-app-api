@@ -7,7 +7,6 @@ from test.integration.src.fixtures.DTO.performance_fixture_dto import (
     PerformanceFixtureDTO,
 )
 from test.integration.src.fixtures.DTO.performer_fixture_dto import PerformerFixtureDTO
-from unittest.mock import patch
 
 from api.dao.performers_dao import PerformersDAO
 from api.typings.performers import AttendeePerformersGetFilter
