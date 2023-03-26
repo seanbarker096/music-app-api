@@ -89,12 +89,12 @@ class PerformerCreateResult:
 
 class AttendeePerformersGetFilter:
     attendee_id: int = ...
-    get_count: bool = ...
+    get_counts: bool = ...
     limit: int = ...
 
-    def __init__(self, attendee_id: int, get_count: bool = False, limit: int = 10) -> None:
+    def __init__(self, attendee_id: int, get_counts: bool = False, limit: int = 10) -> None:
         self.attendee_id = attendee_id
-        self.get_count = get_count
+        self.get_counts = get_counts
         self.limit = limit
 
 

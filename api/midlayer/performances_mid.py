@@ -125,12 +125,12 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
         self, request: PerformanceAttendanceCreateRequest
     ) -> PerformanceAttendanceCreateResult:
 
-        performance_id = process_int_request_param(
+        process_int_request_param(
             parameter_name="performance_id",
             parameter=request.performance_id,
             optional=False,
         )
-        attendee_id = process_int_request_param(
+        process_int_request_param(
             parameter_name="attendee_id", parameter=request.attendee_id, optional=False
         )
 

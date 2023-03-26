@@ -19,6 +19,7 @@ def process_string_api_request_param(parameter_name: str, optional=True) -> str:
 
     return process_string_request_param(parameter_name, parameter, optional)
 
+
 def process_string_api_post_request_param(request_body: Dict[str, any], parameter_name: str) -> str:
     """Validates and returns a flask json request body string parameter"""
     parameter = request_body.get(parameter_name, None)
@@ -26,7 +27,7 @@ def process_string_api_post_request_param(request_body: Dict[str, any], paramete
     return process_string_request_param(parameter_name, parameter, optional=False)
 
 
-def process_string_request_param( parameter_name: str, parameter: any, optional=True) -> str:
+def process_string_request_param(parameter_name: str, parameter: any, optional=True) -> str:
     """Validates and returns a flask request body string parameter"""
 
     if parameter is None and optional:
@@ -115,23 +116,28 @@ def process_enum_set_param(
     return list_param
 
 
-
-def process_bool_api_request_param(parameter_name: str, optional = True) -> bool:
+def process_bool_api_request_param(parameter_name: str, optional=True) -> bool:
     """Validates and returns a flask request body boolean parameter"""
     parameter = flask.request.values.get(parameter_name, None)
+    
+    if isinstance(parameter, str):
+        if parameter.lower() not in ["true", "false"]:
+            raise Exception(
+                f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean"
+            )
+        else:
+            parameter = parameter.lower() == "true"
 
     return process_bool_request_param(parameter_name, parameter, optional)
 
 
-def process_bool_request_param(parameter_name: str, parameter: bool| None, optional =True) -> bool:
+def process_bool_request_param(parameter_name: str, parameter: any, optional=True) -> bool:
     """Validates and returns a flask request body boolean parameter"""
     if parameter is None and optional:
         return None
 
-    if not parameter:
+    if parameter is None and not optional:
         raise Exception(f"Missing required request parameter '{parameter_name}'")
-
-    parameter = parameter.lower() == "true"
 
     if parameter not in [True, False]:
         raise Exception(

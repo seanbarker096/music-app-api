@@ -132,9 +132,8 @@ class PerformersMidlayerMixin(BaseMidlayerMixin):
         return PerformersGetResult(performers=[performer])
 
     def attendee_performers_get(self, filter: AttendeePerformersGetFilter):
-
-        process_int_request_param(filter.attendee_id, "attendee_id", required=True)
-        process_bool_request_param(filter.get_count, "get_count", required=False)
+        process_int_request_param("attendee_id", filter.attendee_id, optional=False)
+        process_bool_request_param("get_counts", filter.get_counts, optional=True)
 
         try:
             return self.performers_dao.attendee_performers_get(filter=filter)

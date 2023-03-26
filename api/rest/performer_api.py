@@ -73,14 +73,15 @@ def performers_search():
         response=json.dumps(response), status=200, mimetype="application/json"
     )
 
-@blueprint.route('attendees/<int:attendee_id>', methods=['GET'])
+
+@blueprint.route("attendees/<int:attendee_id>", methods=["GET"])
+@auth
 def attendee_performers_get(attendee_id: int):
     """
     Get all performers whos performances the user has attended
     """
-    get_counts = process_bool_api_request_param('count', optional=True)
+    get_counts = process_bool_api_request_param("get_counts", optional=True)
     get_counts = get_counts if get_counts else False
-
 
     filter = AttendeePerformersGetFilter(
         attendee_id=attendee_id,
@@ -92,9 +93,9 @@ def attendee_performers_get(attendee_id: int):
     counts = result.counts
 
     response = {}
-    response['performers'] = [class_to_dict(performer) for performer in performers]
-    response['counts'] = [class_to_dict(count) for count in counts]
+    response["performers"] = [class_to_dict(performer) for performer in performers]
+    response["counts"] = [class_to_dict(count) for count in counts]
 
     return flask.current_app.response_class(
-        response=json.dumps(response), status=200, mimetype='application/json'
+        response=json.dumps(response), status=200, mimetype="application/json"
     )

@@ -102,7 +102,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
 
         filter = AttendeePerformersGetFilter(
             attendee_id=attendee_id,
-            get_count=True,
+            get_counts=True,
             limit=10
         )
 

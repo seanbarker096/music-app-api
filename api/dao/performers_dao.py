@@ -128,7 +128,6 @@ class PerformersDAO(object):
         selects = self.PERFORMER_SELECTS
 
         group_by = False
-        wheres = []
         binds = []
         joins = []
         orders = []
@@ -137,37 +136,36 @@ class PerformersDAO(object):
         if not filter.attendee_id:
             raise InvalidArgumentException("attendee_id is required for attendee_performers_get")
 
-        if filter.get_count:
-            group_by = True
-            selects.append("COUNT(pa.id) as performance_count")
-            joins.append(
-                """
+        joins.append(
+            """
             INNER JOIN performance
                 ON performance.performer_id = p.id
             INNER JOIN performance_attendance as pa
                 ON pa.performance_id = performance.id
                 AND pa.attendee_id = %s
             """
-            )
-            binds.append(filter.attendee_id)
+        )
+        binds.append(filter.attendee_id)
+
+        if filter.get_counts:
+            group_by = True
+            selects.append("COUNT(pa.id) as performance_count")
+
             # Keep things simple and just order by performance count if they ask for counts
             orders.append("performance_count DESC")
-
-        if filter.attendee_id:
-            wheres.append("attendee_id = %s")
-            binds.append(filter.attendee_id)
-
-        wheres_string = build_where_query_string(wheres, "AND")
 
         order_by_string = f"ORDER BY {', '.join(orders)}" if len(orders) > 0 else ""
 
         # We use distinct for cases where we are not grouping on the performer, in which case we have have multiple rows for the same performer for each of their performances
-        select_string = f"SELECT DISTINCT {', '.join(selects)}" if not group_by else f"SELECT {', '.join(selects)}"
+        select_string = (
+            f"SELECT DISTINCT {', '.join(selects)}"
+            if not group_by
+            else f"SELECT {', '.join(selects)}"
+        )
 
         sql = f"""
             {select_string} FROM performers as p
             {"".join(joins)}
-            {wheres_string}
             {f"GROUP BY {', '.join(self.PERFORMER_COLUMNS)}" if group_by else ""}
             {order_by_string}
             LIMIT {limit}
