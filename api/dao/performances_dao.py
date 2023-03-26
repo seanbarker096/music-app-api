@@ -27,12 +27,12 @@ class PerformancesDAO:
         self.db = db if db else DB(config)
 
     PERFORMANCE_SELECTS = [
-        "id as " + PerformancesDBAlias.PERFORMANCE_ID,
-        "venue_id as " + PerformancesDBAlias.PERFORMANCE_VENUE_ID,
-        "performer_id as " + PerformancesDBAlias.PERFORMANCE_PERFORMER_ID,
-        "UNIX_TIMESTAMP(performance_date) as " + PerformancesDBAlias.PERFORMANCE_DATE,
-        "UNIX_TIMESTAMP(create_time) as " + PerformancesDBAlias.PERFORMANCE_CREATE_TIME,
-        "UNIX_TIMESTAMP(update_time) as " + PerformancesDBAlias.PERFORMANCE_UPDATE_TIME,
+        "p.id as " + PerformancesDBAlias.PERFORMANCE_ID,
+        "p.venue_id as " + PerformancesDBAlias.PERFORMANCE_VENUE_ID,
+        "p.performer_id as " + PerformancesDBAlias.PERFORMANCE_PERFORMER_ID,
+        "UNIX_TIMESTAMP(p.performance_date) as " + PerformancesDBAlias.PERFORMANCE_DATE,
+        "UNIX_TIMESTAMP(p.create_time) as " + PerformancesDBAlias.PERFORMANCE_CREATE_TIME,
+        "UNIX_TIMESTAMP(p.update_time) as " + PerformancesDBAlias.PERFORMANCE_UPDATE_TIME,
     ]
 
     def performance_create(self, request: PerformanceCreateRequest) -> Performance:
@@ -68,22 +68,35 @@ class PerformancesDAO:
     def performances_get(self, filter: PerformancesGetFilter) -> List[Performance]:
         selects = f"""
             SELECT {", ".join(self.PERFORMANCE_SELECTS)}
-            FROM performance
+            FROM performance as p
             """
 
         wheres = []
+        joins = []
         binds = []
 
+        if filter.attendee_ids:
+            joins.append(
+                """
+                LEFT JOIN performance_attendance as pa
+                    ON pa.performance_id = p.id
+                    AND pa.attendee_id in %s
+                """
+            )
+            binds.append(filter.attendee_ids)
+            # providing this filter implies we are only returning performances that user has attended. LEFT JOIN instead of INNER in case this behaviour changes though
+            wheres.append("pa.id IS NOT NULL")
+
         if filter.ids:
-            wheres.append("id in %s")
+            wheres.append("p.id in %s")
             binds.append(filter.ids)
 
         if filter.performer_ids:
-            wheres.append("performer_id in %s")
+            wheres.append("p.performer_id in %s")
             binds.append(filter.performer_ids)
 
         if filter.performance_date:
-            wheres.append("performance_date = DATE(FROM_UNIXTIME(%s))")
+            wheres.append("p.performance_date = DATE(FROM_UNIXTIME(%s))")
             binds.append(filter.performance_date)
 
         if len(wheres) == 0:
@@ -91,7 +104,11 @@ class PerformancesDAO:
 
         where_string = build_where_query_string(wheres, "AND")
 
-        sql = selects + where_string
+        sql = f"""
+            {selects}
+            {"".join(joins)}
+            {where_string}
+            """
 
         db_result = self.db.run_query(sql, binds)
 

@@ -27,11 +27,17 @@ def performances_get():
         parameter_name="performance_date", optional=True
     )
 
-    performances = flask.current_app.conns.midlayer.performances_get(
-        PerformancesGetFilter(
-            ids=performance_ids, performer_ids=performer_ids, performance_date=performance_date
+    attendee_ids = process_api_set_request_param(
+        parameter_name="attendee_ids[]", type=int, optional=True
+    )
+
+    filter =  PerformancesGetFilter(
+            attendee_ids=attendee_ids,
+            ids=performance_ids,
+            performer_ids=performer_ids,
+            performance_date=performance_date
         )
-    ).performances
+    performances = flask.current_app.conns.midlayer.performances_get(filter).performances
 
     response = {}
     response["performances"] = [class_to_dict(performance) for performance in performances]

@@ -27,16 +27,19 @@ class Performance:
 
 
 class PerformancesGetFilter:
+    attendee_ids: Optional[list[int]] = ...
     ids: Optional[list[int]] = ...
     performer_ids: Optional[list[int]] = ...
     performance_date: Optional[int] = ...
 
     def __init__(
         self,
+        attendee_ids: Optional[list[int]] = None,
         ids: Optional[list[int]] = None,
         performer_ids: Optional[list[int]] = None,
         performance_date: Optional[int] = None,
     ) -> None:
+        self.attendee_ids = attendee_ids
         self.ids = ids
         self.performer_ids = performer_ids
         self.performance_date = performance_date

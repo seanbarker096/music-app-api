@@ -241,6 +241,14 @@ performance_two_create_request = PerformanceCreateRequest(
 
 performance_two = performances_mid.performance_create(request=performance_two_create_request).performance
 
+performance_three_create_request = PerformanceCreateRequest(
+    performer_id=performer.id,
+    venue_id=555,
+    performance_date=time.time() + 400000,
+)
+
+performance_three = performances_mid.performance_create(request=performance_three_create_request).performance
+
 
 ################### CREATE PERFORMANCE ATTENDANCES ####################
 

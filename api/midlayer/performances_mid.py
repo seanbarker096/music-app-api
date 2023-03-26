@@ -70,9 +70,15 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
                 "filter.performer_ids",
             )
 
+        if filter.attendee_ids and len(filter.attendee_ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field attendee_ids: {filter.attendee_ids}. At least one attendee_id must be provided",
+                "filter.attendee_ids",
+            )
+
         process_int_request_param("performance_date", filter.performance_date)
 
-        if not filter.ids and not filter.performer_ids and not filter.performance_date:
+        if not filter.ids and not filter.performer_ids and not filter.performance_date and not filter.attendee_ids:
             raise InvalidArgumentException(
                 f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",
                 "filter",
@@ -87,7 +93,8 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
             )
-        
+
+
 class PerformanceAttendancesMidlayerConnections:
     def __init__(
         self, config, performance_attendances_dao: Optional[PerformanceAttendancesDAO] = None
@@ -156,7 +163,7 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
                 )
 
             performance_attendance = self.performance_attendances_dao.performance_attendance_create(
-               request=request
+                request=request
             )
 
             return PerformanceAttendanceCreateResult(performance_attendance=performance_attendance)
