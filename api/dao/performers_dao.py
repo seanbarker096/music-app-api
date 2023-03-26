@@ -124,7 +124,7 @@ class PerformersDAO(object):
     def attendee_performers_get(
         self, filter: AttendeePerformersGetFilter
     ) -> AttendeePerformersGetResult:
-        
+
         selects = self.PERFORMER_SELECTS
 
         group_by = False
@@ -150,6 +150,7 @@ class PerformersDAO(object):
             """
             )
             binds.append(filter.attendee_id)
+            # Keep things simple and just order by performance count if they ask for counts
             orders.append("performance_count DESC")
 
         if filter.attendee_id:
@@ -160,16 +161,17 @@ class PerformersDAO(object):
 
         order_by_string = f"ORDER BY {', '.join(orders)}" if len(orders) > 0 else ""
 
+        # We use distinct for cases where we are not grouping on the performer, in which case we have have multiple rows for the same performer for each of their performances
+        select_string = f"SELECT DISTINCT {', '.join(selects)}" if not group_by else f"SELECT {', '.join(selects)}"
+
         sql = f"""
-            SELECT {', '.join(selects)} FROM performers as p
+            {select_string} FROM performers as p
             {"".join(joins)}
             {wheres_string}
             {f"GROUP BY {', '.join(self.PERFORMER_COLUMNS)}" if group_by else ""}
             {order_by_string}
             LIMIT {limit}
         """
-
-        print(sql)
 
         db_result = self.db.run_query(sql, binds)
 
@@ -183,10 +185,10 @@ class PerformersDAO(object):
             performers.append(performer)
 
             count_result = AttendeePerformersGetCount(
-                    attendee_id=filter.attendee_id,
-                    performer_id=performer.id,
-                    count=int(row["performance_count"]),
-                )
+                attendee_id=filter.attendee_id,
+                performer_id=performer.id,
+                count=int(row["performance_count"]),
+            )
             counts.append(count_result)
 
         return AttendeePerformersGetResult(performers=performers, counts=counts)
