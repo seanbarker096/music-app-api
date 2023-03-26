@@ -197,7 +197,7 @@ feature = features_mid.feature_create(feature_create_request).feature
 ###################### CREATE PERFORMERS ######################
 
 performer_create_request = PerformerCreateRequest(
-    name="Kendrick Lamar",
+    name="Eminem",
     biography="I'm a rapper",
     uuid="7dGJo4pcD2V6oG8kP0tJRR",
     owner_id=user_two.id,
@@ -212,7 +212,7 @@ performer = performers_mid.performer_create(performer_create_request).performer
 post_create_request = PostCreateRequest(
     owner_id=performer.id,
     owner_type=PostOwnerType.PERFORMER.value,
-    content="Kendrick Lamars first post",
+    content="Eminems first post",
     creator_id=user_two.id,
 )
 

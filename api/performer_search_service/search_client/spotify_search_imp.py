@@ -42,11 +42,11 @@ class SpotifySearchImp(SearchImp):
         ## TODO: Avoid calling this every time. Instead cache the token somwhere and request it
         access_token = self._spotify_get_access_token()
 
-        return self._spotify_search_performers(access_token, request.q, request.limit)
+        return self._spotify_search_artists(access_token, request.q, request.limit)
 
     def build_search_result(self, api_result: Dict[str, Any]) -> PerformersSearchResult:
 
-        dict = api_result.get("performers", None)
+        dict = api_result.get("artists", None)
 
         limit = dict.get("limit", None)
         next = dict.get("next", None)
@@ -70,8 +70,6 @@ class SpotifySearchImp(SearchImp):
         auth_str = f"{self.client_id}:{self.secret}"
         b64_auth_str = base64.b64encode(auth_str.encode()).decode("ascii")
 
-        print(b64_auth_str)
-
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": f"Basic {b64_auth_str}",
@@ -94,16 +92,16 @@ class SpotifySearchImp(SearchImp):
                 f"Failed to get access token from spotify api. Error: {json.dumps(str(err))}"
             )
 
-    def _spotify_search_performers(self, access_token, search_term, limit) -> Dict[str, Any]:
+    def _spotify_search_artists(self, access_token, search_term, limit) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
-        url = f"https://api.spotify.com/v1/search?q={search_term}&type=performer&limit={limit}"
+        url = f"https://api.spotify.com/v1/search?q={search_term}&type=artist&limit={limit}"
         response = requests.get(url, headers=headers)
         try:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as err:
             raise Exception(
-                f"Error in request to spotify api when searching for performers. Error: {json.dumps(str(err))}"
+                f"Error in request to spotify api when searching for artists. Error: {json.dumps(str(err))}"
             )
 
     def _build_app_performer(self, performer: dict) -> PerformerSearchPerformer:
@@ -140,7 +138,9 @@ class SpotifySearchImp(SearchImp):
         uuid = performer_dict["id"]
 
         self._assert_field_exists("images", performer_dict)
-        image_url = performer_dict["images"][-1]["url"] if len(performer_dict["images"]) > 0 else None
+        image_url = (
+            performer_dict["images"][-1]["url"] if len(performer_dict["images"]) > 0 else None
+        )
 
         return PerformerSearchPerformer(name=name, uuid=uuid, image_url=image_url)
 
@@ -150,12 +150,12 @@ class SpotifySearchImp(SearchImp):
         uuid: str,
     ) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
-        url = f"https://api.spotify.com/v1/performers/{uuid}"
+        url = f"https://api.spotify.com/v1/artists/{uuid}"
         response = requests.get(url, headers=headers)
         try:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as err:
             raise Exception(
-                f"Error in request to spotify api when getting performer by uuid: {uuid}. Error: {json.dumps(str(err))}"
+                f"Error in request to spotify api when getting artist by uuid: {uuid}. Error: {json.dumps(str(err))}"
             )
