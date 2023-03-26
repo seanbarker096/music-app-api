@@ -1,4 +1,5 @@
 import os
+import time
 from configparser import ConfigParser
 
 from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
@@ -6,9 +7,17 @@ from api.dao.users_dao import UsersDAO
 from api.file_service.api import FileService
 from api.file_service.typings.typings import FileCreateRequest
 from api.midlayer.features_mid import FeaturesMidlayerMixin
+from api.midlayer.performances_mid import (
+    PerformanceAttendancesMidlayerMixin,
+    PerformancesMidlayerMixin,
+)
 from api.midlayer.performers_mid import PerformersMidlayerMixin
 from api.midlayer.tags_mid import TagsMidlayerMixin
 from api.typings.features import FeatureCreateRequest, FeaturedEntityType, FeaturerType
+from api.typings.performances import (
+    PerformanceAttendanceCreateRequest,
+    PerformanceCreateRequest,
+)
 from api.typings.performers import PerformerCreateRequest
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
@@ -38,6 +47,9 @@ posts_dao = PostsDAO(config_dict)
 post_attachments_dao = PostAttachmentsDAO(config_dict)
 
 performers_mid = PerformersMidlayerMixin(config_dict)
+
+performances_mid = PerformancesMidlayerMixin(config_dict)
+performance_attendances_mid = PerformanceAttendancesMidlayerMixin(config_dict)
 
 file_service = FileService(config_dict)
 
@@ -185,7 +197,7 @@ feature = features_mid.feature_create(feature_create_request).feature
 ###################### CREATE PERFORMERS ######################
 
 performer_create_request = PerformerCreateRequest(
-    name="Eminem",
+    name="Kendrick Lamar",
     biography="I'm a rapper",
     uuid="7dGJo4pcD2V6oG8kP0tJRR",
     owner_id=user_two.id,
@@ -200,7 +212,7 @@ performer = performers_mid.performer_create(performer_create_request).performer
 post_create_request = PostCreateRequest(
     owner_id=performer.id,
     owner_type=PostOwnerType.PERFORMER.value,
-    content="Eminems first post",
+    content="Kendrick Lamars first post",
     creator_id=user_two.id,
 )
 
@@ -211,4 +223,41 @@ post_attachment = post_attachments_dao.post_attachment_create(
 )
 
 
-################### CREATE FEATURES ####################
+################### CREATE PERFORMANCES ####################
+
+performance_create_request = PerformanceCreateRequest(
+    performer_id=performer.id,
+    venue_id=333,
+    performance_date=time.time(),
+)
+
+performance_one = performances_mid.performance_create(request=performance_create_request).performance
+
+performance_two_create_request = PerformanceCreateRequest(
+    performer_id=performer.id,
+    venue_id=444,
+    performance_date=time.time() + 200000,
+)
+
+performance_two = performances_mid.performance_create(request=performance_two_create_request).performance
+
+
+################### CREATE PERFORMANCE ATTENDANCES ####################
+
+performance_attendance_create_request = PerformanceAttendanceCreateRequest(
+    performance_id=performance_one.id,
+    attendee_id=user_one.id,
+)
+
+performance_attendance = performance_attendances_mid.performance_attendance_create(
+    request=performance_attendance_create_request
+).performance_attendance
+
+performance_attendance_two_create_request = PerformanceAttendanceCreateRequest(
+    performance_id=performance_two.id,
+    attendee_id=user_one.id,
+)
+
+performance_attendance_two = performance_attendances_mid.performance_attendance_create(
+    request=performance_attendance_two_create_request
+).performance_attendance

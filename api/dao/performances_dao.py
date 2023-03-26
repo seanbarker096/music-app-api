@@ -93,7 +93,6 @@ class PerformancesDAO:
 
         sql = selects + where_string
 
-        print(sql, binds)
         db_result = self.db.run_query(sql, binds)
 
         rows = db_result.get_rows()
@@ -104,7 +103,6 @@ class PerformancesDAO:
             performances.append(performance)
 
         return performances
-
 
     def _build_performance_from_row(self, db_row: Dict[str, any]) -> Performance:
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_ID)
@@ -158,7 +156,8 @@ class PerformanceAttendancesDAO:
         "id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID,
         "performance_id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID,
         "attendee_id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID,
-        "UNIX_TIMESTAMP(create_time) as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME,
+        "UNIX_TIMESTAMP(create_time) as "
+        + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME,
     ]
 
     def performance_attendance_create(
