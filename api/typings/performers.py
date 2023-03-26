@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 
 class Performer:
@@ -97,3 +97,21 @@ class AttendeePerformersGetFilter:
         self.get_count = get_count
         self.limit = limit
 
+
+class AttendeePerformersGetCount:
+    performer_id: int = ...
+    count: int = ...
+    attendee_id: int = ...
+
+    def __init__(self, performer_id: int, count: int, attendee_id: int) -> None:
+        self.performer_id = performer_id
+        self.count = count
+        self.attendee_id = attendee_id
+
+class AttendeePerformersGetResult:
+    performers: List[Performer] = ...
+    counts: AttendeePerformersGetCount = ...
+
+    def __init__(self, performers: List[Performer], counts: List[AttendeePerformersGetCount]) -> None:
+        self.performers = performers
+        self.counts = counts

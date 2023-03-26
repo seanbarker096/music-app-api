@@ -5,7 +5,9 @@ from typing import Dict, List, Optional
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.performers import (
+    AttendeePerformersGetCount,
     AttendeePerformersGetFilter,
+    AttendeePerformersGetResult,
     Performer,
     PerformerCreateRequest,
     PerformersGetFilter,
@@ -121,7 +123,7 @@ class PerformersDAO(object):
 
     def attendee_performers_get(
         self, filter: AttendeePerformersGetFilter
-    ) -> Dict[str, List[Performer] | Dict[str, int]]:
+    ) -> AttendeePerformersGetResult:
         
         selects = self.PERFORMER_SELECTS
 
@@ -179,15 +181,15 @@ class PerformersDAO(object):
         for row in rows:
             performer = self._build_performer_from_row(row)
             performers.append(performer)
-            counts.append(
-                {
-                    "performer_id": performer.id,
-                    "attendee_id": filter.attendee_id,
-                    "count": row["performance_count"],
-                }
-            )
 
-        return {"performers": performers, "counts": counts}
+            count_result = AttendeePerformersGetCount(
+                    attendee_id=filter.attendee_id,
+                    performer_id=performer.id,
+                    count=int(row["performance_count"]),
+                )
+            counts.append(count_result)
+
+        return AttendeePerformersGetResult(performers=performers, counts=counts)
 
     def _build_performer_from_row(self, db_row: Dict[str, any]) -> Performer:
         assert_row_key_exists(db_row, PerformerDBAlias.PERFORMER_ID)

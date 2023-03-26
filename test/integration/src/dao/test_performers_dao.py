@@ -108,8 +108,8 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
 
         result = dao.attendee_performers_get(filter)
 
-        performers = result["performers"]
-        counts = result["counts"]
+        performers = result.performers
+        counts = result.counts
 
         self.assertEqual(
             len(performers),
@@ -129,10 +129,21 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
             1,
             "Should only return counts for performers whos shows the user has attended"
         )
-        count = counts[0]
+
+        count_result = counts[0]
 
         self.assertEqual(
-            count,
+            count_result.count,
             2,
             "Should return a count equal to the number of the performers shows attended by the user"
+        )
+        self.assertEqual(
+            count_result.performer_id,
+            performer_one_id,
+            "Should return a count for the correct performer"
+        )
+        self.assertEqual(
+            count_result.attendee_id,
+            attendee_id,
+            "Should return a count for the correct attendee"
         )
