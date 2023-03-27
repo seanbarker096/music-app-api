@@ -93,6 +93,69 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
             )
+        
+# here is the api layer for a new performances count endpoint
+
+# @blueprint.route("/performances/counts/", methods=["GET"])
+# def performance_counts_get():
+#     performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=True)
+
+#     include_attendee_count = process_bool_api_request_param(
+#         parameter_name="include_attendee_count", optional=True
+#     )
+
+#     include_tag_count = process_bool_api_request_param(
+#         parameter_name="include_tag_count", optional=True
+#     )
+
+#     include_featured_post_count = process_bool_api_request_param(
+#         parameter_name="include_featured_post_count", optional=True
+#     )
+
+#     filter =  PerformanceCountsGetFilter(
+#         performance_ids=performance_ids,
+#         include_attendee_count=include_attendee_count,
+#         include_tag_count=include_tag_count,
+#         include_featured_post_count=include_featured_post_count
+#     )
+
+#     result = flask.current_app.conns.midlayer.performance_counts_get(filter)
+
+#     performances = result.performances
+#     counts = result.counts
+
+#     response = {}
+#     response["performances"] = [class_to_dict(performance) for performance in performances]
+#     response["counts"] = []
+
+#     return flask.current_app.response_class(
+#         response=json.dumps(response), status=200, mimetype="application/json"
+#     )
+
+# write me the performance_counts_get midlayer method below:
+
+    def performance_counts_get(self, filter: PerformanceCountsGetFilter):
+        if filter.performance_ids and len(filter.performance_ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field performance_ids: {filter.performance_ids}. At least one performance_id must be provided",
+                "filter.performance_ids",
+            )
+
+        if not filter.performance_ids:
+            raise InvalidArgumentException(
+                f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",
+                "filter",
+            )
+
+        try:
+            performances = self.performances_dao.performances_get(filter=filter)
+
+            return PerformancesGetResult(performances=performances)
+
+        except Exception as e:
+            raise Exception(
+                f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
+            )
 
 
 class PerformanceAttendancesMidlayerConnections:

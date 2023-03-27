@@ -121,7 +121,7 @@ class PostsDAO(object):
         # IF THIS QUERY IS SLOW CONSIDER USING A UNION ALL
 
         selects = f"""
-            SELECT {', '.join(self.POST_SELECTS)} 
+            SELECT DISTINCT {', '.join(self.POST_SELECTS)} 
             FROM post as p
         """
 

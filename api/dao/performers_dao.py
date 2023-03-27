@@ -67,11 +67,11 @@ class PerformersDAO(object):
         binds = []
 
         if filter.uuids:
-            wheres.append("uuid in %s")
+            wheres.append("p.uuid in %s")
             binds.append(filter.uuids)
 
         if filter.ids:
-            wheres.append("id in %s")
+            wheres.append("p.id in %s")
             binds.append(filter.ids)
 
         where_string = build_where_query_string(wheres, "AND")
