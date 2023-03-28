@@ -131,10 +131,10 @@ post_create_request = PostCreateRequest(
     creator_id=user_one.id,
 )
 
-post = posts_dao.post_create(post_create_request)
+post_one = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=dog_video_file.id
+    post_id=post_one.id, file_id=dog_video_file.id
 )
 
 # 2 Post uploaded by second user, and tags the first user
@@ -145,14 +145,14 @@ post_create_request = PostCreateRequest(
     creator_id=user_two.id,
 )
 
-post = posts_dao.post_create(post_create_request)
+post_two = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=dog_video_file.id
+    post_id=post_two.id, file_id=dog_video_file.id
 )
 
 tag_create_request = TagCreateRequest(
-    tagged_in_entity_id=post.id,
+    tagged_in_entity_id=post_two.id,
     tagged_in_entity_type=TaggedInEntityType.POST.value,
     tagged_entity_type=TaggedEntityType.USER.value,
     tagged_entity_id=user_one.id,
@@ -168,15 +168,15 @@ post_create_request = PostCreateRequest(
     creator_id=user_two.id,
 )
 
-post = posts_dao.post_create(post_create_request)
+post_three = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=avatar_file.id
+    post_id=post_three.id, file_id=avatar_file.id
 )
 
 feature_create_request = FeatureCreateRequest(
     featured_entity_type=FeaturedEntityType.POST.value,
-    featured_entity_id=post.id,
+    featured_entity_id=post_three.id,
     featurer_type=FeaturerType.USER.value,
     featurer_id=user_one.id,
     creator_id=user_one.id,
@@ -216,10 +216,10 @@ post_create_request = PostCreateRequest(
     creator_id=user_two.id,
 )
 
-post = posts_dao.post_create(post_create_request)
+post_four = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=dog_video_file.id
+    post_id=post_four.id, file_id=dog_video_file.id
 )
 
 
@@ -231,7 +231,9 @@ performance_create_request = PerformanceCreateRequest(
     performance_date=time.time(),
 )
 
-performance_one = performances_mid.performance_create(request=performance_create_request).performance
+performance_one = performances_mid.performance_create(
+    request=performance_create_request
+).performance
 
 performance_two_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
@@ -239,7 +241,9 @@ performance_two_create_request = PerformanceCreateRequest(
     performance_date=time.time() + 200000,
 )
 
-performance_two = performances_mid.performance_create(request=performance_two_create_request).performance
+performance_two = performances_mid.performance_create(
+    request=performance_two_create_request
+).performance
 
 performance_three_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
@@ -247,19 +251,12 @@ performance_three_create_request = PerformanceCreateRequest(
     performance_date=time.time() + 400000,
 )
 
-performance_three = performances_mid.performance_create(request=performance_three_create_request).performance
+performance_three = performances_mid.performance_create(
+    request=performance_three_create_request
+).performance
 
 
 ################### CREATE PERFORMANCE ATTENDANCES ####################
-
-performance_attendance_create_request = PerformanceAttendanceCreateRequest(
-    performance_id=performance_one.id,
-    attendee_id=user_one.id,
-)
-
-performance_attendance = performance_attendances_mid.performance_attendance_create(
-    request=performance_attendance_create_request
-).performance_attendance
 
 performance_attendance_two_create_request = PerformanceAttendanceCreateRequest(
     performance_id=performance_two.id,
@@ -269,3 +266,55 @@ performance_attendance_two_create_request = PerformanceAttendanceCreateRequest(
 performance_attendance_two = performance_attendances_mid.performance_attendance_create(
     request=performance_attendance_two_create_request
 ).performance_attendance
+
+
+################### CREATE TAGS for the performances ####################
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=performance_one.id,
+    tagged_entity_type=TaggedEntityType.PERFORMANCE.value,
+    tagged_in_entity_id=post_one.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_two.id,
+)
+
+tag = tags_mid.tag_create(tag_create_request)
+
+tag_two_create_request = TagCreateRequest(
+    tagged_entity_id=performance_one.id,
+    tagged_entity_type=TaggedEntityType.PERFORMANCE.value,
+    tagged_in_entity_id=post_two.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_two.id,
+)
+
+################### CREATE FEATURES for the performances ####################
+feature_create_request = FeatureCreateRequest(
+    featured_entity_id=post_one.id,
+    featured_entity_type=FeaturedEntityType.POST.value,
+    featurer_id=performance_one.id,
+    featurer_type=FeaturerType.PERFORMANCE.value,
+    creator_id=user_two.id,
+)
+
+feature = features_mid.feature_create(feature_create_request).feature
+
+feature_two_create_request = FeatureCreateRequest(
+    featured_entity_id=post_two.id,
+    featured_entity_type=FeaturedEntityType.POST.value,
+    featurer_id=performance_one.id,
+    featurer_type=FeaturerType.PERFORMANCE.value,
+    creator_id=user_two.id,
+)
+
+feature_two = features_mid.feature_create(feature_two_create_request).feature
+
+feature_three_create_request = FeatureCreateRequest(
+    featured_entity_id=post_three.id,
+    featured_entity_type=FeaturedEntityType.POST.value,
+    featurer_id=performance_two.id,
+    featurer_type=FeaturerType.PERFORMANCE.value,
+    creator_id=user_two.id,
+)
+
+feature_three = features_mid.feature_create(feature_three_create_request).feature

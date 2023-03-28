@@ -110,8 +110,8 @@ class AttendeePerformersGetCount:
 
 class AttendeePerformersGetResult:
     performers: List[Performer] = ...
-    counts: List[AttendeePerformersGetCount] = ...
+    counts: Optional[List[AttendeePerformersGetCount]] = ...
 
-    def __init__(self, performers: List[Performer], counts: List[AttendeePerformersGetCount]) -> None:
+    def __init__(self, performers: List[Performer], counts: List[AttendeePerformersGetCount] = None) -> None:
         self.performers = performers
         self.counts = counts

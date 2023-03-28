@@ -8,10 +8,12 @@ from api.typings.performances import (
     PerformanceAttendanceCreateResult,
     PerformanceCreateRequest,
     PerformanceCreateResult,
+    PerformancesCountsGetFilter,
+    PerformancesCountsGetResult,
     PerformancesGetFilter,
     PerformancesGetResult,
 )
-from api.utils.rest_utils import process_int_request_param
+from api.utils.rest_utils import process_bool_request_param, process_int_request_param
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import PerformanceNotFoundException
 
@@ -78,7 +80,12 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
 
         process_int_request_param("performance_date", filter.performance_date)
 
-        if not filter.ids and not filter.performer_ids and not filter.performance_date and not filter.attendee_ids:
+        if (
+            not filter.ids
+            and not filter.performer_ids
+            and not filter.performance_date
+            and not filter.attendee_ids
+        ):
             raise InvalidArgumentException(
                 f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",
                 "filter",
@@ -93,68 +100,40 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
             )
-        
-# here is the api layer for a new performances count endpoint
 
-# @blueprint.route("/performances/counts/", methods=["GET"])
-# def performance_counts_get():
-#     performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=True)
-
-#     include_attendee_count = process_bool_api_request_param(
-#         parameter_name="include_attendee_count", optional=True
-#     )
-
-#     include_tag_count = process_bool_api_request_param(
-#         parameter_name="include_tag_count", optional=True
-#     )
-
-#     include_featured_post_count = process_bool_api_request_param(
-#         parameter_name="include_featured_post_count", optional=True
-#     )
-
-#     filter =  PerformanceCountsGetFilter(
-#         performance_ids=performance_ids,
-#         include_attendee_count=include_attendee_count,
-#         include_tag_count=include_tag_count,
-#         include_featured_post_count=include_featured_post_count
-#     )
-
-#     result = flask.current_app.conns.midlayer.performance_counts_get(filter)
-
-#     performances = result.performances
-#     counts = result.counts
-
-#     response = {}
-#     response["performances"] = [class_to_dict(performance) for performance in performances]
-#     response["counts"] = []
-
-#     return flask.current_app.response_class(
-#         response=json.dumps(response), status=200, mimetype="application/json"
-#     )
-
-# write me the performance_counts_get midlayer method below:
-
-    def performance_counts_get(self, filter: PerformanceCountsGetFilter):
-        if filter.performance_ids and len(filter.performance_ids) == 0:
+    def performance_counts_get(self, filter: PerformancesCountsGetFilter):
+        if not filter.performance_ids or (
+            filter.performance_ids and len(filter.performance_ids) == 0
+        ):
             raise InvalidArgumentException(
                 f"Invalid value provided for filter field performance_ids: {filter.performance_ids}. At least one performance_id must be provided",
                 "filter.performance_ids",
             )
 
-        if not filter.performance_ids:
+        process_bool_request_param(
+            "include_attendee_count", filter.include_attendee_count, optional=True
+        )
+        process_bool_request_param("include_tag_count", filter.include_tag_count, optional=True)
+        process_bool_request_param(
+            "include_features_count", filter.include_features_count, optional=True
+        )
+
+        if (
+            not filter.include_attendee_count
+            and not filter.include_tag_count
+            and not filter.include_featured_post_count
+        ):
             raise InvalidArgumentException(
-                f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",
+                f"At least one count filter field must be provided. Filter: {json.dumps(vars(filter))}",
                 "filter",
             )
 
         try:
-            performances = self.performances_dao.performances_get(filter=filter)
-
-            return PerformancesGetResult(performances=performances)
+            return self.performances_dao.performances_counts_get(filter=filter)
 
         except Exception as e:
             raise Exception(
-                f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
+                f"Failed to get performance counts because {str(e)}. Filter: {json.dumps(vars(filter))}"
             )
 
 

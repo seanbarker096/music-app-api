@@ -5,7 +5,7 @@ from typing import List, Optional
 # todo: a performance should feature a post, not a performer
 class FeaturerType(Enum):
     USER = "user"
-    PERFORMER = "performer"
+    PERFORMANCE = "performance"
 
 
 class FeaturedEntityType(Enum):

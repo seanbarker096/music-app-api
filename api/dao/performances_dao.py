@@ -4,13 +4,18 @@ from typing import Dict, List, Optional
 
 from api.db.db import DB
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
+from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.performances import (
     Performance,
     PerformanceAttendance,
     PerformanceAttendanceCreateRequest,
+    PerformanceCounts,
     PerformanceCreateRequest,
+    PerformancesCountsGetFilter,
+    PerformancesCountsGetResult,
     PerformancesGetFilter,
 )
+from api.typings.tags import TaggedEntityType, TaggedInEntityType
 
 
 class PerformancesDBAlias:
@@ -120,71 +125,66 @@ class PerformancesDAO:
             performances.append(performance)
 
         return performances
-    
 
-    # here is the api layer for a new performances count endpoint
-
-# @blueprint.route("/performances/counts/", methods=["GET"])
-# def performance_counts_get():
-#     performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=True)
-
-#     include_attendee_count = process_bool_api_request_param(
-#         parameter_name="include_attendee_count", optional=True
-#     )
-
-#     include_tag_count = process_bool_api_request_param(
-#         parameter_name="include_tag_count", optional=True
-#     )
-
-#     include_featured_post_count = process_bool_api_request_param(
-#         parameter_name="include_featured_post_count", optional=True
-#     )
-
-#     filter =  PerformanceCountsGetFilter(
-#         performance_ids=performance_ids,
-#         include_attendee_count=include_attendee_count,
-#         include_tag_count=include_tag_count,
-#         include_featured_post_count=include_featured_post_count
-#     )
-
-#     result = flask.current_app.conns.midlayer.performance_counts_get(filter)
-
-#     performances = result.performances
-#     counts = result.counts
-
-#     response = {}
-#     response["performances"] = [class_to_dict(performance) for performance in performances]
-#     response["counts"] = []
-
-#     return flask.current_app.response_class(
-#         response=json.dumps(response), status=200, mimetype="application/json"
-#     )
-
-# write me the performance_counts_get dao method below:
-
-    def performance_counts_get(self, filter: PerformanceCountsGetFilter) -> PerformanceCountsGetResult:
-        selects = f"""
-            SELECT {", ".join(self.PERFORMANCE_SELECTS)}
-            FROM performance as p
-            """
-
+    def performances_counts_get(
+        self, filter: PerformancesCountsGetFilter
+    ) -> PerformancesCountsGetResult:
+        selects = self.PERFORMANCE_SELECTS
         wheres = []
         joins = []
         binds = []
 
-        if filter.performance_ids:
-            wheres.append("p.id in %s")
-            binds.append(filter.performance_ids)
+        if filter.include_attendee_count:
+            joins.append(
+                """
+                LEFT JOIN performance_attendance as pa
+                    ON pa.performance_id = p.id
+                """
+            )
+            selects.append("COUNT(DISTINCT pa.id) as attendance_count")
 
-        if len(wheres) == 0:
-            raise Exception("Unbounded performances_get query. Please provide at least one filter")
+        if filter.include_tag_count:
+            joins.append(
+                """
+                LEFT JOIN tag as t
+                    ON t.tagged_entity_id = p.id 
+                    AND t.tagged_entity_type = %s
+                    AND t.tagged_in_entity_type = %s
+                """
+            )
+            binds.append(TaggedEntityType.PERFORMANCE.value)
+            # For now we just support tag counts for performance posts
+            binds.append(TaggedInEntityType.POST.value)
+
+            selects.append("COUNT(DISTINCT t.id) as tag_count")
+
+        if filter.include_features_count:
+            joins.append(
+                """
+                LEFT JOIN feature as f
+                    ON f.featurer_id = p.id
+                    AND f.featurer_type = %s
+                    AND f.featured_entity_type = %s                   
+                """
+            )
+
+            binds.append(FeaturerType.PERFORMANCE.value)
+            # For now we just support feature counts for performance posts
+            binds.append(FeaturedEntityType.POST.value)
+
+            selects.append("COUNT(DISTINCT f.id) as features_count")
+
+        wheres.append("p.id in %s")
+        binds.append(filter.performance_ids)
 
         where_string = build_where_query_string(wheres, "AND")
 
-        sql = f"""
-            {selects}
+        sql = f""" 
+            SELECT DISTINCT {', '.join(selects)} 
+            FROM performance as p
             {"".join(joins)}
             {where_string}
+            GROUP BY p.id
             """
 
         db_result = self.db.run_query(sql, binds)
@@ -192,11 +192,26 @@ class PerformancesDAO:
         rows = db_result.get_rows()
 
         performances = []
+        counts = []
+
         for row in rows:
             performance = self._build_performance_from_row(row)
-            performances.append(performance)
 
-        return PerformanceCountsGetResult(performances=performances, counts=[])
+            attendance_count = row.get("attendance_count", None)
+            tag_count = row.get("tag_count", None)
+            features_count = row.get("features_count", None)
+
+            performance_counts = PerformanceCounts(
+                performance_id=performance.id,
+                attendee_count=attendance_count,
+                tag_count=tag_count,
+                features_count=features_count,
+            )
+
+            performances.append(performance)
+            counts.append(performance_counts)
+
+        return PerformancesCountsGetResult(performances=performances, counts=counts)
 
     def _build_performance_from_row(self, db_row: Dict[str, any]) -> Performance:
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_ID)

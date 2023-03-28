@@ -176,18 +176,19 @@ class PerformersDAO(object):
         rows = db_result.get_rows()
 
         performers = []
-        counts = []
+        counts = [] if filter.get_counts else None
 
         for row in rows:
             performer = self._build_performer_from_row(row)
             performers.append(performer)
 
-            count_result = AttendeePerformersGetCount(
-                attendee_id=filter.attendee_id,
-                performer_id=performer.id,
-                count=int(row["performance_count"]),
-            )
-            counts.append(count_result)
+            if filter.get_counts:
+                count_result = AttendeePerformersGetCount(
+                    attendee_id=filter.attendee_id,
+                    performer_id=performer.id,
+                    count=int(row["performance_count"]),
+                )
+                counts.append(count_result)
 
         return AttendeePerformersGetResult(performers=performers, counts=counts)
 

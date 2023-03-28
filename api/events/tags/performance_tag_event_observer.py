@@ -77,6 +77,21 @@ class PerformanceTagEventObserver(TagEventObserver):
 
         post = posts[0]
 
+
+        # TODO: Add this check once we set up performance attendance get apis
+        # # Check if performance attendance already exists
+        # performance_attendances = self.performance_attendances_midlayer.performance_attendances_get(
+        #     filter=PerformanceAttendancesGetFilter(
+        #         performance_ids=[tag.tagged_entity_id], attendee_ids=[post.owner_id]
+        #     )
+        # ).performance_attendances
+
+        # if len(performance_attendances) > 0:
+        #     logging.info(
+        #         f"Performance attendance already exists for performance with id {tag.tagged_entity_id} and attendee with id {post.owner_id}. Skipping performance attendance creation."
+        #     )
+        #     return None
+
         request = PerformanceAttendanceCreateRequest(
             performance_id=tag.tagged_entity_id, attendee_id=post.owner_id
         )

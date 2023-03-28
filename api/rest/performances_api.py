@@ -2,8 +2,13 @@ import json
 
 import flask
 
-from api.typings.performances import PerformanceCreateRequest, PerformancesGetFilter
+from api.typings.performances import (
+    PerformanceCreateRequest,
+    PerformancesCountsGetFilter,
+    PerformancesGetFilter,
+)
 from api.utils.rest_utils import (
+    auth,
     class_to_dict,
     process_api_set_request_param,
     process_bool_api_request_param,
@@ -16,6 +21,7 @@ blueprint = flask.Blueprint("performances", __name__)
 
 
 @blueprint.route("/performances/", methods=["GET"])
+@auth
 def performances_get():
     performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=True)
 
@@ -31,12 +37,12 @@ def performances_get():
         parameter_name="attendee_ids[]", type=int, optional=True
     )
 
-    filter =  PerformancesGetFilter(
-            attendee_ids=attendee_ids,
-            ids=performance_ids,
-            performer_ids=performer_ids,
-            performance_date=performance_date
-        )
+    filter = PerformancesGetFilter(
+        attendee_ids=attendee_ids,
+        ids=performance_ids,
+        performer_ids=performer_ids,
+        performance_date=performance_date,
+    )
     performances = flask.current_app.conns.midlayer.performances_get(filter).performances
 
     response = {}
@@ -48,6 +54,7 @@ def performances_get():
 
 
 @blueprint.route("/performances/", methods=["POST"])
+@auth
 def performance_create():
     data = flask.request.json
 
@@ -82,6 +89,7 @@ def performance_create():
 
 
 @blueprint.route("/attendances/", methods=["POST"])
+@auth
 def attendance_create():
     request = flask.request.json
 
@@ -108,17 +116,11 @@ def attendance_create():
         response=json.dumps(response), status=200, mimetype="application/json"
     )
 
-# I need a new endpoint which accepts a list of performance ids, and fetches the number of attendees, the number of tagged posts (tags) and the number of posts that have been featured by the performance. Not all counts need to be returned. The counts the endpoint should return are determine by the following parameters:
-
-# - include_attendee_count: bool
-# - include_tag_count: bool
-# - include_featured_post_count: bool
-
-# Please write the code for this below:
 
 @blueprint.route("/performances/counts/", methods=["GET"])
+@auth
 def performance_counts_get():
-    performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=True)
+    performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=False)
 
     include_attendee_count = process_bool_api_request_param(
         parameter_name="include_attendee_count", optional=True
@@ -128,15 +130,15 @@ def performance_counts_get():
         parameter_name="include_tag_count", optional=True
     )
 
-    include_featured_post_count = process_bool_api_request_param(
-        parameter_name="include_featured_post_count", optional=True
+    include_features_count = process_bool_api_request_param(
+        parameter_name="include_features_count", optional=True
     )
 
-    filter =  PerformanceCountsGetFilter(
+    filter = PerformancesCountsGetFilter(
         performance_ids=performance_ids,
         include_attendee_count=include_attendee_count,
         include_tag_count=include_tag_count,
-        include_featured_post_count=include_featured_post_count
+        include_features_count=include_features_count,
     )
 
     result = flask.current_app.conns.midlayer.performance_counts_get(filter)
@@ -146,7 +148,7 @@ def performance_counts_get():
 
     response = {}
     response["performances"] = [class_to_dict(performance) for performance in performances]
-    response["counts"] = []
+    response["counts"] = [class_to_dict(count) for count in counts]
 
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"

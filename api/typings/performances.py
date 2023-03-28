@@ -121,3 +121,60 @@ class PerformanceAttendanceCreateResult:
         performance_attendance: PerformanceAttendance,
     ) -> None:
         self.performance_attendance = performance_attendance
+
+class PerformancesCountsGetFilter:
+    performance_ids: List[int] = ...
+    include_attendee_count: bool = ...
+    include_tag_count: bool = ...
+    include_features_count: bool = ...
+
+    def __init__(
+        self,
+        performance_ids:List[int],
+        include_attendee_count: bool = False,
+        include_tag_count: bool = False,
+        include_features_count: bool = False,
+    ) -> None:
+        self.performance_ids = performance_ids
+        self.include_attendee_count = include_attendee_count
+        self.include_tag_count = include_tag_count
+        self.include_features_count = include_features_count
+
+
+class PerformanceCounts:
+    performance_id: int = ...
+    attendee_count: Optional[int] = ...
+    tag_count: Optional[int] = ...
+    features_count: Optional[int] = ...
+
+    def __init__(
+        self,
+        performance_id: int,
+        attendee_count: Optional[int] = None,
+        tag_count: Optional[int] = None,
+        features_count: Optional[int] = None,
+    ) -> None:
+        self.performance_id = performance_id
+        self.attendee_count = attendee_count
+        self.tag_count = tag_count
+        self.features_count = features_count
+
+
+class PerformancesCountsGetResult:
+    performances: List[Performance] = ...
+    counts: List[PerformanceCounts] = ...
+
+    def __init__(
+        self,
+        performances: List[Performance],
+        counts: List[PerformanceCounts],
+    ) -> None:
+        self.performances = performances
+        self.counts = counts
+
+
+    
+    
+    
+    
+    
