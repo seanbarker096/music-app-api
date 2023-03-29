@@ -129,10 +129,12 @@ class PerformancesDAO:
     def performances_counts_get(
         self, filter: PerformancesCountsGetFilter
     ) -> PerformancesCountsGetResult:
-        selects = self.PERFORMANCE_SELECTS
+        selects = []
         wheres = []
         joins = []
         binds = []
+
+        selects.append(self.PERFORMANCE_SELECTS)
 
         if filter.include_attendee_count:
             joins.append(
@@ -147,7 +149,7 @@ class PerformancesDAO:
             joins.append(
                 """
                 LEFT JOIN tag as t
-                    ON t.tagged_entity_id = p.id 
+                    ON t.tagged_entity_id = p.id
                     AND t.tagged_entity_type = %s
                     AND t.tagged_in_entity_type = %s
                 """
@@ -164,7 +166,7 @@ class PerformancesDAO:
                 LEFT JOIN feature as f
                     ON f.featurer_id = p.id
                     AND f.featurer_type = %s
-                    AND f.featured_entity_type = %s                   
+                    AND f.featured_entity_type = %s
                 """
             )
 
@@ -179,7 +181,7 @@ class PerformancesDAO:
 
         where_string = build_where_query_string(wheres, "AND")
 
-        sql = f""" 
+        sql = f"""
             SELECT DISTINCT {', '.join(selects)} 
             FROM performance as p
             {"".join(joins)}

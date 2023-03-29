@@ -120,7 +120,7 @@ def attendance_create():
 @blueprint.route("/performances/counts/", methods=["GET"])
 @auth
 def performance_counts_get():
-    performance_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=False)
+    performance_ids = process_api_set_request_param(parameter_name="performance_ids[]", type=int, optional=False)
 
     include_attendee_count = process_bool_api_request_param(
         parameter_name="include_attendee_count", optional=True

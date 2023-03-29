@@ -2,9 +2,10 @@ from enum import Enum
 from typing import List, Optional
 
 
-# todo: a performance should feature a post, not a performer
+# Performers cna feature posts e.g. if a logged in artist comes across a post and wants it on his profile. It wont be linked to a show though
 class FeaturerType(Enum):
     USER = "user"
+    PERFORMER = "performer"
     PERFORMANCE = "performance"
 
 
