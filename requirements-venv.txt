@@ -25,3 +25,4 @@ tomli==2.0.1
 urllib3==1.26.12
 Werkzeug==2.2.2
 s3==3.0.*
+mysql-connector-python==8.0.*

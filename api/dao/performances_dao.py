@@ -129,12 +129,11 @@ class PerformancesDAO:
     def performances_counts_get(
         self, filter: PerformancesCountsGetFilter
     ) -> PerformancesCountsGetResult:
-        selects = []
         wheres = []
         joins = []
         binds = []
 
-        selects.append(self.PERFORMANCE_SELECTS)
+        selects = self.PERFORMANCE_SELECTS
 
         if filter.include_attendee_count:
             joins.append(
