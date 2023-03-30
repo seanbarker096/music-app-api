@@ -2,7 +2,7 @@ import datetime
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DB
+from api.db.db import DBConnection
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.performances import (
@@ -28,8 +28,8 @@ class PerformancesDBAlias:
 
 
 class PerformancesDAO:
-    def __init__(self, config, db: Optional[DB] = None):
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None):
+        self.db = db if db else DBConnection(config)
 
     PERFORMANCE_SELECTS = [
         "p.id as " + PerformancesDBAlias.PERFORMANCE_ID,
@@ -259,8 +259,8 @@ class PerformanceAttendancesDBAlias:
 
 
 class PerformanceAttendancesDAO:
-    def __init__(self, config, db: Optional[DB] = None):
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None):
+        self.db = db if db else DBConnection(config)
 
     PERFORMANCE_ATTENDANCE_SELECTS = [
         "id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID,

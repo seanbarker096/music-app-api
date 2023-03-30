@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DB
+from api.db.db import DBConnection
 from api.db.utils.db_util import (
     assert_row_key_exists,
     build_update_set_string,
@@ -36,7 +36,7 @@ class UserDBAlias:
 
 
 class UsersDAO(object):
-    db: DB
+    db: DBConnection
 
     USER_SELECTS = [
         "id as " + UserDBAlias.USER_ID,
@@ -58,8 +58,8 @@ class UsersDAO(object):
         "salt as " + UserDBAlias.USER_SALT,
     ]
 
-    def __init__(self, config, db: Optional[DB] = None) -> None:
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None) -> None:
+        self.db = db if db else DBConnection(config)
 
     def users_get(self, filter: UsersGetFilter) -> List[User]:
         selects = f"""
@@ -78,16 +78,17 @@ class UsersDAO(object):
 
         sql = selects + where_string
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        rows = db_result.get_rows()
+            rows = cursor.fetchall()
 
-        users = []
-        for row in rows:
-            user = self._build_user_from_db_row(row)
-            users.append(user)
+            users = []
+            for row in rows:
+                user = self._build_user_from_db_row(row)
+                users.append(user)
 
-        return users
+            return users
 
     def get_user_by_username(
         self, username: str, include_password=False
@@ -103,11 +104,12 @@ class UsersDAO(object):
         binds = (username,)
 
         try:
-            result = self.db.run_query(sql, binds)
+            with self.db as cursor:
+                cursor.execute(sql, binds)
+                rows = cursor.fetchall()
+
         except Exception:
             raise Exception(f"Failed to get user with username {username} from the database")
-
-        rows = result.get_rows()
 
         if len(rows) == 0:
             raise Exception(
@@ -152,25 +154,28 @@ class UsersDAO(object):
         )
 
         try:
-            db_result = self.db.run_query(sql, binds)
+            with self.db as cursor:
+                cursor.execute(sql, binds)
 
-            user_id = db_result.get_last_row_id()
+                user_id = cursor.lastrowid()
 
-            return User(
-                id=user_id,
-                username=request.username,
-                first_name=request.first_name,
-                second_name=request.second_name,
-                create_time=now,
-                is_deleted=False,
-                avatar_file_uuid=None,
-                email=request.email,
-                last_login_date=now,
-                language_id=1,
-                timezone_id=1,
-            )
+                return User(
+                    id=user_id,
+                    username=request.username,
+                    first_name=request.first_name,
+                    second_name=request.second_name,
+                    create_time=now,
+                    is_deleted=False,
+                    avatar_file_uuid=None,
+                    email=request.email,
+                    last_login_date=now,
+                    language_id=1,
+                    timezone_id=1,
+                )
+
         except DBDuplicateKeyException as e:
             raise e
+        
         except Exception:
             raise Exception(
                 f"Failed to create user with username {request.username} and email {request.email}"
@@ -215,10 +220,11 @@ class UsersDAO(object):
             UPDATE users {set_string} WHERE id = {request.user_id}
         """
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        if db_result.affected_rows() == 0:
-            raise Exception("Failed to update any users for the provided request parameters")
+            if cursor.rowcount() == 0:
+                raise Exception("Failed to update any users for the provided request parameters")
 
         return user
 

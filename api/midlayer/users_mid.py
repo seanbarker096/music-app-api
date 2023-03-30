@@ -1,7 +1,7 @@
 from typing import Optional
 
 from api.dao.users_dao import UsersDAO
-from api.db.db import DBDuplicateKeyException
+from api.db.db import DBConnectionDuplicateKeyException
 from api.midlayer import BaseMidlayerMixin
 from api.typings.users import (
     User,
@@ -15,6 +15,7 @@ from api.typings.users import (
     UserWithPassword,
 )
 from api.utils import hash_password, validate_password, verify_hash
+from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
     ResponseBaseException,

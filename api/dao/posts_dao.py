@@ -2,7 +2,7 @@ import json
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DB
+from api.db.db import DBConnection
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.posts import (
@@ -30,7 +30,7 @@ class PostDBAlias:
 
 
 class PostsDAO(object):
-    db: DB
+    db: DBConnection
 
     POST_SELECTS = [
         "p.id as " + PostDBAlias.POST_ID,
@@ -43,8 +43,8 @@ class PostsDAO(object):
         "p.is_deleted as " + PostDBAlias.POST_IS_DELETED,
     ]
 
-    def __init__(self, config, db: Optional[DB] = None):
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None):
+        self.db = db if db else DBConnection(config)
 
     def post_create(self, request: PostCreateRequest) -> Post:
         sql = """
@@ -283,7 +283,7 @@ class PostAttachmentDBAlias:
 
 
 class PostAttachmentsDAO(object):
-    db: DB
+    db: DBConnection
 
     POST_ATTACHMENT_SELECTS = [
         "id as " + PostAttachmentDBAlias.POST_ATTACHMENT_ID,
@@ -292,8 +292,8 @@ class PostAttachmentsDAO(object):
         "UNIX_TIMESTAMP(create_time) as " + PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME,
     ]
 
-    def __init__(self, config, db: Optional[DB] = None):
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None):
+        self.db = db if db else DBConnection(config)
 
     def post_attachment_create(self, post_id: int, file_id: int) -> PostAttachment:
         sql = """

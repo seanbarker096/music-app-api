@@ -2,7 +2,7 @@ import json
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DB
+from api.db.db import DBConnection
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.performers import (
     AttendeePerformersGetCount,
@@ -27,7 +27,7 @@ class PerformerDBAlias:
 
 
 class PerformersDAO(object):
-    db: DB
+    db: DBConnection
 
     """
     Some queries such as in attendee_performers_get requires a GROUP BY on all columns in performances table. We therefore create this so we can iterate over it when adding it to group by clauses. Using PERFORMANCES_SELECTS in a group by would fail as it contains an alias
@@ -54,8 +54,8 @@ class PerformersDAO(object):
         f"{PERFORMER_COLUMNS[7]} as {PerformerDBAlias.PERFORMER_IMAGE_URL}",
     ]
 
-    def __init__(self, config, db: Optional[DB] = None):
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None):
+        self.db = db if db else DBConnection(config)
 
     def performers_get(self, filter: PerformersGetFilter) -> List[Performer]:
         selects = f"""

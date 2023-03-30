@@ -2,9 +2,8 @@ import json
 import traceback
 from typing import Any, Dict
 
-import pymysql.cursors
-import pymysql.err
-from mysql.connector import MySQLConnection
+from mysql.connector import IntegrityError, MySQLConnection
+from mysql.connector.cursor import MySQLCursor
 
 from api.db.config import DBConfig
 from exceptions.db.exceptions import DBDuplicateKeyException
@@ -14,9 +13,9 @@ from exceptions.db.exceptions import DBDuplicateKeyException
 
 
 class DBResult(object):
-    _cursor: pymysql.cursors.DictCursor = ...
+    _cursor: MySQLCursor = ...
 
-    def __init__(self, cursor: pymysql.cursors.DictCursor):
+    def __init__(self, cursor: MySQLCursor):
         self._cursor = cursor
 
     def get_last_row_id(self):
@@ -30,59 +29,57 @@ class DBResult(object):
         return self._cursor.rowcount
 
 
-class DB:
-    def __init__(self, config: Dict[str, str]):
-        self.connection = None
+# class DB:
+#     def __init__(self, config: Dict[str, str]):
+#         self.connection = None
 
-        db_config = config["config_file"]["db"]
+#         db_config = config["config_file"]["db"]
 
-        if (
-            db_config
-            and db_config["host"]
-            and db_config["user"]
-            and db_config["password"]
-            and db_config["database"]
-            and db_config["port"]
-        ):
-            self.config = DBConfig(
-                db_config["host"],
-                db_config["user"],
-                db_config["password"],
-                db_config["database"],
-                db_config["port"],
-            )
-        else:
-            raise Exception("Failed to instantiate DB class. Invalid configuration supplied")
+#         if (
+#             db_config
+#             and db_config["host"]
+#             and db_config["user"]
+#             and db_config["password"]
+#             and db_config["database"]
+#             and db_config["port"]
+#         ):
+#             self.config = DBConfig(
+#                 db_config["host"],
+#                 db_config["user"],
+#                 db_config["password"],
+#                 db_config["database"],
+#                 db_config["port"],
+#             )
+#         else:
+#             raise Exception("Failed to instantiate DB class. Invalid configuration supplied")
 
-        self.connection = pymysql.connect(
-            host=self.config.host,
-            user=self.config.user,
-            password=self.config.password,
-            database=self.config.database,
-            port=int(self.config.port),
-            cursorclass=pymysql.cursors.DictCursor,
-            autocommit=True, # TODO: Can disable this for readonly transactions
-        )
+#         self.connection = pymysql.connect(
+#             host=self.config.host,
+#             user=self.config.user,
+#             password=self.config.password,
+#             database=self.config.database,
+#             port=int(self.config.port),
+#             cursorclass=pymysql.cursors.DictCursor,
+#             autocommit=True,  # TODO: Can disable this for readonly transactions
+#         )
 
-    def run_query(self, sql, binds) -> DBResult:
-        ## TODO: validate sql and binds
-        ## TODO: Check connection exists
+#     def run_query(self, sql, binds) -> DBResult:
+#         ## TODO: validate sql and binds
+#         ## TODO: Check connection exists
 
-        ## TODO: What if connection fails? Shoulld i return None, throw error??
+#         ## TODO: What if connection fails? Shoulld i return None, throw error??
 
-        try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(sql, binds)
-            return DBResult(cursor=cursor)
-        except pymysql.err.IntegrityError as e:
-            print(e)
-            raise DBDuplicateKeyException(e.args[1])
-        
-
+#         try:
+#             with self.connection.cursor() as cursor:
+#                 cursor.execute(sql, binds)
+#             return DBResult(cursor=cursor)
+#         except pymysql.err.IntegrityError as e:
+#             print(e)
+#             raise DBDuplicateKeyException(e.args[1])
 
 
 class DBConnection(MySQLConnection):
-    _cursor: pymysql.cursors.DictCursor = ...
+    _cursor: MySQLCursor | None = ...
     _new_conn_per_request: bool = ...
     config: Dict[str, Any] = ...
     opened: bool = ...
@@ -94,23 +91,25 @@ class DBConnection(MySQLConnection):
 
         if not self.new_conn_per_request:
             self._open()
-        else:
-            self._connection = None
-            self._cursor = None
+            self._cursor = self.cursor(dictionary=True)
 
     def __enter__(self):
         # Open the connection. We don't handle on transient connections here as they shouldn't use the context manager
         if self.new_conn_per_request and not self.opened:
             self._open()
-        
-        self._cursor = self.cursor()
-        return self._cursor
 
+        self._cursor = self.cursor(dictionary=True)
+        return self._cursor
 
     def __exit__(self, exception, exception_message, trace):
         if exception and self.autocommit is False:
             self.rollback()
 
+            if isinstance(exception, IntegrityError):
+                raise DBDuplicateKeyException(exception.args[1])
+            
+            raise exception
+            
         else:
             self.commit()
 
@@ -121,20 +120,19 @@ class DBConnection(MySQLConnection):
         if self.new_conn_per_request and self.opened:
             self._close()
 
-
     def _open(self):
         if not self.opened:
-            MySQLConnection.__init__(self, host=self.config.host,
-            user=self.config.user,
-            password=self.config.password,
-            database=self.config.database,
-            port=int(self.config.port),
-            cursorclass=pymysql.cursors.DictCursor,
-            autocommit=False,
+            MySQLConnection.__init__(
+                self,
+                host=self.config.host,
+                user=self.config.user,
+                password=self.config.password,
+                database=self.config.database,
+                port=int(self.config.port),
+                autocommit=False,
             )
             self.opened = True
 
     def _close(self):
         super().close()
         self.opened = False
-        

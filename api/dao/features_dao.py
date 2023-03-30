@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from api.db.db import DB
+from api.db.db import DBConnection
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.features import Feature, FeatureCreateRequest, FeaturesGetFilter
 
@@ -15,7 +15,7 @@ class FeaturesDBAlias:
 
 
 class FeaturesDAO:
-    db: DB
+    db: DBConnection
 
     FEATURE_SELECTS = [
         "id as " + FeaturesDBAlias.FEATURE_ID,
@@ -26,8 +26,8 @@ class FeaturesDAO:
         "creator_id as " + FeaturesDBAlias.FEATURE_CREATOR_ID,
     ]
 
-    def __init__(self, config, db: Optional[DB] = None):
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None):
+        self.db = db if db else DBConnection(config)
 
     def feature_create(self, request: FeatureCreateRequest) -> Feature:
         sql = """

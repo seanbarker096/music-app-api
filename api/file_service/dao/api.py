@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from api.db.db import DB
+from api.db.db import DBConnection
 from api.db.utils.db_util import (
     assert_row_key_exists,
     build_update_set_string,
@@ -37,7 +37,7 @@ class FileServiceDAO:
 
     def __init__(self, config):
         ## Consider making this static, or maybe a flyweight or singleton
-        self.db = DB(config)
+        self.db = DBConnection(config)
 
     def create_file_meta(self, request: FileMetaCreateRequest) -> FileServiceFile:
         sql = """

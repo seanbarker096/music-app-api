@@ -52,7 +52,9 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         binds = list(vars(self.test_user_with_password).values())
 
         binds = binds[1:]  ## Ignore the id
-        self.db.run_query(sql, binds)
+        
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
     @patch("time.time")
     def test_user_create(self, time):

@@ -1,12 +1,12 @@
 import json
 
 from api.authentication_service.typings import TokenCreateRequest
-from api.db.db import DB
+from api.db.db import DBConnection
 
 
 class AuthTokenServiceDAO:
     def __init__(self, config):
-        self.db = DB(config)
+        self.db = DBConnection(config)
 
     def token_create(self, request: TokenCreateRequest) -> int:
         if not isinstance(request.owner_id, int):

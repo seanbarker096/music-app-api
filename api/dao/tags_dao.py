@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from api.db.db import DB
+from api.db.db import DBConnection
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.tags import Tag, TagCreateRequest, TagsGetFilter
 
@@ -15,7 +15,7 @@ class TagsDBAlias:
 
 
 class TagsDAO:
-    db: DB
+    db: DBConnection
 
     TAG_SELECTS = [
         "id as " + TagsDBAlias.TAG_ID,
@@ -26,8 +26,8 @@ class TagsDAO:
         "creator_id as " + TagsDBAlias.TAG_CREATOR_ID,
     ]
 
-    def __init__(self, config, db: Optional[DB] = None) -> None:
-        self.db = db if db else DB(config)
+    def __init__(self, config, db: Optional[DBConnection] = None) -> None:
+        self.db = db if db else DBConnection(config)
 
     def tag_create(self, request: TagCreateRequest) -> Tag:
         query = """
