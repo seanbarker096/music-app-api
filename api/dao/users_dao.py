@@ -157,7 +157,7 @@ class UsersDAO(object):
             with self.db as cursor:
                 cursor.execute(sql, binds)
 
-                user_id = cursor.lastrowid()
+                user_id = cursor.lastrowid
 
                 return User(
                     id=user_id,

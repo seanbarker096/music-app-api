@@ -2,6 +2,7 @@ import json
 import traceback
 from typing import Any, Dict
 
+import pymysql
 from mysql.connector import IntegrityError, MySQLConnection
 from mysql.connector.cursor import MySQLCursor
 
@@ -78,61 +79,83 @@ class DBResult(object):
 #             raise DBDuplicateKeyException(e.args[1])
 
 
-class DBConnection(MySQLConnection):
+class DBConnection:
     _cursor: MySQLCursor | None = ...
     _new_conn_per_request: bool = ...
-    config: Dict[str, Any] = ...
+    app_config: Dict[str, Any] = ...
     opened: bool = ...
+    connection: pymysql.connections.Connection = ...
 
     def __init__(self, config: Dict[str, str], new_conn_per_request: bool = True):
-        self.config = config
+        app_db_config = config["config_file"]["db"]
+
+        if (
+            app_db_config
+            and app_db_config["host"]
+            and app_db_config["user"]
+            and app_db_config["password"]
+            and app_db_config["database"]
+            and app_db_config["port"]
+        ):
+            self.app_config = DBConfig(
+                app_db_config["host"],
+                app_db_config["user"],
+                app_db_config["password"],
+                app_db_config["database"],
+                app_db_config["port"],
+            )
+        else:
+            raise Exception("Failed to instantiate DB class. Invalid configuration supplied")
+
         self._new_conn_per_request = new_conn_per_request
         self.opened = False
+        self.connection = None
 
-        if not self.new_conn_per_request:
+        if not self._new_conn_per_request:
             self._open()
-            self._cursor = self.cursor(dictionary=True)
+            self._cursor = self.connection.cursor()
 
     def __enter__(self):
         # Open the connection. We don't handle on transient connections here as they shouldn't use the context manager
-        if self.new_conn_per_request and not self.opened:
+        if self._new_conn_per_request and not self.opened:
             self._open()
 
-        self._cursor = self.cursor(dictionary=True)
+        self._cursor = self.connection.cursor()
         return self._cursor
 
     def __exit__(self, exception, exception_message, trace):
-        if exception and self.autocommit is False:
-            self.rollback()
-
-            if isinstance(exception, IntegrityError):
-                raise DBDuplicateKeyException(exception.args[1])
-            
-            raise exception
-            
+        if exception:
+            if self.connection.autocommit is False:
+                self.connection.rollback()
         else:
-            self.commit()
+            self.connection.commit()
 
         # we always close the cursor on exit because we always initialise a new one on enter
         self._cursor.close()
         self._cursor = None
 
-        if self.new_conn_per_request and self.opened:
+        if self._new_conn_per_request and self.opened:
             self._close()
+
+        if exception:
+            if isinstance(exception, pymysql.err.IntegrityError):
+                raise DBDuplicateKeyException(exception.args[1])
+
+            raise exception
 
     def _open(self):
         if not self.opened:
-            MySQLConnection.__init__(
-                self,
-                host=self.config.host,
-                user=self.config.user,
-                password=self.config.password,
-                database=self.config.database,
-                port=int(self.config.port),
-                autocommit=False,
+            self.connection = pymysql.connect(
+            host=self.app_config.host,
+            user=self.app_config.user,
+            password=self.app_config.password,
+            database=self.app_config.database,
+            port=int(self.app_config.port),
+            cursorclass=pymysql.cursors.DictCursor,
+            autocommit=False,  # TODO: Can disable this for readonly transactions
             )
             self.opened = True
 
     def _close(self):
-        super().close()
+        self.connection.close()
         self.opened = False

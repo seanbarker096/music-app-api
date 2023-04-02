@@ -4,7 +4,7 @@ import unittest
 from configparser import ConfigParser
 from test.integration.src.fixtures.fixture_factory import FixtureFactory
 
-from api.db.db import DBConnectionConnection
+from api.db.db import DBConnection
 
 
 class IntegrationTestCase(unittest.TestCase):
