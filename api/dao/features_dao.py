@@ -43,9 +43,9 @@ class FeaturesDAO:
             request.creator_id,
         )
 
-        db_result = self.db.run_query(sql, binds)
-
-        feature_id = db_result.get_last_row_id()
+        with self.db as cursor:
+            cursor.exectute(sql, binds)
+            feature_id = cursor.lastrowid
 
         return Feature(
             id=feature_id,
@@ -84,9 +84,9 @@ class FeaturesDAO:
 
         sql = selects + where_string
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         features = []
         for row in rows:

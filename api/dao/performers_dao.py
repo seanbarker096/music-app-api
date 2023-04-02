@@ -78,9 +78,9 @@ class PerformersDAO(object):
 
         sql = selects + where_string
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         performers = []
         for row in rows:
@@ -106,9 +106,9 @@ class PerformersDAO(object):
             request.image_url,
         )
 
-        db_result = self.db.run_query(sql, binds)
-
-        performer_id = db_result.get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            performer_id = cursor.lastrowid
 
         return Performer(
             id=performer_id,
@@ -171,9 +171,9 @@ class PerformersDAO(object):
             LIMIT {limit}
         """
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         performers = []
         counts = [] if filter.get_counts else None

@@ -145,18 +145,21 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
 
         ## Seed the db with a file.
         ## TODO: Create fixtures to avoid doing this directly in the test
-        file_id = self.db.run_query(
-            """
-        INSERT INTO files(uuid, file_size, file_name, mime_type, url) VALUES(%s, %s, %s, %s, %s)
-        """,
-            (
-                "abcdefghikklmnop",
-                None,
-                "my-test-file.png",
-                "image/png",
-                "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
-            ),
-        ).get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(
+                """
+            INSERT INTO files(uuid, file_size, file_name, mime_type, url) VALUES(%s, %s, %s, %s, %s)
+            """,
+                (
+                    "abcdefghikklmnop",
+                    None,
+                    "my-test-file.png",
+                    "image/png",
+                    "https://storage-container-id.provider.domain.com/as?query-param-one=random-param",
+                ),
+            )
+
+            file_id = cursor.lastrowid
 
         filter = FilesGetFilter(uuids=["abcdefghikklmnop"])
 

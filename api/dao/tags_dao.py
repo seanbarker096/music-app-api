@@ -43,9 +43,9 @@ class TagsDAO:
             request.creator_id,
         )
 
-        db_result = self.db.run_query(query, binds)
-
-        tag_id = db_result.get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(query, binds)
+            tag_id = cursor.lastrowid
 
         return Tag(
             id=tag_id,
@@ -76,9 +76,9 @@ class TagsDAO:
 
         sql = selects + where_string
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         return [self._build_tag_from_db_row(row) for row in rows]
 

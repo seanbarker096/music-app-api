@@ -11,7 +11,7 @@ from api.performer_search_service.types import PerformersSearchRequest
 
 class PerformerSearchServiceTestCase(TestCase):
     EXAMPLE_API_RESPONSE = {
-        "performers": {
+        "artists": {
             "href": "https://api.spotify.com/v1/search?query=f&type=performer&offset=950&limit=2",
             "items": [
                 {
@@ -83,12 +83,12 @@ class PerformerSearchServiceTestCase(TestCase):
         }
     }
 
-    @patch.object(SpotifySearchImp, "_spotify_search_performers")
+    @patch.object(SpotifySearchImp, "_spotify_search_artists")
     @patch.object(SpotifySearchImp, "_spotify_get_access_token")
-    def test_performer_search(self, mock_get_access_token, mock_search_performers):
+    def test_performer_search(self, mock_get_access_token, mock_search_artists):
         mock_search_imp = SpotifySearchImp(self.config)
         mock_get_access_token.return_value = "test_token"
-        mock_search_performers.return_value = self.EXAMPLE_API_RESPONSE
+        mock_search_artists.return_value = self.EXAMPLE_API_RESPONSE
 
         service = PerformerSearchService(self.config, mock_search_imp)
 
@@ -98,7 +98,7 @@ class PerformerSearchServiceTestCase(TestCase):
 
         mock_get_access_token.assert_called_once()
         # 50 is the default limit for spotify implementation
-        mock_search_performers.assert_called_once_with("test_token", "E", 50)
+        mock_search_artists.assert_called_once_with("test_token", "E", 50)
 
         performers = response.performers
 

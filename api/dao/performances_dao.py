@@ -57,9 +57,9 @@ class PerformancesDAO:
             None,
         )
 
-        db_result = self.db.run_query(sql, binds)
-
-        performance_id = db_result.get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            performance_id = cursor.lastrowid
 
         return Performance(
             id=performance_id,
@@ -115,9 +115,9 @@ class PerformancesDAO:
             {where_string}
             """
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         performances = []
         for row in rows:
@@ -188,9 +188,9 @@ class PerformancesDAO:
             GROUP BY p.id
             """
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         performances = []
         counts = []
@@ -286,9 +286,9 @@ class PerformanceAttendancesDAO:
             now,
         )
 
-        db_result = self.db.run_query(sql, binds)
-
-        performance_attendance_id = db_result.get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            performance_attendance_id = cursor.lastrowid
 
         return PerformanceAttendance(
             id=performance_attendance_id,

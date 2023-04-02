@@ -46,7 +46,9 @@ class FileServiceDAO:
 
         binds = (request.uuid, None, request.file_name, request.mime_type, None)
 
-        insert_id = self.db.run_query(sql, binds).get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            insert_id = cursor.lastrowid
 
         file = FileServiceFile(
             id=insert_id,
@@ -97,9 +99,11 @@ class FileServiceDAO:
             UPDATE files {set_string} WHERE id = {request.id}
         """
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            affected_rows = cursor.rowcount
 
-        if db_result.affected_rows() == 0:
+        if affected_rows == 0:
             raise Exception("Failed to update any files for the provided request parameters")
 
         return file
@@ -130,7 +134,9 @@ class FileServiceDAO:
 
         sql = selects + where_string
 
-        rows = self.db.run_query(sql, binds).get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         files = []
         for row in rows:
