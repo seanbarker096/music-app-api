@@ -21,9 +21,10 @@ class AuthTokenServiceDAO:
 
         binds = (request.token, request.owner_id, request.session_id)
 
-        result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            result = cursor.execute(sql, binds)
 
-        return result.get_last_row_id()
+            return cursor.lastrowid
 
     def get_token_by_user_id_and_session_id(self, user_id: int, session_id: str) -> str:
 
@@ -41,10 +42,12 @@ class AuthTokenServiceDAO:
         """
 
         binds = (user_id, session_id)
+        rows = None
 
-        result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            result = cursor.execute(sql, binds)
 
-        rows = result.get_rows()
+            rows = cursor.fetchall()
 
         if not rows or len(rows) == 0:
             raise Exception(
@@ -70,10 +73,12 @@ class AuthTokenServiceDAO:
             DELETE FROM auth_tokens WHERE token = %s
         """
         binds = (token,)
+        row_count = None
 
-        result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        row_count = result.affected_rows()
+            row_count = cursor.rowcount
 
         if row_count == 0:
             raise Exception(f"Failed to remove token {token} from the database")
