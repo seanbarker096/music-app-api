@@ -36,9 +36,10 @@ class FixtureFactory:
                 VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
             """
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        return db_result.get_last_row_id()
+            return cursor.lastrowid
 
     def post_attachment_fixture_create(self, dto: PostAttachmentFixtureDTO) -> int:
         sql = """
@@ -51,9 +52,10 @@ class FixtureFactory:
             dto.get_create_time(),
         )
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        return db_result.get_last_row_id()
+            return cursor.lastrowid
 
     def tag_fixture_create(self, dto: TagFixtureDTO) -> int:
         sql = """
@@ -68,9 +70,10 @@ class FixtureFactory:
             dto.get_creator_id(),
         )
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        return db_result.get_last_row_id()
+            return cursor.lastrowid
 
     def feature_fixture_create(self, dto: FeatureFixtureDTO) -> int:
         sql = """
@@ -86,9 +89,10 @@ class FixtureFactory:
             dto.get_creator_id(),
         )
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        return db_result.get_last_row_id()
+            return cursor.lastrowid
 
     def performer_fixture_create(self, dto: PerformerFixtureDTO) -> int:
         sql = """
@@ -104,10 +108,11 @@ class FixtureFactory:
             dto.get_owner_id(),
             dto.get_image_url(),
         )
+        
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        db_result = self.db.run_query(sql, binds)
-
-        return db_result.get_last_row_id()
+            return cursor.lastrowid
     
 
     def performance_attendance_fixture_create(self, dto: PerformanceAttendanceFixtureDTO) -> int:
@@ -120,10 +125,11 @@ class FixtureFactory:
             dto.get_attendee_id(),
             dto.get_create_time(),
         )
+        
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        db_result = self.db.run_query(sql, binds)
-
-        return db_result.get_last_row_id()
+            return cursor.lastrowid
     
     def performance_fixture_create(self, dto: PerformanceFixtureDTO) -> int:
         sql = """
@@ -138,7 +144,8 @@ class FixtureFactory:
             dto.get_venue_id(),
         )
 
-        db_result = self.db.run_query(sql, binds)
+        with self.db as cursor:
+            cursor.execute(sql, binds)
 
-        return db_result.get_last_row_id()
+            return cursor.lastrowid
     

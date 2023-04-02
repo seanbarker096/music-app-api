@@ -63,18 +63,18 @@ class PostsDAO(object):
             0,
         )
 
-        db_result = self.db.run_query(sql, binds)
-
-        post_id = db_result.get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            post_id = cursor.lastrowid
 
         return Post(
-            id=post_id,
-            owner_id=request.owner_id,
-            owner_type=request.owner_type,
-            content=request.content,
-            creator_id=request.creator_id,
-            create_time=now,
-            update_time=None,
+                id=post_id,
+                owner_id=request.owner_id,
+                owner_type=request.owner_type,
+                content=request.content,
+                creator_id=request.creator_id,
+                create_time=now,
+                update_time=None,
         )
 
     def posts_get(self, filter: PostsGetFilter) -> List[Post]:
@@ -106,9 +106,9 @@ class PostsDAO(object):
 
         sql = selects + where_string
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         posts = []
         for row in rows:
@@ -220,11 +220,11 @@ class PostsDAO(object):
             + f"".join(joins)
             + final_wheres_string
             + f" ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC"
-        )
+        )  
 
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         posts = []
         for row in rows:
@@ -308,9 +308,9 @@ class PostAttachmentsDAO(object):
             now,
         )
 
-        db_result = self.db.run_query(sql, binds)
-
-        post_attachment_id = db_result.get_last_row_id()
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            post_attachment_id = cursor.lastrowid
 
         return PostAttachment(
             id=post_attachment_id, post_id=post_id, file_id=file_id, create_time=now
@@ -336,10 +336,10 @@ class PostAttachmentsDAO(object):
         where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string
-
-        db_result = self.db.run_query(sql, binds)
-
-        rows = db_result.get_rows()
+        
+        with self.db as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
 
         posts_attachments = []
         for row in rows:

@@ -159,7 +159,7 @@ class UsersDAO(object):
 
                 user_id = cursor.lastrowid
 
-                return User(
+            return User(
                     id=user_id,
                     username=request.username,
                     first_name=request.first_name,
@@ -171,7 +171,7 @@ class UsersDAO(object):
                     last_login_date=now,
                     language_id=1,
                     timezone_id=1,
-                )
+            )
 
         except DBDuplicateKeyException as e:
             raise e
