@@ -27,7 +27,8 @@ class TagsDAO:
     ]
 
     def __init__(self, config, db: Optional[DBConnection] = None) -> None:
-        self.db = db if db else DBConnection(config)
+        # self.db = db if db else DBConnection(config)
+        self.config = config
 
     def tag_create(self, request: TagCreateRequest) -> Tag:
         query = """
@@ -43,7 +44,7 @@ class TagsDAO:
             request.creator_id,
         )
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(query, binds)
             tag_id = cursor.lastrowid
 
@@ -76,7 +77,7 @@ class TagsDAO:
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

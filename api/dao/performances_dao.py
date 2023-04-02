@@ -29,7 +29,8 @@ class PerformancesDBAlias:
 
 class PerformancesDAO:
     def __init__(self, config, db: Optional[DBConnection] = None):
-        self.db = db if db else DBConnection(config)
+        # self.db = db if db else DBConnection(config)
+        self.config = config
 
     PERFORMANCE_SELECTS = [
         "p.id as " + PerformancesDBAlias.PERFORMANCE_ID,
@@ -57,7 +58,7 @@ class PerformancesDAO:
             None,
         )
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             performance_id = cursor.lastrowid
 
@@ -115,7 +116,7 @@ class PerformancesDAO:
             {where_string}
             """
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -188,7 +189,7 @@ class PerformancesDAO:
             GROUP BY p.id
             """
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -286,7 +287,7 @@ class PerformanceAttendancesDAO:
             now,
         )
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             performance_attendance_id = cursor.lastrowid
 

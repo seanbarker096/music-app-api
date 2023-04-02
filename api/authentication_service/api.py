@@ -128,7 +128,6 @@ class JWTTokenAuthService(TokenAuthService):
     def validate_token(self, token: str, token_type: Optional[TokenType] = None) -> Dict[str, any]:
         """Validate token allowing for 10 second leway."""
         try:
-            print(token)
             decoded_token = jwt.decode(
                 token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
             )

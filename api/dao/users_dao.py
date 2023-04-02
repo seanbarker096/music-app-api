@@ -59,7 +59,8 @@ class UsersDAO(object):
     ]
 
     def __init__(self, config, db: Optional[DBConnection] = None) -> None:
-        self.db = db if db else DBConnection(config)
+        # self.db = db if db else DBConnection(config)
+        self.config = config
 
     def users_get(self, filter: UsersGetFilter) -> List[User]:
         selects = f"""
@@ -78,7 +79,7 @@ class UsersDAO(object):
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
 
             rows = cursor.fetchall()
@@ -104,7 +105,7 @@ class UsersDAO(object):
         binds = (username,)
 
         try:
-            with self.db as cursor:
+            with DBConnection(self.config) as cursor:
                 cursor.execute(sql, binds)
                 rows = cursor.fetchall()
 
@@ -154,7 +155,7 @@ class UsersDAO(object):
         )
 
         try:
-            with self.db as cursor:
+            with DBConnection(self.config) as cursor:
                 cursor.execute(sql, binds)
 
                 user_id = cursor.lastrowid
@@ -220,7 +221,7 @@ class UsersDAO(object):
             UPDATE users {set_string} WHERE id = {request.user_id}
         """
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
 
             if cursor.rowcount == 0:

@@ -27,7 +27,8 @@ class FeaturesDAO:
     ]
 
     def __init__(self, config, db: Optional[DBConnection] = None):
-        self.db = db if db else DBConnection(config)
+        # self.db = db if db else DBConnection(config)
+        self.config = config
 
     def feature_create(self, request: FeatureCreateRequest) -> Feature:
         sql = """
@@ -43,8 +44,8 @@ class FeaturesDAO:
             request.creator_id,
         )
 
-        with self.db as cursor:
-            cursor.exectute(sql, binds)
+        with DBConnection(self.config) as cursor:
+            cursor.execute(sql, binds)
             feature_id = cursor.lastrowid
 
         return Feature(
@@ -84,7 +85,7 @@ class FeaturesDAO:
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

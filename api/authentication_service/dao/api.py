@@ -6,7 +6,8 @@ from api.db.db import DBConnection
 
 class AuthTokenServiceDAO:
     def __init__(self, config):
-        self.db = DBConnection(config)
+        # self.db = DBConnection(config)
+        self.config = config
 
     def token_create(self, request: TokenCreateRequest) -> int:
         if not isinstance(request.owner_id, int):
@@ -21,7 +22,7 @@ class AuthTokenServiceDAO:
 
         binds = (request.token, request.owner_id, request.session_id)
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             result = cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -44,7 +45,7 @@ class AuthTokenServiceDAO:
         binds = (user_id, session_id)
         rows = None
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             result = cursor.execute(sql, binds)
 
             rows = cursor.fetchall()
@@ -75,7 +76,7 @@ class AuthTokenServiceDAO:
         binds = (token,)
         row_count = None
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
 
             row_count = cursor.rowcount

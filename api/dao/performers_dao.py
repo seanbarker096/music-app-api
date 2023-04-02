@@ -55,7 +55,8 @@ class PerformersDAO(object):
     ]
 
     def __init__(self, config, db: Optional[DBConnection] = None):
-        self.db = db if db else DBConnection(config)
+        # self.db = db if db else DBConnection(config)
+        self.config = config
 
     def performers_get(self, filter: PerformersGetFilter) -> List[Performer]:
         selects = f"""
@@ -78,7 +79,7 @@ class PerformersDAO(object):
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -106,7 +107,7 @@ class PerformersDAO(object):
             request.image_url,
         )
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             performer_id = cursor.lastrowid
 
@@ -171,7 +172,7 @@ class PerformersDAO(object):
             LIMIT {limit}
         """
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

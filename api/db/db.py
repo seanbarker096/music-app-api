@@ -1,5 +1,6 @@
 import json
 import traceback
+from random import randint
 from typing import Any, Dict
 
 import pymysql
@@ -16,6 +17,7 @@ class DBConnection:
     app_config: Dict[str, Any] = ...
     opened: bool = ...
     connection: pymysql.connections.Connection = ...
+    connection_id: int = ...
 
     def __init__(self, config: Dict[str, str], new_conn_per_request: bool = True):
         app_db_config = config["config_file"]["db"]
@@ -48,13 +50,23 @@ class DBConnection:
 
     def __enter__(self):
         # Open the connection. We don't handle on transient connections here as they shouldn't use the context manager
-        if self._new_conn_per_request and not self.opened:
-            self._open()
+        try:
+            if self._new_conn_per_request and not self.opened:
+                self._open()
 
-        self._cursor = self.connection.cursor()
+            self._cursor = self.connection.cursor()
+
+        except Exception as err:
+            raise Exception(f"Failed to open DB connection because {str(err)}") from err
+        
+        self.connection_id = randint(0, 1000000)
+        print(f"{self.connection_id} open")
+        
         return self._cursor
 
     def __exit__(self, exception_type, exception_value, trace):
+
+
         if exception_type is not None:
             if self.connection.autocommit is False:
                 self.connection.rollback()
@@ -62,11 +74,16 @@ class DBConnection:
             self.connection.commit()
 
         # we always close the cursor on exit because we always initialise a new one on enter
-        self._cursor.close()
+        res = self._cursor.close()
+
+        if res is False:
+            raise Exception(f"Failed to close cursor.")
+
         self._cursor = None
 
         if self._new_conn_per_request and self.opened:
             self._close()
+            print(f"{self.connection_id} closed \n\n")
 
         if exception_type is not None:
             if isinstance(exception_value, pymysql.err.IntegrityError):

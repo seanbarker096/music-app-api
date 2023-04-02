@@ -44,7 +44,8 @@ class PostsDAO(object):
     ]
 
     def __init__(self, config, db: Optional[DBConnection] = None):
-        self.db = db if db else DBConnection(config)
+        # self.db = db if db else DBConnection(config)
+        self.config = config
 
     def post_create(self, request: PostCreateRequest) -> Post:
         sql = """
@@ -63,7 +64,7 @@ class PostsDAO(object):
             0,
         )
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             post_id = cursor.lastrowid
 
@@ -106,7 +107,7 @@ class PostsDAO(object):
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -222,7 +223,7 @@ class PostsDAO(object):
             + f" ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC"
         )  
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -293,7 +294,8 @@ class PostAttachmentsDAO(object):
     ]
 
     def __init__(self, config, db: Optional[DBConnection] = None):
-        self.db = db if db else DBConnection(config)
+        # self.db = db if db else DBConnection(config)
+        self.config = config
 
     def post_attachment_create(self, post_id: int, file_id: int) -> PostAttachment:
         sql = """
@@ -308,7 +310,7 @@ class PostAttachmentsDAO(object):
             now,
         )
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             post_attachment_id = cursor.lastrowid
 
@@ -337,7 +339,7 @@ class PostAttachmentsDAO(object):
 
         sql = selects + where_string
         
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

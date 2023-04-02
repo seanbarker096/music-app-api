@@ -37,7 +37,8 @@ class FileServiceDAO:
 
     def __init__(self, config):
         ## Consider making this static, or maybe a flyweight or singleton
-        self.db = DBConnection(config)
+        # self.db = DBConnection(config)
+        self.config = config
 
     def create_file_meta(self, request: FileMetaCreateRequest) -> FileServiceFile:
         sql = """
@@ -46,7 +47,7 @@ class FileServiceDAO:
 
         binds = (request.uuid, None, request.file_name, request.mime_type, None)
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             insert_id = cursor.lastrowid
 
@@ -99,7 +100,7 @@ class FileServiceDAO:
             UPDATE files {set_string} WHERE id = {request.id}
         """
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             affected_rows = cursor.rowcount
 
@@ -134,7 +135,7 @@ class FileServiceDAO:
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with DBConnection(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
