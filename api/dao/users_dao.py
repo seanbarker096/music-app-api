@@ -223,7 +223,7 @@ class UsersDAO(object):
         with self.db as cursor:
             cursor.execute(sql, binds)
 
-            if cursor.rowcount() == 0:
+            if cursor.rowcount == 0:
                 raise Exception("Failed to update any users for the provided request parameters")
 
         return user

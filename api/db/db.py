@@ -123,8 +123,8 @@ class DBConnection:
         self._cursor = self.connection.cursor()
         return self._cursor
 
-    def __exit__(self, exception, exception_message, trace):
-        if exception:
+    def __exit__(self, exception_type, exception_value, trace):
+        if exception_type is not None:
             if self.connection.autocommit is False:
                 self.connection.rollback()
         else:
@@ -137,11 +137,11 @@ class DBConnection:
         if self._new_conn_per_request and self.opened:
             self._close()
 
-        if exception:
-            if isinstance(exception, pymysql.err.IntegrityError):
-                raise DBDuplicateKeyException(exception.args[1])
+        if exception_type is not None:
+            if isinstance(exception_value, pymysql.err.IntegrityError):
+                raise DBDuplicateKeyException(exception_value.args[1]) from exception_value
 
-            raise exception
+            raise exception_value
 
     def _open(self):
         if not self.opened:
