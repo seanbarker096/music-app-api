@@ -119,7 +119,7 @@ def process_enum_set_param(
 def process_bool_api_request_param(parameter_name: str, optional=True) -> bool:
     """Validates and returns a flask request body boolean parameter"""
     parameter = flask.request.values.get(parameter_name, None)
-    
+
     if isinstance(parameter, str):
         if parameter.lower() not in ["true", "false"]:
             raise Exception(

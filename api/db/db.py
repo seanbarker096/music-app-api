@@ -76,6 +76,7 @@ class DBConnection(Singleton):
         Close the connection to the database and remove the singleton instance
         """
         try:
+            print("Closing connection")
             self._cursor.close()
             self.connection.close()
             DBConnection.remove_instance()
@@ -108,14 +109,14 @@ class DBConnectionManager:
 
     def __exit__(self, exception_type, exception_value, trace):
         if exception_type is not None:
-            if self.db_connection.connection.autocommit is False:
+            if self.db_connection.connection.get_autocommit() is False:
                 self.db_connection.connection.rollback()
 
             if isinstance(exception_value, pymysql.err.IntegrityError):
                 raise DBDuplicateKeyException(exception_value.args[1]) from exception_value
 
             raise exception_value
-        elif self.db_connection.connection.autocommit is False:
+        elif self.db_connection.connection.get_autocommit() is False:
             self.db_connection.connection.commit()
 
     def close(self):

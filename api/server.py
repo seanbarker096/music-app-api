@@ -46,6 +46,7 @@ app.register_blueprint(performances_api.blueprint, url_prefix="/api/performances
 
 @app.after_request
 def after_request(response):
+    flask.current_app.conns.close()
     return after_request_setup(response)
 
 

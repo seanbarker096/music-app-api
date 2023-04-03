@@ -33,7 +33,6 @@ config.optionxform = str
 
 env = os.environ.get("ENVIRONMENT", "dev")
 filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../api/config/", f"{env}.cfg")
-print(filename)
 
 config.read(filename)
 
@@ -67,6 +66,8 @@ request = UserCreateRequest(
 )
 
 user_one = users_dao.user_create(request=request, password_hash=password_hash)
+
+print(user_one)
 
 
 # Create avatar file

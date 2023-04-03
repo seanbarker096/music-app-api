@@ -17,3 +17,7 @@ class Singleton:
     @classmethod
     def remove_instance(cls) -> None:
         cls._instance = None
+
+    @classmethod
+    def has_instance(cls):
+        return cls._instance is not None

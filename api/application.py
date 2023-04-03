@@ -4,6 +4,7 @@ from typing import Dict
 from flask import Flask
 
 from api.authentication_service.api import JWTTokenAuthService
+from api.db.db import DBConnection
 from api.file_service.api import FileService
 from api.midlayer.api import Midlayer
 
@@ -13,6 +14,11 @@ class Connections:
         self.file_service = FileService(config)
         self.midlayer = Midlayer(config)
         self.auth_service = JWTTokenAuthService(config)
+
+    def close(self):
+        # Close db connection if it exists
+        if DBConnection.has_instance():
+            DBConnection.instance(DBConnection).close()
 
 
 class FlaskApp(Flask):
