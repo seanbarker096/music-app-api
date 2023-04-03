@@ -4,7 +4,7 @@ import unittest
 from configparser import ConfigParser
 from test.integration.src.fixtures.fixture_factory import FixtureFactory
 
-from api.db.db import DBConnection
+from api.db.db import DBConnection, DBConnectionManager
 
 
 class IntegrationTestCase(unittest.TestCase):
@@ -23,7 +23,7 @@ class IntegrationTestCase(unittest.TestCase):
 
         self.config = {}
         self.config["config_file"] = config
-        self.db = DBConnection(self.config)
+        self.db = DBConnectionManager(self.config)
         ## Allows us to access the actual time in tests when we mock time.time()
         self.current_time = int(time.time())
 
@@ -31,6 +31,10 @@ class IntegrationTestCase(unittest.TestCase):
 
         ## We use addCleanup instead of tearDown because teardown does not get called if a test or setup fails
         self.addCleanup(self.truncate_db)
+
+        # Once test case complete, close the db connection
+        IntegrationTestCase.addClassCleanup(self.db.close)
+        
 
     def truncate_db(self):
         with self.db as cursor:

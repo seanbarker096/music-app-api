@@ -12,7 +12,7 @@ from test.integration.src.fixtures.DTO.post_attachment_fixture_dto import (
 from test.integration.src.fixtures.DTO.post_fixture_dto import PostFixtureDTO
 from test.integration.src.fixtures.DTO.tag_fixture_dto import TagFixtureDTO
 
-from api.db.db import DBConnection
+from api.db.db import DBConnection, DBConnectionManager
 
 
 class FixtureFactory:

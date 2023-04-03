@@ -2,7 +2,7 @@ import json
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnection
+from api.db.db import DBConnection, DBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.performers import (
     AttendeePerformersGetCount,
@@ -28,6 +28,7 @@ class PerformerDBAlias:
 
 class PerformersDAO(object):
     db: DBConnection
+    db_conn: DBConnectionManager
 
     """
     Some queries such as in attendee_performers_get requires a GROUP BY on all columns in performances table. We therefore create this so we can iterate over it when adding it to group by clauses. Using PERFORMANCES_SELECTS in a group by would fail as it contains an alias
@@ -57,6 +58,7 @@ class PerformersDAO(object):
     def __init__(self, config, db: Optional[DBConnection] = None):
         # self.db = db if db else DBConnection(config)
         self.config = config
+        self.db_conn = DBConnectionManager(config)
 
     def performers_get(self, filter: PerformersGetFilter) -> List[Performer]:
         selects = f"""
@@ -79,7 +81,7 @@ class PerformersDAO(object):
 
         sql = selects + where_string
 
-        with DBConnection(self.config) as cursor:
+        with self.db_conn as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -107,7 +109,7 @@ class PerformersDAO(object):
             request.image_url,
         )
 
-        with DBConnection(self.config) as cursor:
+        with self.db_conn as cursor:
             cursor.execute(sql, binds)
             performer_id = cursor.lastrowid
 
@@ -172,7 +174,7 @@ class PerformersDAO(object):
             LIMIT {limit}
         """
 
-        with DBConnection(self.config) as cursor:
+        with self.db_conn as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
