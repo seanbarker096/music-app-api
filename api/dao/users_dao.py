@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnection
+from api.db.db import DBConnectionManager
 from api.db.utils.db_util import (
     assert_row_key_exists,
     build_update_set_string,
@@ -36,7 +36,7 @@ class UserDBAlias:
 
 
 class UsersDAO(object):
-    db: DBConnection
+    db: DBConnectionManager
 
     USER_SELECTS = [
         "id as " + UserDBAlias.USER_ID,
@@ -58,8 +58,8 @@ class UsersDAO(object):
         "salt as " + UserDBAlias.USER_SALT,
     ]
 
-    def __init__(self, config, db: Optional[DBConnection] = None) -> None:
-        # self.db = db if db else DBConnection(config)
+    def __init__(self, config, db: Optional[DBConnectionManager] = None) -> None:
+        self.db = db if db else DBConnectionManager(config)
         self.config = config
 
     def users_get(self, filter: UsersGetFilter) -> List[User]:
@@ -79,7 +79,7 @@ class UsersDAO(object):
 
         sql = selects + where_string
 
-        with DBConnection(self.config) as cursor:
+        with self.db as cursor:
             cursor.execute(sql, binds)
 
             rows = cursor.fetchall()
@@ -105,7 +105,7 @@ class UsersDAO(object):
         binds = (username,)
 
         try:
-            with DBConnection(self.config) as cursor:
+            with self.db as cursor:
                 cursor.execute(sql, binds)
                 rows = cursor.fetchall()
 
@@ -155,7 +155,7 @@ class UsersDAO(object):
         )
 
         try:
-            with DBConnection(self.config) as cursor:
+            with self.db as cursor:
                 cursor.execute(sql, binds)
 
                 user_id = cursor.lastrowid
@@ -221,7 +221,7 @@ class UsersDAO(object):
             UPDATE users {set_string} WHERE id = {request.user_id}
         """
 
-        with DBConnection(self.config) as cursor:
+        with self.db as cursor:
             cursor.execute(sql, binds)
 
             if cursor.rowcount == 0:

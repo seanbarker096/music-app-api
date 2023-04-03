@@ -13,3 +13,7 @@ class Singleton:
             cls._instance = classname(create_key=Singleton.__create_key, *args, **kwargs)
 
         return cls._instance
+    
+    @classmethod
+    def remove_instance(cls) -> None:
+        cls._instance = None

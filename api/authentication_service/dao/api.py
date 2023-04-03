@@ -1,12 +1,13 @@
 import json
+from typing import Optional
 
 from api.authentication_service.typings import TokenCreateRequest
-from api.db.db import DBConnection
+from api.db.db import DBConnectionManager
 
 
 class AuthTokenServiceDAO:
-    def __init__(self, config):
-        # self.db = DBConnection(config)
+    def __init__(self, config, db: Optional[DBConnectionManager] = None):
+        self.db = db if db else DBConnectionManager(config)
         self.config = config
 
     def token_create(self, request: TokenCreateRequest) -> int:
@@ -22,7 +23,7 @@ class AuthTokenServiceDAO:
 
         binds = (request.token, request.owner_id, request.session_id)
 
-        with DBConnection(self.config) as cursor:
+        with self.db as cursor:
             result = cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -45,7 +46,7 @@ class AuthTokenServiceDAO:
         binds = (user_id, session_id)
         rows = None
 
-        with DBConnection(self.config) as cursor:
+        with self.db as cursor:
             result = cursor.execute(sql, binds)
 
             rows = cursor.fetchall()
@@ -76,7 +77,7 @@ class AuthTokenServiceDAO:
         binds = (token,)
         row_count = None
 
-        with DBConnection(self.config) as cursor:
+        with self.db as cursor:
             cursor.execute(sql, binds)
 
             row_count = cursor.rowcount

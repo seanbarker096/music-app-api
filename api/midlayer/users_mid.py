@@ -1,7 +1,7 @@
 from typing import Optional
 
 from api.dao.users_dao import UsersDAO
-from api.db.db import DBConnection, DBDuplicateKeyException
+from api.db.db import DBConnectionManager, DBDuplicateKeyException
 from api.midlayer import BaseMidlayerMixin
 from api.typings.users import (
     User,

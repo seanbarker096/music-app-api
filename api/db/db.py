@@ -54,48 +54,6 @@ class DBConnection(Singleton):
         self._cursor = self.connection.cursor()
         self.connection_id = randint(0, 1000000)
 
-    # def __enter__(self):
-    #     # Open the connection. We don't handle on transient connections here as they shouldn't use the context manager
-
-    #     try:
-    #         if self._new_conn_per_request and not self.opened:
-    #             self._open()
-
-    #         self._cursor = self.connection.cursor()
-
-    #     except Exception as err:
-    #         raise Exception(f"Failed to open DB connection because {str(err)}") from err
-
-          
-    #     print(f"{self.connection_id} open")
-
-    #     return self._cursor
-
-    # def __exit__(self, exception_type, exception_value, trace):
-    #     # if exception_type is not None:
-    #     #     if self.connection.autocommit is False:
-    #     #         self.connection.rollback()
-    #     # else:
-    #     #     self.connection.commit()
-
-    #     # # we always close the cursor on exit because we always initialise a new one on enter
-    #     # res = self._cursor.close()
-
-    #     # if res is False:
-    #     #     raise Exception(f"Failed to close cursor.")
-
-    #     # self._cursor = None
-
-    #     # if self._new_conn_per_request and self.opened:
-    #     #     self._close()
-    #     #     print(f"{self.connection_id} closed \n\n")
-
-    #     if exception_type is not None:
-    #         if isinstance(exception_value, pymysql.err.IntegrityError):
-    #             raise DBDuplicateKeyException(exception_value.args[1]) from exception_value
-
-    #         raise exception_value
-
     def _open(self):
         if not self.opened:
             try:
@@ -110,18 +68,22 @@ class DBConnection(Singleton):
                 )
             except Exception as err:
                 raise Exception(f"Failed to connect to database because {str(err)}") from err
-            
+
             self.opened = True
 
     def close(self):
+        """
+        Close the connection to the database and remove the singleton instance
+        """
         try:
             self._cursor.close()
             self.connection.close()
-            self.opened = False
-            self.connection_id = None
+            DBConnection.remove_instance()
 
         except Exception as err:
-            logging.exception(f"Failed to close connection with id {self.connection_id} because {str(err)}")
+            logging.exception(
+                f"Failed to close connection with id {self.connection_id} because {str(err)}"
+            )
 
     def get_cursor(self):
         return self._cursor
@@ -135,13 +97,13 @@ class DBConnectionManager:
     def __enter__(self):
         self.db_connection = DBConnection.instance(DBConnection, config=self.config)
 
-        print("connection_id", self.db_connection.connection_id)
-
         cursor = self.db_connection.get_cursor()
 
         if cursor is None:
-            raise Exception(f"Failed to get cursor from DBConnection with connection id {self.db_connection.connection_id}")
-        
+            raise Exception(
+                f"Failed to get cursor from DBConnection with connection id {self.db_connection.connection_id}"
+            )
+
         return cursor
 
     def __exit__(self, exception_type, exception_value, trace):
@@ -155,7 +117,7 @@ class DBConnectionManager:
             raise exception_value
         elif self.db_connection.connection.autocommit is False:
             self.db_connection.connection.commit()
-            
+
     def close(self):
         self.db_connection.close()
         self.db_connection = None

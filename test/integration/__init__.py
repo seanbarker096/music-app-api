@@ -4,7 +4,7 @@ import unittest
 from configparser import ConfigParser
 from test.integration.src.fixtures.fixture_factory import FixtureFactory
 
-from api.db.db import DBConnection, DBConnectionManager
+from api.db.db import DBConnectionManager
 
 
 class IntegrationTestCase(unittest.TestCase):
@@ -24,6 +24,7 @@ class IntegrationTestCase(unittest.TestCase):
         self.config = {}
         self.config["config_file"] = config
         self.db = DBConnectionManager(self.config)
+       
         ## Allows us to access the actual time in tests when we mock time.time()
         self.current_time = int(time.time())
 

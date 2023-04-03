@@ -12,11 +12,11 @@ from test.integration.src.fixtures.DTO.post_attachment_fixture_dto import (
 from test.integration.src.fixtures.DTO.post_fixture_dto import PostFixtureDTO
 from test.integration.src.fixtures.DTO.tag_fixture_dto import TagFixtureDTO
 
-from api.db.db import DBConnection, DBConnectionManager
+from api.db.db import DBConnectionManager
 
 
 class FixtureFactory:
-    def __init__(self, db: DBConnection) -> None:
+    def __init__(self, db: DBConnectionManager) -> None:
         self.db = db
 
     def post_fixture_create(self, dto: PostFixtureDTO) -> int:

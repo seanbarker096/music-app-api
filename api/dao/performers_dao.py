@@ -2,7 +2,7 @@ import json
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnection, DBConnectionManager
+from api.db.db import DBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.performers import (
     AttendeePerformersGetCount,
@@ -27,8 +27,7 @@ class PerformerDBAlias:
 
 
 class PerformersDAO(object):
-    db: DBConnection
-    db_conn: DBConnectionManager
+    db: DBConnectionManager
 
     """
     Some queries such as in attendee_performers_get requires a GROUP BY on all columns in performances table. We therefore create this so we can iterate over it when adding it to group by clauses. Using PERFORMANCES_SELECTS in a group by would fail as it contains an alias
@@ -55,10 +54,9 @@ class PerformersDAO(object):
         f"{PERFORMER_COLUMNS[7]} as {PerformerDBAlias.PERFORMER_IMAGE_URL}",
     ]
 
-    def __init__(self, config, db: Optional[DBConnection] = None):
-        # self.db = db if db else DBConnection(config)
+    def __init__(self, config, db: Optional[DBConnectionManager] = None):
         self.config = config
-        self.db_conn = DBConnectionManager(config)
+        self.db = DBConnectionManager(config)
 
     def performers_get(self, filter: PerformersGetFilter) -> List[Performer]:
         selects = f"""
@@ -81,7 +79,7 @@ class PerformersDAO(object):
 
         sql = selects + where_string
 
-        with self.db_conn as cursor:
+        with self.db as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -109,7 +107,7 @@ class PerformersDAO(object):
             request.image_url,
         )
 
-        with self.db_conn as cursor:
+        with self.db as cursor:
             cursor.execute(sql, binds)
             performer_id = cursor.lastrowid
 
@@ -174,7 +172,7 @@ class PerformersDAO(object):
             LIMIT {limit}
         """
 
-        with self.db_conn as cursor:
+        with self.db as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
