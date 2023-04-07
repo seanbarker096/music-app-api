@@ -1,9 +1,11 @@
 import json
 import logging
+import os
 import traceback
 from random import randint
 from typing import Any, Dict
 
+import flask
 import pymysql
 from mysql.connector import IntegrityError, MySQLConnection
 from mysql.connector.cursor import MySQLCursor
@@ -53,6 +55,7 @@ class DBConnection(Singleton):
         self._open()
         self._cursor = self.connection.cursor()
         self.connection_id = randint(0, 1000000)
+        print(f"created cinnection with id {self.connection_id}")
 
     def _open(self):
         if not self.opened:
@@ -66,24 +69,35 @@ class DBConnection(Singleton):
                     cursorclass=pymysql.cursors.DictCursor,
                     autocommit=False,  # TODO: Can disable this for readonly transactions
                 )
+
+                self.opened = True
+
             except Exception as err:
                 raise Exception(f"Failed to connect to database because {str(err)}") from err
 
-            self.opened = True
-
-    def close(self):
+    @staticmethod
+    def close(instance_key: str):
         """
         Close the connection to the database and remove the singleton instance
         """
+
+        conn_exists = DBConnection.has_instance(instance_key=instance_key)
+        if conn_exists is False:
+            raise Exception(
+                f"Failed to close database connection for connection uuid {instance_key} because it could not be found"
+            )
+
+        connection = DBConnection.instance(DBConnection, instance_key=instance_key)
+
         try:
-            print("Closing connection")
-            self._cursor.close()
-            self.connection.close()
-            DBConnection.remove_instance()
+            print(f"Closing connection with id {connection.connection_id}")
+            connection._cursor.close()
+            connection.connection.close()
+            DBConnection.remove_instance(instance_key=instance_key)
 
         except Exception as err:
             logging.exception(
-                f"Failed to close connection with id {self.connection_id} because {str(err)}"
+                f"Failed to close connection with id {connection.connection_id} because {str(err)}"
             )
 
     def get_cursor(self):
@@ -91,12 +105,14 @@ class DBConnection(Singleton):
 
 
 class DBConnectionManager:
-    def __init__(self, config):
+    def __init__(self, config, connection_uuid: str):
         self.config = config
-        self.db_connection = None
+        self.connection_uuid = connection_uuid
 
     def __enter__(self):
-        self.db_connection = DBConnection.instance(DBConnection, config=self.config)
+        self.db_connection = DBConnection.instance(
+            DBConnection, instance_key=self.connection_uuid, config=self.config
+        )
 
         cursor = self.db_connection.get_cursor()
 
@@ -116,9 +132,25 @@ class DBConnectionManager:
                 raise DBDuplicateKeyException(exception_value.args[1]) from exception_value
 
             raise exception_value
+
         elif self.db_connection.connection.get_autocommit() is False:
             self.db_connection.connection.commit()
 
-    def close(self):
-        self.db_connection.close()
-        self.db_connection = None
+    @staticmethod
+    def close(connection_uuid: str):
+        DBConnection.close(instance_key=connection_uuid)
+
+
+class FlaskDBConnectionManager(DBConnectionManager):
+    """
+    A simple wrapper around DBConnection manager which uses flask request to create the connection uuid.
+    """
+
+    def __init__(self, config):
+        connection_uuid = flask.request.request_id
+        super().__init__(config, connection_uuid)
+
+    @staticmethod
+    def close():
+        connection_uuid = flask.request.request_id
+        super().close(connection_uuid)

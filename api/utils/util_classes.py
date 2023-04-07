@@ -1,6 +1,7 @@
 
 class Singleton:
-    _instance = None
+    # _instance = None
+    _instances = {}
     __create_key = object()
 
     def __init__(self, create_key) -> None:
@@ -8,16 +9,16 @@ class Singleton:
             "You must use Singleton.instance() to create a Singleton instance"
 
     @classmethod
-    def instance(cls, classname, *args, **kwargs) -> object:
-        if (cls._instance is None):
-            cls._instance = classname(create_key=Singleton.__create_key, *args, **kwargs)
+    def instance(cls, classname, instance_key: str, *args, **kwargs) -> object:
+        if (cls._instances.get(instance_key, None) is None):
+            cls._instances[instance_key] = classname(create_key=Singleton.__create_key, *args, **kwargs)
 
-        return cls._instance
+        return cls._instances[instance_key]
     
     @classmethod
-    def remove_instance(cls) -> None:
-        cls._instance = None
+    def remove_instance(cls, instance_key: str) -> None:
+        del cls._instances[instance_key]
 
     @classmethod
-    def has_instance(cls):
-        return cls._instance is not None
+    def has_instance(cls, instance_key: str) -> bool:
+        return cls._instances.get(instance_key, None) is not None

@@ -15,11 +15,6 @@ class Connections:
         self.midlayer = Midlayer(config)
         self.auth_service = JWTTokenAuthService(config)
 
-    def close(self):
-        # Close db connection if it exists
-        if DBConnection.has_instance():
-            DBConnection.instance(DBConnection).close()
-
 
 class FlaskApp(Flask):
     config: Dict[str, any]

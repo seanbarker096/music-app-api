@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from configparser import ConfigParser
@@ -27,6 +28,12 @@ from api.typings.posts import (
 from api.typings.tags import TagCreateRequest, TaggedEntityType, TaggedInEntityType
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
+
+log_file_path = f"{os.path.dirname(__file__)}/../api/db.log"
+with open(log_file_path, 'w') as file:
+    file.write('')
+
+logging.basicConfig(filename=log_file_path, level=logging.ERROR)
 
 config = ConfigParser(allow_no_value=True, interpolation=None)
 config.optionxform = str

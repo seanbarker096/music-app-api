@@ -1,10 +1,12 @@
 import os
+import uuid
 from configparser import ConfigParser
 
 import flask
 from flask_cors import CORS
 
 from api.application import FlaskApp
+from api.db.db import DBConnection
 from api.debugger import initialize_flask_server_debugger_if_needed
 from api.rest import (
     auth_api,
@@ -34,6 +36,8 @@ app.config["MAX_CONTENT_LENGTH"] = 50 * 1000 * 1000  # TODO: Come up with sensib
 origin = config.get("cors", "origin")
 CORS(app, origins=[origin])
 
+
+
 app.register_blueprint(file_service_api.blueprint, url_prefix="/api/fileservice/0.1")
 app.register_blueprint(posts_api.blueprint, url_prefix="/api/posts/0.1")
 app.register_blueprint(auth_api.blueprint, url_prefix="/api/auth/0.1")
@@ -44,9 +48,15 @@ app.register_blueprint(tags_api.blueprint, url_prefix="/api/tags/0.1")
 app.register_blueprint(performances_api.blueprint, url_prefix="/api/performances/0.1")
 
 
+@app.before_request
+def create_db_connection():
+    flask.request.request_id = str(uuid.uuid4())
+    DBConnection.instance(DBConnection, config=config)
+
 @app.after_request
 def after_request(response):
-    flask.current_app.conns.close()
+    print("RUNNING AFTER REQUEST")
+    DBConnection.instance(DBConnection).close()
     return after_request_setup(response)
 
 
