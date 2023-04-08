@@ -35,8 +35,8 @@ class PerformersMidlayerConnections:
 
 class PerformersMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[PerformersMidlayerConnections] = None, **kwargs):
-        self.performers_dao = conns.performers_dao if conns.users_dao else PerformersDAO(config)
-        self.performer_search_service = conns.performer_search_service if conns.performer_search_service else PerformerSearchService(config)
+        self.performers_dao = conns.performers_dao if conns and conns.performers_dao else PerformersDAO(config)
+        self.performer_search_service = conns.performer_search_service if conns and conns.performer_search_service else PerformerSearchService(config)
 
         ## Call the next mixins constructor
         super().__init__(config)

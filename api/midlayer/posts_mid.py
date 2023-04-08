@@ -20,13 +20,13 @@ from exceptions.exceptions import InvalidArgumentException
 
 
 class PostMidlayerConnections:
-    def __init__(self, config, post_dao: Optional[PostsDAO] = None):
-        self.post_dao = post_dao if post_dao else PostsDAO(config)
+    def __init__(self, config, posts_dao: Optional[PostsDAO] = None):
+        self.posts_dao = posts_dao if posts_dao else PostsDAO(config)
 
 
 class PostsMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[PostMidlayerConnections] = None, **kwargs):
-        self.posts_dao = conns.post_dao if conns.post_dao else PostsDAO(config)
+        self.posts_dao = conns.posts_dao if conns and conns.posts_dao else PostsDAO(config)
 
         ## Call the next mixins constructor
         super().__init__(config)
@@ -157,7 +157,7 @@ class PostAttachmentsMidlayerConnections:
 
 class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[PostAttachmentsMidlayerConnections] = None, **kwargs):
-        self.posts_attachments_dao = conns.post_attachments_dao if conns.post_attachments_dao else PostAttachmentsDAO(config)
+        self.posts_attachments_dao = conns.post_attachments_dao if conns and conns.post_attachments_dao else PostAttachmentsDAO(config)
 
         ## Call the next mixins constructor
         super().__init__(config)

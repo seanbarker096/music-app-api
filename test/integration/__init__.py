@@ -26,12 +26,12 @@ class IntegrationTestCase(unittest.TestCase):
         self.config["config_file"] = config
 
 
-        self.db =TestingDBConnectionManager(self.config)
+        self.db =TestingDBConnectionManager
        
         ## Allows us to access the actual time in tests when we mock time.time()
         self.current_time = int(time.time())
 
-        self.fixture_factory = FixtureFactory(db=self.db)
+        self.fixture_factory = FixtureFactory(config=self.config, db=self.db)
 
         ## We use addCleanup instead of tearDown because teardown does not get called if a test or setup fails
         self.addCleanup(self.truncate_db)
@@ -41,7 +41,7 @@ class IntegrationTestCase(unittest.TestCase):
         
 
     def truncate_db(self):
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
                 cursor.execute("SHOW TABLES")
                 tables = cursor.fetchall()
                 tables_list = [table for table_dict in tables for table in table_dict.values()]

@@ -4,6 +4,7 @@ from test.integration import IntegrationTestCase
 from unittest.mock import Mock
 
 from api.file_service.api import AcceptedMimeTypes, FileService, Storage
+from api.file_service.dao.api import FileServiceDAO
 from api.file_service.typings.typings import FileCreateRequest, FilesGetFilter
 from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
@@ -11,19 +12,28 @@ from exceptions.response.exceptions import FileUUIDNotUniqueException
 
 
 class FileUploadIntegrationTestCase(IntegrationTestCase):
-    def test_file_create(self):
-        """Asserts that can succesfully upload file meta data, and no calls are made to try to store the file bytes given they do not exist."""
-        mock_storage_imp = Mock()
-        mock_storage_imp.save = Mock()
+
+    def setUp(self):
+        super().setUp()
+
+        self.file_service_dao = FileServiceDAO(self.config, self.db)
+
+        self.mock_storage_imp = Mock()
+        self.mock_storage_imp.save = Mock()
         mock_storage_imp_save_request = Mock()  ## This method usually returns some sort of object
-        mock_storage_imp.process_upload_request = Mock(return_value=mock_storage_imp_save_request)
-        mock_storage_imp.get_file_url = Mock(
+        self.mock_storage_imp.process_upload_request = Mock(return_value=mock_storage_imp_save_request)
+        self.mock_storage_imp.get_file_url = Mock(
             return_value="www.file-store.com/download/some-random-location"
         )
 
-        storage = Storage(self.config, mock_storage_imp)
+        storage = Storage(self.config, self.mock_storage_imp)
 
-        file_service = FileService(config=self.config, storage=storage)
+        self.file_service = FileService(config=self.config, storage=storage, file_service_dao=self.file_service_dao)
+
+    
+
+    def test_file_create(self):
+        """Asserts that can succesfully upload file meta data, and no calls are made to try to store the file bytes given they do not exist."""
 
         test_uuid = "abcdefghikklmnop"
         mime_type = "image/png"
@@ -33,11 +43,11 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             uuid=test_uuid, file_name="my-test-file.png", mime_type=mime_type, bytes=byte_message
         )
 
-        response = file_service.create_file(request)
+        response = self.file_service.create_file(request)
         file_response = response.file
 
-        mock_storage_imp.process_upload_request.assert_called_once()
-        mock_storage_imp.save.assert_called_once()
+        self.mock_storage_imp.process_upload_request.assert_called_once()
+        self.mock_storage_imp.save.assert_called_once()
 
         ## Assert meta data has been added to db correctly
         self.assertTrue(isinstance(file_response.id, int))
@@ -70,17 +80,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             self.assertEqual(e.exception.get_source(), "uuid")
 
     def test_file_upload_with_duplicate_uuid(self):
-        mock_storage_imp = Mock()
-        mock_storage_imp.save = Mock()
-        mock_storage_imp_save_request = Mock()  ## This method usually returns some sort of object
-        mock_storage_imp.process_upload_request = Mock(return_value=mock_storage_imp_save_request)
-        mock_storage_imp.get_file_url = Mock(
-            return_value="www.file-store.com/download/some-random-location"
-        )
-
         ## Create first file
-        # file_service = FileService(config=self.config, storage=mock_storage_imp)
-        file_service = FileService(config=self.config)
 
         test_uuid_one = "testuuidone1234"
         mime_type = "image/png"
@@ -93,7 +93,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
             bytes=byte_message,
         )
 
-        first_file = file_service.create_file(request).file
+        first_file = self.file_service.create_file(request).file
 
         test_uuid_two = test_uuid_one
 
@@ -105,7 +105,7 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
         )
 
         with self.assertRaises(FileUUIDNotUniqueException) as e:
-            file_service.create_file(request_two)
+            self.file_service.create_file(request_two)
 
             self.assertEqual(
                 e.exception.get_message(),
@@ -141,11 +141,11 @@ class FileUploadIntegrationTestCase(IntegrationTestCase):
 
         storage = Storage(self.config, mock_storage_imp)
 
-        file_service = FileService(self.config, storage)
+        file_service = FileService(self.config, storage, self.file_service_dao)
 
         ## Seed the db with a file.
         ## TODO: Create fixtures to avoid doing this directly in the test
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(
                 """
             INSERT INTO files(uuid, file_size, file_name, mime_type, url) VALUES(%s, %s, %s, %s, %s)

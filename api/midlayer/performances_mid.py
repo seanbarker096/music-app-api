@@ -25,7 +25,7 @@ class PerformancesMidlayerConnections:
 
 class PerformancesMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[PerformancesMidlayerConnections] = None):
-        self.performances_dao = conns.performances_dao if conns.performances_dao else PerformancesDAO(config)
+        self.performances_dao = conns.performances_dao if conns and conns.performances_dao else PerformancesDAO(config)
 
         ## Call the next mixins constructor
         super().__init__(config)
@@ -153,7 +153,7 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
             performances_mid if performances_mid else PerformancesMidlayerMixin(config)
         )
 
-        self.performance_attendances_dao = conns.performance_attendances_dao if conns.performance_attendances_dao else PerformanceAttendancesDAO(config)
+        self.performance_attendances_dao = conns.performance_attendances_dao if conns and conns.performance_attendances_dao else PerformanceAttendancesDAO(config)
 
         ## Call the next mixins constructor
         super().__init__(config)

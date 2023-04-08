@@ -2,7 +2,7 @@ import datetime
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnectionManager
+from api.db.db import DBConnectionManager, FlaskDBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.performances import (
@@ -29,7 +29,7 @@ class PerformancesDBAlias:
 
 class PerformancesDAO:
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
-        self.db = db if db else DBConnectionManager(config)
+        self.db = db if db else FlaskDBConnectionManager
         self.config = config
 
     PERFORMANCE_SELECTS = [
@@ -58,7 +58,7 @@ class PerformancesDAO:
             None,
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             performance_id = cursor.lastrowid
 
@@ -116,7 +116,7 @@ class PerformancesDAO:
             {where_string}
             """
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -189,7 +189,7 @@ class PerformancesDAO:
             GROUP BY p.id
             """
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -261,7 +261,8 @@ class PerformanceAttendancesDBAlias:
 
 class PerformanceAttendancesDAO:
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
-        self.db = db if db else DBConnectionManager(config)
+        self.db = db if db else FlaskDBConnectionManager
+        self.config = config
 
     PERFORMANCE_ATTENDANCE_SELECTS = [
         "id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID,
@@ -287,7 +288,7 @@ class PerformanceAttendancesDAO:
             now,
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             performance_attendance_id = cursor.lastrowid
 

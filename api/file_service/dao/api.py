@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnectionManager
+from api.db.db import DBConnectionManager, FlaskDBConnectionManager
 from api.db.utils.db_util import (
     assert_row_key_exists,
     build_update_set_string,
@@ -37,7 +37,7 @@ class FileServiceDAO:
 
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
         ## Consider making this static, or maybe a flyweight or singleton
-        self.db = db if db else DBConnectionManager(config)
+        self.db = db if db else FlaskDBConnectionManager
         self.config = config
 
     def create_file_meta(self, request: FileMetaCreateRequest) -> FileServiceFile:
@@ -47,7 +47,7 @@ class FileServiceDAO:
 
         binds = (request.uuid, None, request.file_name, request.mime_type, None)
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             insert_id = cursor.lastrowid
 
@@ -100,7 +100,7 @@ class FileServiceDAO:
             UPDATE files {set_string} WHERE id = {request.id}
         """
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             affected_rows = cursor.rowcount
 
@@ -135,7 +135,7 @@ class FileServiceDAO:
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

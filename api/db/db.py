@@ -109,6 +109,11 @@ class DBConnection(Singleton):
 
 
 class DBConnectionManager:
+    """
+    This class should not be used directly, but should be extended by a parent class which provides the connection uuids. 
+
+    @see FlaskDBConnectionManager, TestingDBConnectionManager
+    """
     def __init__(self, config, connection_uuid: str):
         self.config = config
         self.connection_uuid = connection_uuid

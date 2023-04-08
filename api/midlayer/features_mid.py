@@ -21,7 +21,7 @@ class FeaturesMidlayerConnections:
 
 class FeaturesMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[FeaturesMidlayerConnections] = None, **kwargs):
-        self.features_dao = conns.features_dao if conns.features_dao else FeaturesDAO(config)
+        self.features_dao = conns.features_dao if conns and conns.features_dao else FeaturesDAO(config)
 
         ## Call the next mixins constructor
         super().__init__(config)

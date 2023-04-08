@@ -59,7 +59,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
 
         binds = binds[1:]  ## Ignore the id
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
     @patch("time.time")

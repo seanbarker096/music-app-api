@@ -11,12 +11,14 @@ from test.integration.src.fixtures.DTO.post_attachment_fixture_dto import (
 )
 from test.integration.src.fixtures.DTO.post_fixture_dto import PostFixtureDTO
 from test.integration.src.fixtures.DTO.tag_fixture_dto import TagFixtureDTO
+from typing import Dict
 
 from api.db.db import DBConnectionManager
 
 
 class FixtureFactory:
-    def __init__(self, db: DBConnectionManager) -> None:
+    def __init__(self, config: Dict[str, str] , db: DBConnectionManager) -> None:
+        self.config = config
         self.db = db
 
     def post_fixture_create(self, dto: PostFixtureDTO) -> int:
@@ -36,7 +38,7 @@ class FixtureFactory:
                 VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
             """
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -52,7 +54,7 @@ class FixtureFactory:
             dto.get_create_time(),
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -70,7 +72,7 @@ class FixtureFactory:
             dto.get_creator_id(),
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -89,7 +91,7 @@ class FixtureFactory:
             dto.get_creator_id(),
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -109,7 +111,7 @@ class FixtureFactory:
             dto.get_image_url(),
         )
         
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -126,7 +128,7 @@ class FixtureFactory:
             dto.get_create_time(),
         )
         
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
             return cursor.lastrowid
@@ -144,7 +146,7 @@ class FixtureFactory:
             dto.get_venue_id(),
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
 
             return cursor.lastrowid

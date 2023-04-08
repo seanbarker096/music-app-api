@@ -100,8 +100,6 @@ def get_files():
 
     response["files"] = file_dicts
 
-    print(response)
-
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
     )

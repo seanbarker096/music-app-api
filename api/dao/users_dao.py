@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnectionManager
+from api.db.db import DBConnectionManager, FlaskDBConnectionManager
 from api.db.utils.db_util import (
     assert_row_key_exists,
     build_update_set_string,
@@ -59,7 +59,7 @@ class UsersDAO(object):
     ]
 
     def __init__(self, config, db: Optional[DBConnectionManager] = None) -> None:
-        self.db = db if db else DBConnectionManager
+        self.db = db if db else FlaskDBConnectionManager
         self.config = config
 
     def users_get(self, filter: UsersGetFilter) -> List[User]:

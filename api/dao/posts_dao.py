@@ -2,7 +2,7 @@ import json
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnectionManager
+from api.db.db import DBConnectionManager, FlaskDBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.posts import (
@@ -44,7 +44,7 @@ class PostsDAO(object):
     ]
 
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
-        self.db = db if db else DBConnectionManager(config)
+        self.db = db if db else FlaskDBConnectionManager
         self.config = config
 
     def post_create(self, request: PostCreateRequest) -> Post:
@@ -64,7 +64,7 @@ class PostsDAO(object):
             0,
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             post_id = cursor.lastrowid
 
@@ -107,7 +107,7 @@ class PostsDAO(object):
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -223,7 +223,7 @@ class PostsDAO(object):
             + f" ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC"
         )  
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -295,7 +295,7 @@ class PostAttachmentsDAO(object):
 
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
         self.config = config
-        self.db = db if db else DBConnectionManager(config)
+        self.db = db if db else FlaskDBConnectionManager
 
     def post_attachment_create(self, post_id: int, file_id: int) -> PostAttachment:
         sql = """
@@ -310,7 +310,7 @@ class PostAttachmentsDAO(object):
             now,
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             post_attachment_id = cursor.lastrowid
 
@@ -339,7 +339,7 @@ class PostAttachmentsDAO(object):
 
         sql = selects + where_string
         
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

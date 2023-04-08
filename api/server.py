@@ -1,6 +1,8 @@
+import logging
 import os
 import uuid
 from configparser import ConfigParser
+from logging import Logger
 
 import flask
 from flask_cors import CORS
@@ -50,13 +52,19 @@ app.register_blueprint(performances_api.blueprint, url_prefix="/api/performances
 
 @app.before_request
 def create_db_connection():
-    flask.request.request_id = str(uuid.uuid4())
-    DBConnection.instance(DBConnection, config=config)
+    request_id = str(uuid.uuid4())
+    flask.request.request_id = request_id
+    DBConnection.instance(DBConnection, instance_key=request_id, config={'config_file': config})
 
 @app.after_request
 def after_request(response):
-    print("RUNNING AFTER REQUEST")
-    DBConnection.instance(DBConnection).close()
+    db_connection_uuid = flask.request.request_id
+
+    if DBConnection.has_instance(instance_key=db_connection_uuid):
+        DBConnection.instance(DBConnection, instance_key=db_connection_uuid).close(instance_key=db_connection_uuid)
+    else:
+        logging.warning(f"DBConnection with id {db_connection_uuid} not found in after_request")
+
     return after_request_setup(response)
 
 

@@ -11,7 +11,13 @@ from unittest.mock import patch
 
 import pytest
 
-from api.midlayer.posts_mid import PostAttachmentsMidlayerMixin, PostsMidlayerMixin
+from api.dao.posts_dao import PostsDAO
+from api.db.db import TestingDBConnectionManager
+from api.midlayer.posts_mid import (
+    PostAttachmentsMidlayerMixin,
+    PostMidlayerConnections,
+    PostsMidlayerMixin,
+)
 from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
@@ -29,11 +35,13 @@ class PostsMidIntegrationTest(IntegrationTestCase):
     def setUp(self):
         super().setUp()
 
+        posts_dao = PostsDAO(config=self.config, db=TestingDBConnectionManager)
+        posts_mid_conns = PostMidlayerConnections(config=self.config, posts_dao=posts_dao)
+        self.posts_mid = PostsMidlayerMixin(config=self.config, conns=posts_mid_conns)
+
     @patch("time.time")
     def test_post_create(self, time):
         time.return_value = self.current_time
-
-        post_mid = PostsMidlayerMixin(config=self.config)
 
         request = PostCreateRequest(
             owner_id=555,
@@ -42,7 +50,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             creator_id=555,
         )
 
-        post = post_mid.post_create(request).post
+        post = self.posts_mid.post_create(request).post
 
         self.assertEqual(post.id, 1, "Should return the correct post id")
         self.assertEqual(post.content, "A test post", "Should return the correct post content")
@@ -64,11 +72,9 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         post_id = self.fixture_factory.post_fixture_create(post_dto)
 
-        post_mid = PostsMidlayerMixin(config=self.config)
-
         filter = PostsGetFilter(ids=[post_id])
 
-        result = post_mid.posts_get(filter=filter)
+        result = self.posts_mid.posts_get(filter=filter)
         post = result.posts[0]
 
         self.assertEqual(len(result.posts), 1, "Should only return one post")
@@ -132,8 +138,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         self.fixture_factory.tag_fixture_create(tag_dto)
 
-        post_mid = PostsMidlayerMixin(config=self.config)
-
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
             profile_type=ProfileType.PERFORMER.value,
@@ -142,7 +146,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             include_owned=True,
         )
 
-        result = post_mid.profile_posts_get(filter=filter)
+        result = self.posts_mid.profile_posts_get(filter=filter)
 
         posts = result.posts
         owned_post_result = result.posts[2]
@@ -214,8 +218,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         self.fixture_factory.tag_fixture_create(tag_dto)
 
-        post_mid = PostsMidlayerMixin(config=self.config)
-
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
             profile_type=ProfileType.PERFORMER.value,
@@ -224,7 +226,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             include_owned=True,
         )
 
-        result = post_mid.profile_posts_get(filter=filter)
+        result = self.posts_mid.profile_posts_get(filter=filter)
 
         posts = result.posts
         returned_post = result.posts[0]
@@ -286,8 +288,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         self.fixture_factory.tag_fixture_create(tag_dto)
 
-        post_mid = PostsMidlayerMixin(config=self.config)
-
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
             profile_type=ProfileType.PERFORMER.value,
@@ -296,7 +296,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             include_owned=False,
         )
 
-        result = post_mid.profile_posts_get(filter=filter)
+        result = self.posts_mid.profile_posts_get(filter=filter)
 
         posts = result.posts
         returned_post = result.posts[0]
@@ -358,8 +358,6 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 
         self.fixture_factory.tag_fixture_create(tag_dto)
 
-        post_mid = PostsMidlayerMixin(config=self.config)
-
         filter = ProfilePostsGetFilter(
             profile_id=requesting_profile_id,
             profile_type=ProfileType.PERFORMER.value,
@@ -368,7 +366,7 @@ class PostsMidIntegrationTest(IntegrationTestCase):
             include_owned=False,
         )
 
-        result = post_mid.profile_posts_get(filter=filter)
+        result = self.posts_mid.profile_posts_get(filter=filter)
 
         posts = result.posts
         returned_post = result.posts[0]

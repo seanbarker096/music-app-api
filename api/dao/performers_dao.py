@@ -2,7 +2,7 @@ import json
 import time
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnectionManager
+from api.db.db import DBConnectionManager, FlaskDBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.performers import (
     AttendeePerformersGetCount,
@@ -56,7 +56,7 @@ class PerformersDAO(object):
 
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
         self.config = config
-        self.db = DBConnectionManager(config)
+        self.db = db if db else FlaskDBConnectionManager
 
     def performers_get(self, filter: PerformersGetFilter) -> List[Performer]:
         selects = f"""
@@ -79,7 +79,7 @@ class PerformersDAO(object):
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
@@ -107,7 +107,7 @@ class PerformersDAO(object):
             request.image_url,
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             performer_id = cursor.lastrowid
 
@@ -172,7 +172,7 @@ class PerformersDAO(object):
             LIMIT {limit}
         """
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

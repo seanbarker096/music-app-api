@@ -31,7 +31,7 @@ class UserMidlayerConnections:
 
 class UsersMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[UserMidlayerConnections] = None, **kwargs):
-        self.users_dao = conns.users_dao if conns.users_dao else UsersDAO(config=config)
+        self.users_dao = conns.users_dao if conns and conns.users_dao else UsersDAO(config=config)
 
         ## Call the next mixins constructor
         super().__init__(config)

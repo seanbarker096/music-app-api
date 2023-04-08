@@ -22,10 +22,12 @@ class TagsMidlayerConnections:
 
 
 class TagsMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional[TagsMidlayerConnections] = None, **kwargs):
-        self.tags_dao = conns.tags_dao if conns.tags_dao else TagsDAO(config)
+    def __init__(self, config, conns: Optional[TagsMidlayerConnections] = None, tag_event_subject: TagEventSubject = None, **kwargs):
+        self.tags_dao = conns.tags_dao if conns and conns.tags_dao else TagsDAO(config)
 
-        self.tag_event_subject = TagEventSubject(config=config)
+        self.tag_event_subject = tag_event_subject if tag_event_subject else TagEventSubject(
+            config=config
+        )
 
         ## Call the next mixins constructor
         super().__init__(config)

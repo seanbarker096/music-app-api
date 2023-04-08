@@ -3,17 +3,30 @@ import os
 import time
 from configparser import ConfigParser
 
+from api.dao.features_dao import FeaturesDAO
+from api.dao.performances_dao import PerformanceAttendancesDAO, PerformancesDAO
+from api.dao.performers_dao import PerformersDAO
 from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
+from api.dao.tags_dao import TagsDAO
 from api.dao.users_dao import UsersDAO
-from api.file_service.api import FileService
+from api.db.db import TestingDBConnectionManager
+from api.events.tags.performance_tag_event_observer import PerformanceTagEventObserver
+from api.events.tags.tag_event_subject import TagEventSubject
+from api.file_service.api import FileService, FileServiceDAO
 from api.file_service.typings.typings import FileCreateRequest
-from api.midlayer.features_mid import FeaturesMidlayerMixin
+from api.midlayer.features_mid import FeaturesMidlayerConnections, FeaturesMidlayerMixin
 from api.midlayer.performances_mid import (
+    PerformanceAttendancesMidlayerConnections,
     PerformanceAttendancesMidlayerMixin,
+    PerformancesMidlayerConnections,
     PerformancesMidlayerMixin,
 )
-from api.midlayer.performers_mid import PerformersMidlayerMixin
-from api.midlayer.tags_mid import TagsMidlayerMixin
+from api.midlayer.performers_mid import (
+    PerformersMidlayerConnections,
+    PerformersMidlayerMixin,
+)
+from api.midlayer.posts_mid import PostMidlayerConnections, PostsMidlayerMixin
+from api.midlayer.tags_mid import TagsMidlayerConnections, TagsMidlayerMixin
 from api.typings.features import FeatureCreateRequest, FeaturedEntityType, FeaturerType
 from api.typings.performances import (
     PerformanceAttendanceCreateRequest,
@@ -30,8 +43,8 @@ from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
 
 log_file_path = f"{os.path.dirname(__file__)}/../api/db.log"
-with open(log_file_path, 'w') as file:
-    file.write('')
+with open(log_file_path, "w") as file:
+    file.write("")
 
 logging.basicConfig(filename=log_file_path, level=logging.ERROR)
 
@@ -45,21 +58,59 @@ config.read(filename)
 
 config_dict = {"config_file": config}
 
-users_dao = UsersDAO(config_dict)
+users_dao = UsersDAO(config_dict, db=TestingDBConnectionManager)
 
-features_mid = FeaturesMidlayerMixin(config_dict)
+features_dao = FeaturesDAO(config_dict, db=TestingDBConnectionManager)
+feature_conns = FeaturesMidlayerConnections(config_dict, features_dao=features_dao)
+features_mid = FeaturesMidlayerMixin(config_dict, feature_conns)
 
-posts_dao = PostsDAO(config_dict)
-post_attachments_dao = PostAttachmentsDAO(config_dict)
+posts_dao = PostsDAO(config_dict, db=TestingDBConnectionManager)
+post_attachments_dao = PostAttachmentsDAO(config_dict, db=TestingDBConnectionManager)
 
-performers_mid = PerformersMidlayerMixin(config_dict)
+posts_midlayer_conns = PostMidlayerConnections(config,
+   posts_dao=posts_dao
+)
+posts_mid = PostsMidlayerMixin(config_dict, conns=posts_midlayer_conns)
 
-performances_mid = PerformancesMidlayerMixin(config_dict)
-performance_attendances_mid = PerformanceAttendancesMidlayerMixin(config_dict)
 
-file_service = FileService(config_dict)
+performers_dao = PerformersDAO(config=config_dict, db=TestingDBConnectionManager)
+performers_conns = PerformersMidlayerConnections(config=config_dict, performers_dao=performers_dao)
+performers_mid = PerformersMidlayerMixin(config=config_dict, conns=performers_conns)
 
-tags_mid = TagsMidlayerMixin(config_dict)
+performances_dao = PerformancesDAO(config=config_dict, db=TestingDBConnectionManager)
+performances_midlayer_conns = PerformancesMidlayerConnections(
+    config=config_dict, performances_dao=performances_dao
+)
+performances_mid = PerformancesMidlayerMixin(config=config_dict, conns=performances_midlayer_conns)
+
+performance_attendances_dao = PerformanceAttendancesDAO(
+    config=config_dict, db=TestingDBConnectionManager
+)
+performance_attendance_conns = PerformanceAttendancesMidlayerConnections(
+    config=config_dict, performance_attendances_dao=performance_attendances_dao
+)
+performance_attendances_mid = PerformanceAttendancesMidlayerMixin(
+    config_dict, conns=performance_attendance_conns, performances_mid=performances_mid
+)
+
+
+file_service_dao = FileServiceDAO(config=config_dict, db=TestingDBConnectionManager)
+file_service = FileService(config_dict, file_service_dao=file_service_dao)
+
+
+tags_dao = TagsDAO(config_dict, db=TestingDBConnectionManager)
+tags_mid_conns = TagsMidlayerConnections(config, tags_dao=tags_dao)
+tag_event_subject = TagEventSubject(
+    config=config_dict,
+    observers=[
+        PerformanceTagEventObserver(
+            config=config_dict,
+            performance_attendances_midlayer=performance_attendances_mid,
+            posts_midlayer=posts_mid,
+        )
+    ],
+)
+tags_mid = TagsMidlayerMixin(config=config_dict, conns=tags_mid_conns, tag_event_subject=tag_event_subject)
 
 
 ## Create user 1 and their avatar image

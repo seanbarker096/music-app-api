@@ -14,6 +14,10 @@ from api.typings.performers import AttendeePerformersGetFilter
 
 class PerformersDAOIntegrrationTest(IntegrationTestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.performers_dao = PerformersDAO(self.db)
+
     def test_attendee_performers_get(self):
         attendee_id = 5555
 
@@ -98,7 +102,6 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
         )
 
         # Test
-        dao = PerformersDAO(config=self.config)
 
         filter = AttendeePerformersGetFilter(
             attendee_id=attendee_id,
@@ -106,7 +109,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
             limit=10
         )
 
-        result = dao.attendee_performers_get(filter)
+        result = self.dao.attendee_performers_get(filter)
 
         performers = result.performers
         counts = result.counts
