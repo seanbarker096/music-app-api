@@ -1,10 +1,11 @@
 import os
 import time
 import unittest
+import uuid
 from configparser import ConfigParser
 from test.integration.src.fixtures.fixture_factory import FixtureFactory
 
-from api.db.db import DBConnectionManager
+from api.db.db import DBConnectionManager, TestingDBConnectionManager
 
 
 class IntegrationTestCase(unittest.TestCase):
@@ -23,7 +24,9 @@ class IntegrationTestCase(unittest.TestCase):
 
         self.config = {}
         self.config["config_file"] = config
-        self.db = DBConnectionManager(self.config)
+
+
+        self.db =TestingDBConnectionManager(self.config)
        
         ## Allows us to access the actual time in tests when we mock time.time()
         self.current_time = int(time.time())
@@ -34,7 +37,7 @@ class IntegrationTestCase(unittest.TestCase):
         self.addCleanup(self.truncate_db)
 
         # Once test case complete, close the db connection
-        IntegrationTestCase.addClassCleanup(self.db.close)
+        IntegrationTestCase.addClassCleanup(lambda : self.db.close(connection_uuid='id-for-testing'))
         
 
     def truncate_db(self):
@@ -44,3 +47,5 @@ class IntegrationTestCase(unittest.TestCase):
                 tables_list = [table for table_dict in tables for table in table_dict.values()]
                 for table in tables_list:
                     cursor.execute(f"TRUNCATE {table}")
+
+

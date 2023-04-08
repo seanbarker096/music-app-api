@@ -34,17 +34,12 @@ class PerformersMidlayerConnections:
 
 
 class PerformersMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
-        connnections = (
-            conns.performer_mid_conns
-            if conns and conns.performer_mid_conns
-            else PerformersMidlayerConnections(config)
-        )
-        self.performers_dao = connnections.performers_dao
-        self.performer_search_service = connnections.performer_search_service
+    def __init__(self, config, conns: Optional[PerformersMidlayerConnections] = None, **kwargs):
+        self.performers_dao = conns.performers_dao if conns.users_dao else PerformersDAO(config)
+        self.performer_search_service = conns.performer_search_service if conns.performer_search_service else PerformerSearchService(config)
 
         ## Call the next mixins constructor
-        super().__init__(config, conns)
+        super().__init__(config)
 
     def performers_get(self, filter=PerformersGetFilter) -> PerformersGetResult:
 

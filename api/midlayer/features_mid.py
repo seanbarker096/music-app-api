@@ -20,16 +20,11 @@ class FeaturesMidlayerConnections:
 
 
 class FeaturesMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
-        connections = (
-            conns.feature_mid_conns
-            if conns and conns.feature_mid_conns
-            else FeaturesMidlayerConnections(config)
-        )
-        self.features_dao = connections.features_dao
+    def __init__(self, config, conns: Optional[FeaturesMidlayerConnections] = None, **kwargs):
+        self.features_dao = conns.features_dao if conns.features_dao else FeaturesDAO(config)
 
         ## Call the next mixins constructor
-        super().__init__(config, conns)
+        super().__init__(config)
 
     def features_get(self, filter=FeaturesGetFilter) -> FeaturesGetResult:
         if filter.featured_entity_id and not isinstance(filter.featured_entity_id, int):

@@ -25,17 +25,11 @@ class PostMidlayerConnections:
 
 
 class PostsMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
-
-        connections = (
-            conns.post_mid_conns
-            if conns and conns.post_mid_conns
-            else PostMidlayerConnections(config)
-        )
-        self.posts_dao = connections.post_dao
+    def __init__(self, config, conns: Optional[PostMidlayerConnections] = None, **kwargs):
+        self.posts_dao = conns.post_dao if conns.post_dao else PostsDAO(config)
 
         ## Call the next mixins constructor
-        super().__init__(config, conns)
+        super().__init__(config)
 
     def post_create(self, request: PostCreateRequest) -> PostCreateResult:
         if not request.creator_id or not isinstance(request.creator_id, int):
@@ -162,16 +156,11 @@ class PostAttachmentsMidlayerConnections:
 
 
 class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
-        connections = (
-            conns.post_attachments_mid_conns
-            if conns and conns.post_attachments_mid_conns
-            else PostAttachmentsMidlayerConnections(config)
-        )
-        self.posts_attachments_dao = connections.post_attachments_dao
+    def __init__(self, config, conns: Optional[PostAttachmentsMidlayerConnections] = None, **kwargs):
+        self.posts_attachments_dao = conns.post_attachments_dao if conns.post_attachments_dao else PostAttachmentsDAO(config)
 
         ## Call the next mixins constructor
-        super().__init__(config, conns)
+        super().__init__(config)
 
     def post_attachments_create(
         self, request: PostAttachmentsCreateRequest

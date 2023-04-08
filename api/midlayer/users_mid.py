@@ -30,16 +30,11 @@ class UserMidlayerConnections:
 
 
 class UsersMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional["MidlayerConnections"] = None, **kwargs):
-        connections = (
-            conns.user_mid_conns
-            if conns and conns.user_mid_conns
-            else UserMidlayerConnections(config)
-        )
-        self.users_dao = connections.users_dao
+    def __init__(self, config, conns: Optional[UserMidlayerConnections] = None, **kwargs):
+        self.users_dao = conns.users_dao if conns.users_dao else UsersDAO(config=config)
 
         ## Call the next mixins constructor
-        super().__init__(config, conns)
+        super().__init__(config)
 
     def users_get(self, filter: UsersGetFilter) -> UsersGetResult:
         if not isinstance(filter.user_ids, list) or len(filter.user_ids) == 0:

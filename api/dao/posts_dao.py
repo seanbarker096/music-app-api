@@ -294,8 +294,8 @@ class PostAttachmentsDAO(object):
     ]
 
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
-        self.db = db if db else DBConnectionManager(config)
         self.config = config
+        self.db = db if db else DBConnectionManager(config)
 
     def post_attachment_create(self, post_id: int, file_id: int) -> PostAttachment:
         sql = """

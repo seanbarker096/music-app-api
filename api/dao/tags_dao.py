@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnectionManager
+from api.db.db import DBConnectionManager, FlaskDBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.tags import Tag, TagCreateRequest, TagsGetFilter
 
@@ -15,7 +15,7 @@ class TagsDBAlias:
 
 
 class TagsDAO:
-    db: DBConnectionManager
+    db: FlaskDBConnectionManager
 
     TAG_SELECTS = [
         "id as " + TagsDBAlias.TAG_ID,
@@ -26,8 +26,9 @@ class TagsDAO:
         "creator_id as " + TagsDBAlias.TAG_CREATOR_ID,
     ]
 
-    def __init__(self, config, db: Optional[DBConnectionManager] = None) -> None:
-        self.db = db if db else DBConnectionManager(config)
+    def __init__(self, config, db: Optional[FlaskDBConnectionManager] = None) -> None:
+        # We will initialise the connection mananger for each database query
+        self.db = db if db else FlaskDBConnectionManager
         self.config = config
 
     def tag_create(self, request: TagCreateRequest) -> Tag:
@@ -44,7 +45,7 @@ class TagsDAO:
             request.creator_id,
         )
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(query, binds)
             tag_id = cursor.lastrowid
 
@@ -77,7 +78,7 @@ class TagsDAO:
 
         sql = selects + where_string
 
-        with self.db as cursor:
+        with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 

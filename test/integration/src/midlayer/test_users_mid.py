@@ -5,7 +5,9 @@ from logging import Logger
 from test.integration import IntegrationTestCase
 from unittest.mock import Mock, patch
 
-from api.midlayer.users_mid import UsersMidlayerMixin
+from api.dao.users_dao import UsersDAO
+from api.db.db import TestingDBConnectionManager
+from api.midlayer.users_mid import UserMidlayerConnections, UsersMidlayerMixin
 from api.typings.users import (
     User,
     UserCreateRequest,
@@ -21,7 +23,7 @@ from exceptions.response.exceptions import UserAlreadyExistsException
 class UsersMidIntegrationTestCase(IntegrationTestCase):
     def setUp(self):
         super().setUp()
-    
+
         self.test_user = User(
             id=1,
             username="testUser123",
@@ -42,6 +44,10 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             self.test_user, password_hash=password_hash, salt="salt"
         )
 
+        users_dao = UsersDAO(config=self.config, db=TestingDBConnectionManager)
+        users_mid_conns = UserMidlayerConnections(config=self.config, users_dao=users_dao)
+        self.users_mid = UsersMidlayerMixin(config=self.config, conns=users_mid_conns)
+
     def _seed_user(self):
 
         sql = """
@@ -52,15 +58,13 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         binds = list(vars(self.test_user_with_password).values())
 
         binds = binds[1:]  ## Ignore the id
-        
+
         with self.db as cursor:
             cursor.execute(sql, binds)
 
     @patch("time.time")
     def test_user_create(self, time):
         time.return_value = self.current_time
-
-        users_mid = UsersMidlayerMixin(config=self.config)
 
         request = UserCreateRequest(
             username="testUser123",
@@ -70,7 +74,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             password="testPassword",
         )
 
-        result = users_mid.user_create(request)
+        result = self.users_mid.user_create(request)
 
         user = result.user
 
@@ -94,7 +98,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(1, user.timezone_id, "Should return the correct timezone id")
 
         ## Assert password stored correctly
-        user_with_password = users_mid.get_user_by_username_and_password(
+        user_with_password = self.users_mid.get_user_by_username_and_password(
             password="testPassword",
             username="testUser123",
             projection=UsersGetProjection(password=True),
@@ -112,9 +116,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             password="testPassword",
         )
 
-        users_mid = UsersMidlayerMixin(config=self.config)
-
-        users_mid.user_create(request)
+        self.users_mid.user_create(request)
 
         with self.assertRaisesRegex(
             UserAlreadyExistsException,
@@ -123,7 +125,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         ):
             new_request = copy.copy(request)
             new_request.email = "gMartinelli2@gmail.com"
-            users_mid.user_create(new_request)
+            self.users_mid.user_create(new_request)
 
     def test_user_create_with_duplicate_email(self):
 
@@ -135,9 +137,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             password="testPassword",
         )
 
-        users_mid = UsersMidlayerMixin(config=self.config)
-
-        users_mid.user_create(request)
+        self.users_mid.user_create(request)
 
         with self.assertRaisesRegex(
             UserAlreadyExistsException,
@@ -146,16 +146,12 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         ):
             new_request = copy.copy(request)
             new_request.username = "testUser888"
-            users_mid.user_create(new_request)
+            self.users_mid.user_create(new_request)
 
     def test_get_user_by_username_and_password(self):
         self._seed_user()
 
-        users_mid = UsersMidlayerMixin(self.config)
-
-        print(self.current_time) 
-
-        user_result = users_mid.get_user_by_username_and_password(
+        user_result = self.users_mid.get_user_by_username_and_password(
             password="password1", username="testUser123", projection=UsersGetProjection()
         )
 
@@ -179,14 +175,12 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
     def test_get_user_by_username_and_incorrect_password(self):
         self._seed_user()
 
-        users_mid = UsersMidlayerMixin(self.config)
-
         with self.assertRaisesRegex(
             Exception,
             expected_regex=f"Cannot get user with username testUser123. Incorrect password provided",
             msg="Should raise exception with correct error message",
         ):
-            users_mid.get_user_by_username_and_password(
+            self.users_mid.get_user_by_username_and_password(
                 password="thisPasswordIsWrong",
                 username="testUser123",
                 projection=UsersGetProjection(),
@@ -195,11 +189,9 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
     def test_user_update(self):
         self._seed_user()
 
-        users_mid = UsersMidlayerMixin(self.config)
-
         request = UserUpdateRequest(user_id=1, avatar_file_uuid="abcdefg")
 
-        result = users_mid.user_update(request)
+        result = self.users_mid.user_update(request)
         updated_user = result.user
 
         self.assertEqual(1, updated_user.id, "Should return the user_id of the updated user")
@@ -213,8 +205,6 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
     def test_user_update_when_user_does_not_exist(self):
         self._seed_user()
 
-        users_mid = UsersMidlayerMixin(self.config)
-
         request = UserUpdateRequest(user_id=2, avatar_file_uuid="abcdefg")
 
         with self.assertRaisesRegex(
@@ -222,12 +212,10 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             expected_regex="Failed to update user with id 2 because user could not be found.",
             msg="Should throw exception if user is not found",
         ):
-            users_mid.user_update(request)
+            self.users_mid.user_update(request)
 
     def test_user_update_with_no_property_values_provided(self):
         self._seed_user()
-
-        users_mid = UsersMidlayerMixin(self.config)
 
         request = UserUpdateRequest(user_id=1, avatar_file_uuid=None)
 
@@ -235,4 +223,4 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             expected_exception=Exception,
             expected_regex="Failed to update user with id 1.",
         ):
-            users_mid.user_update(request)
+            self.users_mid.user_update(request)

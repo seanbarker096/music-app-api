@@ -24,17 +24,11 @@ class PerformancesMidlayerConnections:
 
 
 class PerformancesMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional["MidlayerConnections"] = None):
-        connections = (
-            conns.performance_mid_conns
-            if conns and conns.performance_mid_conns
-            else PerformancesMidlayerConnections(config)
-        )
-
-        self.performances_dao = connections.performances_dao
+    def __init__(self, config, conns: Optional[PerformancesMidlayerConnections] = None):
+        self.performances_dao = conns.performances_dao if conns.performances_dao else PerformancesDAO(config)
 
         ## Call the next mixins constructor
-        super().__init__(config, conns)
+        super().__init__(config)
 
     def performance_create(self, request: PerformanceCreateRequest):
         process_int_request_param(
@@ -152,23 +146,17 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
     def __init__(
         self,
         config,
-        connections: Optional["MidlayerConnections"] = None,
+        conns: Optional[PerformanceAttendancesMidlayerConnections] = None,
         performances_mid: Optional[PerformancesMidlayerMixin] = None,
     ):
         self.performances_mid = (
-            performances_mid if performances_mid else PerformancesMidlayerMixin(config, connections)
+            performances_mid if performances_mid else PerformancesMidlayerMixin(config)
         )
 
-        connections = (
-            connections.performance_attendance_mid_conns
-            if connections and connections.performance_attendance_mid_conns
-            else PerformanceAttendancesMidlayerConnections(config)
-        )
-
-        self.performance_attendances_dao = connections.performance_attendances_dao
+        self.performance_attendances_dao = conns.performance_attendances_dao if conns.performance_attendances_dao else PerformanceAttendancesDAO(config)
 
         ## Call the next mixins constructor
-        super().__init__(config, connections)
+        super().__init__(config)
 
     def performance_attendance_create(
         self, request: PerformanceAttendanceCreateRequest

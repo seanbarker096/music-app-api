@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import traceback
+import uuid
 from random import randint
 from typing import Any, Dict
 
@@ -82,6 +83,9 @@ class DBConnection(Singleton):
         """
 
         conn_exists = DBConnection.has_instance(instance_key=instance_key)
+
+        print(DBConnection._instances)
+        print(f"conn exists, {conn_exists}")
         if conn_exists is False:
             raise Exception(
                 f"Failed to close database connection for connection uuid {instance_key} because it could not be found"
@@ -154,3 +158,16 @@ class FlaskDBConnectionManager(DBConnectionManager):
     def close():
         connection_uuid = flask.request.request_id
         super().close(connection_uuid)
+
+class TestingDBConnectionManager(DBConnectionManager):
+    """
+    A simple wrapper around DBConnection. This is similar to FlaskDBConnectionManager but uses a static uuid for testing, rather than flask globals.
+    """
+
+    def __init__(self, config):
+        connection_uuid = 'id-for-testing'
+        super().__init__(config, connection_uuid)
+
+    @staticmethod
+    def close():
+        super().close('id-for-testing')
