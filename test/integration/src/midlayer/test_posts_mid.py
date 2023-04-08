@@ -11,9 +11,10 @@ from unittest.mock import patch
 
 import pytest
 
-from api.dao.posts_dao import PostsDAO
+from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
 from api.db.db import TestingDBConnectionManager
 from api.midlayer.posts_mid import (
+    PostAttachmentsMidlayerConnections,
     PostAttachmentsMidlayerMixin,
     PostMidlayerConnections,
     PostsMidlayerMixin,
@@ -380,16 +381,17 @@ class PostsMidIntegrationTest(IntegrationTestCase):
 class PostAttachmentsMidIntegrationTest(IntegrationTestCase):
     def setUp(self):
         super().setUp()
+        dao = PostAttachmentsDAO(config=self.config, db=self.db)
+        conns = PostAttachmentsMidlayerConnections(config=self.config, post_attachments_dao=dao)
+        self.post_attachments_mid = PostAttachmentsMidlayerMixin(config=self.config, conns=conns)
 
     @patch("time.time")
     def test_post_attachments_create(self, time):
         time.return_value = self.current_time
 
-        post_attachments_mid = PostAttachmentsMidlayerMixin(config=self.config)
-
         request = PostAttachmentsCreateRequest(post_id=123, file_ids=[567, 8910])
 
-        result = post_attachments_mid.post_attachments_create(request=request)
+        result = self.post_attachments_mid.post_attachments_create(request=request)
 
         attachments = result.post_attachments
         first_attachment = attachments[0]
@@ -424,11 +426,9 @@ class PostAttachmentsMidIntegrationTest(IntegrationTestCase):
             post_attachment_dto
         )
 
-        post_attachments_mid = PostAttachmentsMidlayerMixin(config=self.config)
-
         filter = PostAttachmentsGetFilter(post_ids=[post_attachment_id])
 
-        result = post_attachments_mid.post_attachments_get(filter=filter)
+        result = self.post_attachments_mid.post_attachments_get(filter=filter)
         post_attachment = result.post_attachments[0]
 
         self.assertEqual(

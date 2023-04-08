@@ -16,7 +16,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
 
     def setUp(self):
         super().setUp()
-        self.performers_dao = PerformersDAO(self.db)
+        self.performers_dao = PerformersDAO(self.config,self.db)
 
     def test_attendee_performers_get(self):
         attendee_id = 5555
@@ -109,7 +109,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
             limit=10
         )
 
-        result = self.dao.attendee_performers_get(filter)
+        result = self.performers_dao.attendee_performers_get(filter)
 
         performers = result.performers
         counts = result.counts

@@ -84,8 +84,6 @@ class DBConnection(Singleton):
 
         conn_exists = DBConnection.has_instance(instance_key=instance_key)
 
-        print(DBConnection._instances)
-        print(f"conn exists, {conn_exists}")
         if conn_exists is False:
             raise Exception(
                 f"Failed to close database connection for connection uuid {instance_key} because it could not be found"
@@ -110,10 +108,11 @@ class DBConnection(Singleton):
 
 class DBConnectionManager:
     """
-    This class should not be used directly, but should be extended by a parent class which provides the connection uuids. 
+    This class should not be used directly, but should be extended by a parent class which provides the connection uuids.
 
     @see FlaskDBConnectionManager, TestingDBConnectionManager
     """
+
     def __init__(self, config, connection_uuid: str):
         self.config = config
         self.connection_uuid = connection_uuid
@@ -164,15 +163,16 @@ class FlaskDBConnectionManager(DBConnectionManager):
         connection_uuid = flask.request.request_id
         super().close(connection_uuid)
 
+
 class TestingDBConnectionManager(DBConnectionManager):
     """
     A simple wrapper around DBConnection. This is similar to FlaskDBConnectionManager but uses a static uuid for testing, rather than flask globals.
     """
 
     def __init__(self, config):
-        connection_uuid = 'id-for-testing'
+        connection_uuid = "id-for-testing"
         super().__init__(config, connection_uuid)
 
     @staticmethod
     def close():
-        super().close('id-for-testing')
+        super().close("id-for-testing")

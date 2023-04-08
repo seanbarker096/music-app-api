@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import jwt
 
-from api.authentication_service.api import JWTTokenAuthService
+from api.authentication_service.api import AuthTokenServiceDAO, JWTTokenAuthService
 from api.authentication_service.typings import (
     AuthenticateRequest,
     AuthStateCreateRequest,
@@ -13,9 +13,17 @@ from api.authentication_service.typings import (
     AuthUserRole,
     TokenType,
 )
+from api.db.db import TestingDBConnectionManager
 
 
 class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        dao = AuthTokenServiceDAO(config=self.config, db=TestingDBConnectionManager)
+        self.authentication_service = JWTTokenAuthService(config=self.config, auth_dao=dao)
+
     @patch("time.time")
     def test_create_auth_state(self, time):
         ## This just ensures the time remains fixed so we can assert on it
@@ -31,9 +39,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         request = AuthStateCreateRequest(auth_user=auth_user)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
-
-        result = authentication_service.create_auth_state(request).auth_state
+        result = self.authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
@@ -55,7 +61,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         self.assertEqual(
             access_token_payload["exp"],
-            time.return_value + authentication_service._ACCESS_TOKEN_TTL,
+            time.return_value + self.authentication_service._ACCESS_TOKEN_TTL,
             "Should return the correct access token expiration time",
         )
 
@@ -69,7 +75,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         self.assertEqual(
             refresh_token_payload["exp"],
-            time.return_value + authentication_service._REFRESH_TOKEN_TTL,
+            time.return_value + self.authentication_service._REFRESH_TOKEN_TTL,
             "Should return the correct refresh token expiration type",
         )
 
@@ -88,7 +94,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         self.assertIsInstance(refresh_token_payload["session_id"], str)
 
         ## check that refresh token added to db correctly
-        db_refresh_token = authentication_service.auth_dao.get_token_by_user_id_and_session_id(
+        db_refresh_token = self.authentication_service.auth_dao.get_token_by_user_id_and_session_id(
             user_id, refresh_token_payload["session_id"]
         )
 
@@ -110,15 +116,15 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
     #     request = AuthStateCreateRequest(auth_user=auth_user)
 
-    #     authentication_service = JWTTokenAuthService(config=self.config)
+    #     self.authentication_service = JWTTokenAuthService(config=self.config)
 
-    #     result = authentication_service.create_auth_state(request).auth_state
+    #     result = self.authentication_service.create_auth_state(request).auth_state
 
     #     access_token = result.access_token
 
     #     authenticate_request = AuthenticateRequest(token=access_token)
 
-    #     result = authentication_service.authenticate(request=authenticate_request)
+    #     result = self.authentication_service.authenticate(request=authenticate_request)
 
     #     self.assertEqual(
     #         result.status,
@@ -163,12 +169,10 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         request = AuthStateCreateRequest(auth_user=auth_user)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
-
         # Use this to simulate a recently expired token
-        authentication_service._ACCESS_TOKEN_TTL = -100
+        self.authentication_service._ACCESS_TOKEN_TTL = -100
 
-        result = authentication_service.create_auth_state(request).auth_state
+        result = self.authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
@@ -177,7 +181,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             expected_regex=f"Failed to validate token {access_token} because it has expired",
             msg="Should throw error with correct exception message",
         ):
-            authentication_service.validate_token(token=access_token)
+            self.authentication_service.validate_token(token=access_token)
 
     def test_validate_with_valid_token(self):
         user_id = 12345
@@ -186,13 +190,11 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         request = AuthStateCreateRequest(auth_user=auth_user)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
-
-        result = authentication_service.create_auth_state(request).auth_state
+        result = self.authentication_service.create_auth_state(request).auth_state
 
         access_token = result.access_token
 
-        result = authentication_service.validate_token(token=access_token)
+        result = self.authentication_service.validate_token(token=access_token)
 
         self.assertEqual(
             result["user_id"], 12345, "Should return the user_id in the decoded token payload"
@@ -218,19 +220,19 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
     #     request = AuthStateCreateRequest(auth_user=auth_user)
 
-    #     authentication_service = JWTTokenAuthService(config=self.config)
+    #     self.authentication_service = JWTTokenAuthService(config=self.config)
 
     #     ## TODO: Use getters and setters to configure these fields
     #     # This simulates the token being expired, but its expiry time falling within the leway window
-    #     authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 0.5
+    #     self.authentication_service._ACCESS_TOKEN_TTL = -self.authentication_service._LEWAY * 0.5
 
-    #     result = authentication_service.create_auth_state(request).auth_state
+    #     result = self.authentication_service.create_auth_state(request).auth_state
 
     #     access_token = result.access_token
 
     #     authenticate_request = AuthenticateRequest(token=access_token)
 
-    #     result = authentication_service.authenticate(request=authenticate_request)
+    #     result = self.authentication_service.authenticate(request=authenticate_request)
 
     #     self.assertEqual(
     #         result.status,
@@ -274,19 +276,19 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
     #     request = AuthStateCreateRequest(auth_user=auth_user)
 
-    #     authentication_service = JWTTokenAuthService(config=self.config)
+    #     self.authentication_service = JWTTokenAuthService(config=self.config)
 
     #     ## TODO: Use getters and setters to configure these fields
     #     # This simulates the token being expired, but only just falling outside the leway window
-    #     authentication_service._ACCESS_TOKEN_TTL = -authentication_service._LEWAY * 1.1
+    #     self.authentication_service._ACCESS_TOKEN_TTL = -self.authentication_service._LEWAY * 1.1
 
-    #     result = authentication_service.create_auth_state(request).auth_state
+    #     result = self.authentication_service.create_auth_state(request).auth_state
 
     #     access_token = result.access_token
 
     #     authenticate_request = AuthenticateRequest(token=access_token)
 
-    #     result = authentication_service.authenticate(request=authenticate_request)
+    #     result = self.authentication_service.authenticate(request=authenticate_request)
 
     #     self.assertEqual(
     #         result.status,
@@ -321,19 +323,17 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         create_auth_state_request = AuthStateCreateRequest(auth_user=auth_user)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
-
         ## First generate a refresh token
-        refresh_token = authentication_service.create_auth_state(
+        refresh_token = self.authentication_service.create_auth_state(
             request=create_auth_state_request
         ).auth_state.refresh_token
 
-        new_acess_token = authentication_service.create_token(
+        new_acess_token = self.authentication_service.create_token(
             auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=refresh_token
         )
 
         ## Check new token is valid
-        token_payload = authentication_service.validate_token(token=new_acess_token)
+        token_payload = self.authentication_service.validate_token(token=new_acess_token)
 
         self.assertEqual(
             token_payload["user_id"],
@@ -345,14 +345,12 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         user_id = 12345
         auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
-
         with self.assertRaisesRegex(
             Exception,
             expected_regex="Must provide a refresh token to create an access token",
             msg="Should throw error with correct exception message",
         ):
-            authentication_service.create_token(
+            self.authentication_service.create_token(
                 auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=None
             )
 
@@ -366,19 +364,17 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         auth_user = AuthUser(user_id=user_id, role=AuthUserRole.USER.value, permissions=None)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
-
-        new_refresh_token = authentication_service.create_token(
+        new_refresh_token = self.authentication_service.create_token(
             auth_user=auth_user, token_type=TokenType.REFRESH.value, refresh_token=None
         )
 
         ## Should be able to use the refresh token to create a new access token and authenticate with it
-        new_acess_token = authentication_service.create_token(
+        new_acess_token = self.authentication_service.create_token(
             auth_user=auth_user, token_type=TokenType.ACCESS.value, refresh_token=new_refresh_token
         )
 
         ## Check new token is valid
-        token_payload = authentication_service.validate_token(token=new_acess_token)
+        token_payload = self.authentication_service.validate_token(token=new_acess_token)
 
         self.assertEqual(
             token_payload["user_id"],
@@ -387,7 +383,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
         )
 
         ## Inspect refresh token
-        payload = authentication_service.validate_token(
+        payload = self.authentication_service.validate_token(
             token=new_refresh_token, token_type=TokenType.REFRESH.value
         )
 
@@ -399,7 +395,7 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         self.assertEqual(
             payload["exp"],
-            time() + authentication_service._REFRESH_TOKEN_TTL,
+            time() + self.authentication_service._REFRESH_TOKEN_TTL,
             "Should return the correct expiry time in the refresh token payload",
         )
 
@@ -427,14 +423,12 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
 
         create_auth_state_request = AuthStateCreateRequest(auth_user=auth_user)
 
-        authentication_service = JWTTokenAuthService(config=self.config)
-
         ## First generate a refresh token
-        refresh_token = authentication_service.create_auth_state(
+        refresh_token = self.authentication_service.create_auth_state(
             request=create_auth_state_request
         ).auth_state.refresh_token
 
-        authentication_service.delete_auth_state(
+        self.authentication_service.delete_auth_state(
             request=AuthStateDeleteRequest(refresh_token=refresh_token)
         )
 
@@ -444,6 +438,6 @@ class TokenAuthenticationServiceIntegrationTestCase(IntegrationTestCase):
             expected_regex=f"Failed to validate token {refresh_token} of type {TokenType.REFRESH.value} as it could not be found. It may have been deleted and is therefore no longer valid",
             msg="Should throw error with correct exception message",
         ):
-            authentication_service.validate_token(
+            self.authentication_service.validate_token(
                 token=refresh_token, token_type=TokenType.REFRESH.value
             )
