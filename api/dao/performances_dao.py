@@ -134,7 +134,7 @@ class PerformancesDAO:
         joins = []
         binds = []
 
-        selects = self.PERFORMANCE_SELECTS
+        selects = [*self.PERFORMANCE_SELECTS]
 
         if filter.include_attendee_count:
             joins.append(

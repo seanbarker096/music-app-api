@@ -95,7 +95,7 @@ class UsersDAO(object):
         self, username: str, include_password=False
     ) -> User | UserWithPassword:
 
-        selects = self.USER_SELECTS_WITH_PASSWORD if include_password else self.USER_SELECTS
+        selects = [*self.USER_SELECTS_WITH_PASSWORD] if include_password else [*self.USER_SELECTS]
         sql = f"""
             SELECT {', '.join(selects)}
             FROM users

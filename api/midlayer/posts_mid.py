@@ -94,6 +94,12 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 "filter.owner_types or filter.owner_ids",
             )
 
+        if not filter.ids and not filter.is_deleted and not filter.owner_ids and not filter.owner_types:
+            raise InvalidArgumentException(
+                f"Ubounded request made to posts_get. Must provide at least one filter field. Filter: {vars(filter)}",
+                "PostsGetFilter"
+            )
+
         posts = self.posts_dao.posts_get(filter)
 
         return PostsGetResult(posts=posts)

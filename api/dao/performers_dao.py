@@ -126,13 +126,13 @@ class PerformersDAO(object):
         self, filter: AttendeePerformersGetFilter
     ) -> AttendeePerformersGetResult:
 
-        selects = self.PERFORMER_SELECTS
-
         group_by = False
         binds = []
         joins = []
         orders = []
         limit = filter.limit if filter.limit else 10
+
+        selects = [*self.PERFORMER_SELECTS]
 
         if not filter.attendee_id:
             raise InvalidArgumentException("attendee_id is required for attendee_performers_get")
