@@ -9,13 +9,13 @@ class PerformanceFixtureDTO:
         performance_date: int,
         create_time: int,
         update_time: Optional[int] = None,
-        venue_id: Optional[int] = None
+        event_id: Optional[int] = None
         ):
         self.performer_id = performer_id
         self.performance_date = performance_date
         self.create_time = create_time
         self.update_time = update_time
-        self.venue_id = venue_id
+        self.event_id = event_id
 
     def get_performer_id(self) -> int:
         return self.performer_id
@@ -29,5 +29,5 @@ class PerformanceFixtureDTO:
     def get_update_time(self) -> int:
         return self.update_time
     
-    def get_venue_id(self) -> Optional[int]:
-        return self.venue_id
+    def get_event_id(self) -> Optional[int]:
+        return self.event_id

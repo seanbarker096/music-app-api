@@ -20,7 +20,7 @@ from api.typings.tags import TaggedEntityType, TaggedInEntityType
 
 class PerformancesDBAlias:
     PERFORMANCE_ID = "performance_id"
-    PERFORMANCE_VENUE_ID = "performance_venue_id"
+    PERFORMANCE_EVENT_ID = "performance_event_id"
     PERFORMANCE_PERFORMER_ID = "performance_performer_id"
     PERFORMANCE_DATE = "performance_date"  # users can create performances, so we don't want a unique performance if two usres input a different time of day but the same performer. We therefore store the date only
     PERFORMANCE_CREATE_TIME = "performance_create_time"
@@ -34,7 +34,7 @@ class PerformancesDAO:
 
     PERFORMANCE_SELECTS = [
         "p.id as " + PerformancesDBAlias.PERFORMANCE_ID,
-        "p.venue_id as " + PerformancesDBAlias.PERFORMANCE_VENUE_ID,
+        "p.event_id as " + PerformancesDBAlias.PERFORMANCE_EVENT_ID,
         "p.performer_id as " + PerformancesDBAlias.PERFORMANCE_PERFORMER_ID,
         "UNIX_TIMESTAMP(p.performance_date) as " + PerformancesDBAlias.PERFORMANCE_DATE,
         "UNIX_TIMESTAMP(p.create_time) as " + PerformancesDBAlias.PERFORMANCE_CREATE_TIME,
@@ -44,14 +44,14 @@ class PerformancesDAO:
     def performance_create(self, request: PerformanceCreateRequest) -> Performance:
 
         sql = """
-            INSERT INTO performance (venue_id, performer_id, performance_date, create_time, update_time)
+            INSERT INTO performance (event_id, performer_id, performance_date, create_time, update_time)
             VALUES  (%s, %s, DATE(FROM_UNIXTIME(%s)), FROM_UNIXTIME(%s), FROM_UNIXTIME(%s))
             """
 
         now = time.time()
 
         binds = (
-            request.venue_id,
+            request.event_id,
             request.performer_id,
             request.performance_date,
             now,
@@ -64,7 +64,7 @@ class PerformancesDAO:
 
         return Performance(
             id=performance_id,
-            venue_id=request.venue_id,
+            event_id=request.event_id,
             performer_id=request.performer_id,
             performance_date=request.performance_date,
             create_time=now,
@@ -219,10 +219,10 @@ class PerformancesDAO:
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_ID)
         performance_id = int(db_row[PerformancesDBAlias.PERFORMANCE_ID])
 
-        assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_VENUE_ID)
-        venue_id = (
-            int(db_row[PerformancesDBAlias.PERFORMANCE_VENUE_ID])
-            if db_row[PerformancesDBAlias.PERFORMANCE_VENUE_ID]
+        assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_EVENT_ID)
+        event_id = (
+            int(db_row[PerformancesDBAlias.PERFORMANCE_EVENT_ID])
+            if db_row[PerformancesDBAlias.PERFORMANCE_EVENT_ID]
             else None
         )
 
@@ -244,7 +244,7 @@ class PerformancesDAO:
 
         return Performance(
             id=performance_id,
-            venue_id=venue_id,
+            event_id=event_id,
             performer_id=performer_id,
             performance_date=performance_date,
             create_time=create_time,

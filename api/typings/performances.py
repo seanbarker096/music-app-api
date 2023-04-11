@@ -3,7 +3,7 @@ from typing import List, Optional
 
 class Performance:
     id: int = ...
-    venue_id: Optional[int] = ...
+    event_id: Optional[int] = ...
     performer_id: int = ...
     performance_date: int = ...
     create_time: int = ...
@@ -16,10 +16,10 @@ class Performance:
         performance_date: int,
         create_time: int,
         update_time: int,
-        venue_id: Optional[int] = None,
+        event_id: Optional[int] = None,
     ) -> None:
         self.id = id
-        self.venue_id = venue_id
+        self.event_id = event_id
         self.performer_id = performer_id
         self.performance_date = performance_date
         self.create_time = create_time
@@ -56,7 +56,7 @@ class PerformancesGetResult:
 
 
 class PerformanceCreateRequest:
-    venue_id: Optional[int] = ...
+    event_id: Optional[int] = ...
     performer_id: int = ...
     performance_date: int = ...
 
@@ -64,9 +64,9 @@ class PerformanceCreateRequest:
         self,
         performer_id: int,
         performance_date: int,
-        venue_id: Optional[int] = None,
+        event_id: Optional[int] = None,
     ) -> None:
-        self.venue_id = venue_id
+        self.event_id = event_id
         self.performer_id = performer_id
         self.performance_date = performance_date
 

@@ -32,7 +32,7 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
 
     def performance_create(self, request: PerformanceCreateRequest):
         process_int_request_param(
-            parameter_name="venue_id", parameter=request.venue_id, optional=True
+            parameter_name="event_id", parameter=request.event_id, optional=True
         )
         process_int_request_param(
             parameter_name="performer_id", parameter=request.performer_id, optional=False

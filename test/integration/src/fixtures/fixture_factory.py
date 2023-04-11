@@ -135,7 +135,7 @@ class FixtureFactory:
     
     def performance_fixture_create(self, dto: PerformanceFixtureDTO) -> int:
         sql = """
-            INSERT INTO performance(performer_id, performance_date, create_time, update_time, venue_id) VALUES(%s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
+            INSERT INTO performance(performer_id, performance_date, create_time, update_time, event_id) VALUES(%s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
         """
 
         binds = (
@@ -143,7 +143,7 @@ class FixtureFactory:
             dto.get_performance_date(),
             dto.get_create_time(),
             dto.get_update_time(),
-            dto.get_venue_id(),
+            dto.get_event_id(),
         )
 
         with self.db(self.config) as cursor:

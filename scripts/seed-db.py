@@ -286,7 +286,7 @@ post_attachment = post_attachments_dao.post_attachment_create(
 
 performance_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
-    venue_id=333,
+    event_id=333,
     performance_date=time.time(),
 )
 
@@ -296,7 +296,7 @@ performance_one = performances_mid.performance_create(
 
 performance_two_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
-    venue_id=444,
+    event_id=444,
     performance_date=time.time() + 200000,
 )
 
@@ -306,7 +306,7 @@ performance_two = performances_mid.performance_create(
 
 performance_three_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
-    venue_id=555,
+    event_id=555,
     performance_date=time.time() + 400000,
 )
 

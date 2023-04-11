@@ -58,8 +58,8 @@ def performances_get():
 def performance_create():
     data = flask.request.json
 
-    venue_id = process_int_request_param(
-        parameter_name="venue_id", parameter=data.get("venue_id", None), optional=True
+    event_id = process_int_request_param(
+        parameter_name="event_id", parameter=data.get("event_id", None), optional=True
     )
     performer_id = process_int_request_param(
         parameter_name="performer_id", parameter=data.get("performer_id", None), optional=False
@@ -71,7 +71,7 @@ def performance_create():
     )
 
     performance_create_request = PerformanceCreateRequest(
-        venue_id=venue_id,
+        event_id=event_id,
         performer_id=performer_id,
         performance_date=performance_date,
     )

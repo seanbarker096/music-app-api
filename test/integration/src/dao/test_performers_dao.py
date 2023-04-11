@@ -47,7 +47,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
             performance_date=self.current_time,
             create_time=self.current_time,
             update_time=None,
-            venue_id=111,
+            event_id=111,
         )
 
         performance_one_id = self.fixture_factory.performance_fixture_create(
@@ -59,7 +59,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
             performance_date=self.current_time - 200000, # roughly a day earlier,
             create_time=self.current_time,
             update_time=None,
-            venue_id=222,
+            event_id=222,
         )
 
 
@@ -72,7 +72,7 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
             performance_date=self.current_time - 200000,
             create_time=self.current_time,
             update_time=None,
-            venue_id=111,
+            event_id=111,
         )
 
         performance_three_id = self.fixture_factory.performance_fixture_create(
