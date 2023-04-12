@@ -20,8 +20,9 @@ blueprint = flask.Blueprint("performers", __name__)
 def performers_get():
     uuids = process_api_set_request_param(parameter_name="uuids[]", type=str)
     ids = process_api_set_request_param(parameter_name="ids[]", type=int)
+    owner_ids = process_api_set_request_param(parameter_name="owner_ids[]", type=int)
 
-    performers_get_filter = PerformersGetFilter(uuids=uuids, ids=ids)
+    performers_get_filter = PerformersGetFilter(uuids=uuids, ids=ids, owner_ids=owner_ids)
 
     performers = flask.current_app.conns.midlayer.performers_get(performers_get_filter).performers
 

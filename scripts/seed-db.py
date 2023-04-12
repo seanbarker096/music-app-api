@@ -259,7 +259,7 @@ performer_create_request = PerformerCreateRequest(
     name="Eminem",
     biography="I'm a rapper",
     uuid="7dGJo4pcD2V6oG8kP0tJRR",
-    owner_id=user_two.id,
+    owner_id=user_one.id,
     image_url="https://i.scdn.co/image/ab6761610000f178a00b11c129b27a88fc72f36b",
 )
 

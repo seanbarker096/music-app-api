@@ -35,8 +35,14 @@ class PerformersMidlayerConnections:
 
 class PerformersMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[PerformersMidlayerConnections] = None, **kwargs):
-        self.performers_dao = conns.performers_dao if conns and conns.performers_dao else PerformersDAO(config)
-        self.performer_search_service = conns.performer_search_service if conns and conns.performer_search_service else PerformerSearchService(config)
+        self.performers_dao = (
+            conns.performers_dao if conns and conns.performers_dao else PerformersDAO(config)
+        )
+        self.performer_search_service = (
+            conns.performer_search_service
+            if conns and conns.performer_search_service
+            else PerformerSearchService(config)
+        )
 
         ## Call the next mixins constructor
         super().__init__(config)
@@ -49,7 +55,19 @@ class PerformersMidlayerMixin(BaseMidlayerMixin):
                 filter.uuids,
             )
 
-        if not filter.uuids and not filter.ids:
+        if filter.ids and len(filter.ids) == 0:
+            raise InvalidArgumentException(
+                "Invalid value provided for filter field ids. At least one id must be provided",
+                filter.ids,
+            )
+
+        if filter.owner_ids and len(filter.owner_ids) == 0:
+            raise InvalidArgumentException(
+                "Invalid value provided for filter field owner_ids. At least one owner_id must be provided",
+                filter.owner_ids,
+            )
+
+        if not filter.uuids and not filter.ids and not filter.owner_ids:
             raise InvalidArgumentException(
                 f"Must provide at least one filter field. Filter: {json.dumps(vars(filter))}",
                 "filter",

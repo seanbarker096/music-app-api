@@ -46,10 +46,12 @@ class PerformerSearchPerformer:
 class PerformersGetFilter:
     ids: Optional[List[int]] = ...
     uuids: Optional[List[int]] = ...
+    owner_ids: Optional[List[int]] = ...
 
-    def __init__(self, ids: Optional[List[int]] = None, uuids: Optional[List[int]] = None) -> None:
+    def __init__(self, ids: Optional[List[int]] = None, uuids: Optional[List[int]] = None, owner_ids: Optional[List[int]] = None) -> None:
         self.uuids = uuids
         self.ids = ids
+        self.owner_ids = owner_ids
 
 
 class PerformersGetResult:

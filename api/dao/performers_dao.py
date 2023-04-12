@@ -75,6 +75,10 @@ class PerformersDAO(object):
             wheres.append("p.id in %s")
             binds.append(filter.ids)
 
+        if filter.owner_ids:
+            wheres.append("p.owner_id in %s")
+            binds.append(filter.owner_ids)
+
         where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string
