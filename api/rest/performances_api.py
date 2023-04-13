@@ -70,6 +70,10 @@ def performance_create():
         optional=False,
     )
 
+    ## check if event exists. If it doesn't then create it
+
+    ## Use evnet id to create performance
+
     performance_create_request = PerformanceCreateRequest(
         event_id=event_id,
         performer_id=performer_id,
