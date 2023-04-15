@@ -12,6 +12,8 @@ class Event:
     event_type: EventType = ...
     venue_name: str = ...
     name: str = ...
+    create_time: int = ...
+    update_time: int = ...
 
     def __init__(
         self,
@@ -20,12 +22,16 @@ class Event:
         event_type: EventType,
         venue_name: str,
         name: str,
+        create_time: int,
+        update_time: int,
     ):
         self.start_date = start_date
         self.end_date = end_date
         self.event_type = event_type
         self.venue_name = venue_name
         self.name = name
+        self.create_time = create_time
+        self.update_time = update_time
 
 
 class EventCreateRequest:

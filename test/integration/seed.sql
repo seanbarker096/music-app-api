@@ -137,6 +137,8 @@ CREATE TABLE gigs.event (
   start_date date NOT NULL,
   end_date date NOT NULL,
   event_type varchar(60) NOT NULL,
+  create_time datetime NOT NULL,
+  update_time datetime default NULL,
   PRIMARY KEY (id),
   UNIQUE INDEX start_date_end_date_name_idx(start_date, end_date, name)
 ) ENGINE = InnoDB

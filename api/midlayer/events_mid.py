@@ -1,6 +1,7 @@
 import json
 from typing import Optional
 
+from api.dao.events_dao import EventsDAO
 from api.midlayer import BaseMidlayerMixin
 from api.typings.events import (
     EventCreateRequest,

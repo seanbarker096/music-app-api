@@ -282,6 +282,12 @@ post_attachment = post_attachments_dao.post_attachment_create(
 )
 
 
+#### CREATE EVENTS ####
+event_create_request = EventCreateRequest(
+    name="Glastonbury",
+    
+
+
 ################### CREATE PERFORMANCES ####################
 
 performance_create_request = PerformanceCreateRequest(
