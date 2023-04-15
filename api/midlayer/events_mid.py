@@ -8,8 +8,13 @@ from api.typings.events import (
     EventCreateResult,
     EventsGetFilter,
     EventsGetResult,
+    EventType,
 )
-from api.utils.rest_utils import process_int_request_param, process_string_request_param
+from api.utils.rest_utils import (
+    process_enum_request_param,
+    process_int_request_param,
+    process_string_request_param,
+)
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -23,22 +28,32 @@ class EventsMidlayerMixin(BaseMidlayerMixin):
         self.events_dao = conns.events_dao if conns and conns.events_dao else EventsDAO(config)
         super().__init__(config)
 
-    def event_create(self, request: EventCreateRequest):
+    def event_create(self, request: EventCreateRequest) -> EventCreateResult:
         process_int_request_param(
             parameter_name="start_date", parameter=request.start_date, optional=False
         )
         process_int_request_param(
             parameter_name="end_date", parameter=request.end_date, optional=False
         )
-        process_int_request_param(
-            parameter_name="event_type", parameter=request.event_type, optional=False
+        process_enum_request_param(
+            parameter_name="event_type", parameter=request.event_type, enum=EventType, optional=False
         )
         process_string_request_param(
             parameter_name="venue_name", parameter=request.venue_name, optional=False
         )
         process_string_request_param(
-            parameter_name="name", parameter=request.name, optional=False
+            parameter_name="name", parameter=request.name, optional=True
         )
+
+        ## If event name isn't set, then use venue name. This could be the case for things like festivals, or just when the event is simply a performance at a given venue
+        if request.name is None:
+            request.name = request.venue_name
+        
+        if request.start_date > request.end_date:
+            raise InvalidArgumentException(
+                f"Start date must be before end date. Request: {json.dumps(vars(request))}",
+                "start_date",
+            )
 
         try:
             event = self.events_dao.event_create(request)
@@ -47,7 +62,7 @@ class EventsMidlayerMixin(BaseMidlayerMixin):
 
         except Exception as e:
             raise Exception(
-                f"Failed to create event because {str(e)}. Request: {vars(request)}"
+                f"Failed to create event because {str(e)}. Request: {json.dumps(vars(request))}"
             )        
 
     def events_get(self, filter: EventsGetFilter):

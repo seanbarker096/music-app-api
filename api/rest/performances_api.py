@@ -2,6 +2,7 @@ import json
 
 import flask
 
+from api.typings.events import EventCreateRequest, EventsGetFilter, EventType
 from api.typings.performances import (
     PerformanceCreateRequest,
     PerformancesCountsGetFilter,
@@ -12,9 +13,10 @@ from api.utils.rest_utils import (
     class_to_dict,
     process_api_set_request_param,
     process_bool_api_request_param,
+    process_enum_request_param,
     process_int_api_request_param,
     process_int_request_param,
-    process_string_api_request_param,
+    process_string_request_param,
 )
 
 blueprint = flask.Blueprint("performances", __name__)
@@ -58,9 +60,6 @@ def performances_get():
 def performance_create():
     data = flask.request.json
 
-    event_id = process_int_request_param(
-        parameter_name="event_id", parameter=data.get("event_id", None), optional=True
-    )
     performer_id = process_int_request_param(
         parameter_name="performer_id", parameter=data.get("performer_id", None), optional=False
     )
@@ -70,9 +69,50 @@ def performance_create():
         optional=False,
     )
 
-    ## check if event exists. If it doesn't then create it
+    venue_name = process_string_request_param(
+        parameter_name="venue_name", parameter=data.get("venue_name", None), optional=False
+    )
 
-    ## Use evnet id to create performance
+    event_start_date = process_int_request_param(
+        parameter_name="event_start_date",
+        parameter=data.get("event_start_date", None),
+        optional=False,
+    )
+
+    event_end_date = process_int_request_param(
+        parameter_name="event_end_date", parameter=data.get("event_end_date", None), optional=False
+    )
+
+    event_type = process_enum_request_param(
+        parameter_name="event_type",
+        enum=EventType,
+        parameter=data.get("event_type", None),
+        optional=False,
+    )
+
+    ## check if event exists. If it doesn't then create it
+    event_filter = EventsGetFilter(
+        start_date=event_start_date,
+        end_date=event_end_date,
+        venue_name=venue_name,
+    )
+
+    events = flask.current_app.conns.midlayer.events_get(event_filter).events
+
+    if len(events) == 0:
+        event_create_request = EventCreateRequest(
+            start_date=event_start_date,
+            end_date=event_end_date,
+            venue_name=venue_name,
+            event_type=event_type,
+        )
+
+        event = flask.current_app.conns.midlayer.event_create(event_create_request).event
+
+    else:
+        event = events[0]
+
+    event_id = event.id
 
     performance_create_request = PerformanceCreateRequest(
         event_id=event_id,
@@ -124,7 +164,9 @@ def attendance_create():
 @blueprint.route("/performances/counts/", methods=["GET"])
 @auth
 def performance_counts_get():
-    performance_ids = process_api_set_request_param(parameter_name="performance_ids[]", type=int, optional=False)
+    performance_ids = process_api_set_request_param(
+        parameter_name="performance_ids[]", type=int, optional=False
+    )
 
     include_attendee_count = process_bool_api_request_param(
         parameter_name="include_attendee_count", optional=True

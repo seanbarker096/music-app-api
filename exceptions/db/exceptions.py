@@ -23,8 +23,11 @@ class DBDuplicateKeyException(AppException):
 
         try:
             [_, source] = self._message.split(" for key '")
+            print(_, source)
             [table_name, key] = source.split(".")
+            print(table_name, key)
             [column, _] = key.split("_")
+            print(column, _)
 
             self._column = column
         except ValueError:

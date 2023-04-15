@@ -7,6 +7,7 @@ class EventType(Enum):
     MUSIC_CONCERT = 'music_concert'
 
 class Event:
+    id: int = ...
     start_date: int = ...
     end_date: int = ...
     event_type: EventType = ...
@@ -17,6 +18,7 @@ class Event:
 
     def __init__(
         self,
+        id: int,
         start_date: int,
         end_date: int,
         event_type: EventType,
@@ -24,7 +26,8 @@ class Event:
         name: str,
         create_time: int,
         update_time: int,
-    ):
+    ):  
+        self.id = id
         self.start_date = start_date
         self.end_date = end_date
         self.event_type = event_type
@@ -39,7 +42,7 @@ class EventCreateRequest:
     end_date: int = ...
     event_type: EventType = ...
     venue_name: str = ...
-    name: str = ...
+    name: Optional[str] = ...
 
     def __init__(
         self,
@@ -47,7 +50,7 @@ class EventCreateRequest:
         end_date: int,
         event_type: EventType,
         venue_name: str,
-        name: str,
+        name: Optional[str] = None,
     ):
         self.start_date = start_date
         self.end_date = end_date

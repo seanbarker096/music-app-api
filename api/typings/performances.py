@@ -56,7 +56,7 @@ class PerformancesGetResult:
 
 
 class PerformanceCreateRequest:
-    event_id: Optional[int] = ...
+    event_id: int = ...
     performer_id: int = ...
     performance_date: int = ...
 
@@ -64,7 +64,7 @@ class PerformanceCreateRequest:
         self,
         performer_id: int,
         performance_date: int,
-        event_id: Optional[int] = None,
+        event_id: int,
     ) -> None:
         self.event_id = event_id
         self.performer_id = performer_id

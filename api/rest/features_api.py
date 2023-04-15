@@ -12,7 +12,7 @@ from api.utils.rest_utils import (
     auth,
     class_to_dict,
     process_api_set_request_param,
-    process_enum_request_param,
+    process_enum_api_request_param,
     process_int_api_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
@@ -23,9 +23,9 @@ blueprint = flask.Blueprint("features", __name__)
 @blueprint.route("/features/", methods=["GET"])
 @auth
 def features_get():
-    featurer_type = process_enum_request_param("featurer_type", FeaturerType)
+    featurer_type = process_enum_api_request_param("featurer_type", FeaturerType)
     featurer_id = process_int_api_request_param("featurer_id")
-    featured_entity_type = process_enum_request_param("featured_entity_type", FeaturedEntityType)
+    featured_entity_type = process_enum_api_request_param("featured_entity_type", FeaturedEntityType)
     featured_entity_id = process_int_api_request_param("featured_entity_id")
 
     if (

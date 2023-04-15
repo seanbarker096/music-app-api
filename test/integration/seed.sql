@@ -125,7 +125,7 @@ CREATE TABLE gigs.performance (
   create_time datetime NOT NULL,
   update_time datetime default NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX performer_id_performance_date_event_id_idx(performer_id, performance_date)
+  UNIQUE INDEX performer_id_performance_date_event_id_idx(performer_id, performance_date, event_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
@@ -140,7 +140,7 @@ CREATE TABLE gigs.event (
   create_time datetime NOT NULL,
   update_time datetime default NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX start_date_end_date_name_idx(start_date, end_date, name)
+  UNIQUE INDEX start_date_end_date_venue_name_idx(start_date, end_date, venue_name)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 

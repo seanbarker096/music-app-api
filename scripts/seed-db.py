@@ -3,6 +3,7 @@ import os
 import time
 from configparser import ConfigParser
 
+from api.dao.events_dao import EventsDAO
 from api.dao.features_dao import FeaturesDAO
 from api.dao.performances_dao import PerformanceAttendancesDAO, PerformancesDAO
 from api.dao.performers_dao import PerformersDAO
@@ -14,6 +15,7 @@ from api.events.tags.performance_tag_event_observer import PerformanceTagEventOb
 from api.events.tags.tag_event_subject import TagEventSubject
 from api.file_service.api import FileService, FileServiceDAO
 from api.file_service.typings.typings import FileCreateRequest
+from api.midlayer.events_mid import EventsMidlayerConnections, EventsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerConnections, FeaturesMidlayerMixin
 from api.midlayer.performances_mid import (
     PerformanceAttendancesMidlayerConnections,
@@ -27,6 +29,7 @@ from api.midlayer.performers_mid import (
 )
 from api.midlayer.posts_mid import PostMidlayerConnections, PostsMidlayerMixin
 from api.midlayer.tags_mid import TagsMidlayerConnections, TagsMidlayerMixin
+from api.typings.events import EventCreateRequest, EventType
 from api.typings.features import FeatureCreateRequest, FeaturedEntityType, FeaturerType
 from api.typings.performances import (
     PerformanceAttendanceCreateRequest,
@@ -72,6 +75,10 @@ posts_midlayer_conns = PostMidlayerConnections(config,
 )
 posts_mid = PostsMidlayerMixin(config_dict, conns=posts_midlayer_conns)
 
+
+events_dao = EventsDAO(config=config_dict, db=TestingDBConnectionManager)
+events_midlayer_conns = EventsMidlayerConnections(config=config_dict, events_dao=events_dao)
+events_mid = EventsMidlayerMixin(config=config_dict, conns=events_midlayer_conns)
 
 performers_dao = PerformersDAO(config=config_dict, db=TestingDBConnectionManager)
 performers_conns = PerformersMidlayerConnections(config=config_dict, performers_dao=performers_dao)
@@ -284,15 +291,30 @@ post_attachment = post_attachments_dao.post_attachment_create(
 
 #### CREATE EVENTS ####
 event_create_request = EventCreateRequest(
-    name="Glastonbury",
-    
+    venue_name = 'Glastonbury',
+    event_type = EventType.MUSIC_FESTIVAL.value,
+    start_date= 1681551032,
+    end_date = 1681551032 + 100000,
+)
+
+event_one = events_mid.event_create(event_create_request).event
+
+
+event_create_request = EventCreateRequest(
+    venue_name = 'O2 Academy Brixton',
+    event_type = EventType.MUSIC_CONCERT.value,
+    start_date= 1681551032 + 200000,
+    end_date = 1681551032 + 300000,
+)
+
+event_two = events_mid.event_create(event_create_request).event
 
 
 ################### CREATE PERFORMANCES ####################
 
 performance_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
-    event_id=333,
+    event_id=event_one.id,
     performance_date=time.time(),
 )
 
@@ -302,7 +324,7 @@ performance_one = performances_mid.performance_create(
 
 performance_two_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
-    event_id=444,
+    event_id=event_two.id,
     performance_date=time.time() + 200000,
 )
 
@@ -312,7 +334,7 @@ performance_two = performances_mid.performance_create(
 
 performance_three_create_request = PerformanceCreateRequest(
     performer_id=performer.id,
-    event_id=555,
+    event_id=event_one.id,
     performance_date=time.time() + 400000,
 )
 

@@ -68,9 +68,16 @@ def process_int_request_param(parameter_name: str, parameter: any, optional=True
     return parameter
 
 
-def process_enum_request_param(parameter_name: str, enum: Enum, optional=True) -> str | int:
+def process_enum_api_request_param(parameter_name: str, enum: Enum, optional=True) -> str | int:
 
     parameter = flask.request.values.get(parameter_name, None)
+
+    return process_enum_request_param(parameter_name, parameter, enum, optional)
+
+
+def process_enum_request_param(
+    parameter_name: str, parameter: any, enum: Enum, optional=True
+) -> str | int:
 
     if parameter is None and optional:
         return None

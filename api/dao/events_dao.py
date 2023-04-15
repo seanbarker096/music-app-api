@@ -1,3 +1,4 @@
+import json
 import time
 from typing import Dict, List, Optional
 
@@ -26,7 +27,7 @@ class EventsDAO:
         "e.venue_name as " + EventsDBAlias.EVENT_VENUE_NAME,
         "UNIX_TIMESTAMP(e.start_date) as " + EventsDBAlias.EVENT_START_DATE,
         "UNIX_TIMESTAMP(e.end_date) as " + EventsDBAlias.EVENT_END_DATE,
-        "e.event_type as " + EventsDBAlias.EVENT_TYPE,
+        "e.event_type as " + EventsDBAlias.EVENT_EVENT_TYPE,
         "UNIX_TIMESTAMP(e.create_time) as " + EventsDBAlias.EVENT_CREATE_TIME,
         "UNIX_TIMESTAMP(e.update_time) as " + EventsDBAlias.EVENT_UPDATE_TIME,
     ]
@@ -38,7 +39,7 @@ class EventsDAO:
     def event_create(self, request: EventCreateRequest) -> Event:
         sql = f"""
             INSERT INTO event(name, venue_name, start_date, end_date, event_type, create_time, update_time)
-            VALUES(%s, %s, DATE(FROM_UNIXTIME(%s)), DATE(FROM_UNIXTIME(%s)), %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s)
+            VALUES(%s, %s, DATE(FROM_UNIXTIME(%s)), DATE(FROM_UNIXTIME(%s)), %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s))
         """
 
         now = time.time()
@@ -50,7 +51,7 @@ class EventsDAO:
             request.end_date,
             request.event_type,
             now,
-            now,
+            None,
         )
 
         with self.db(self.config) as cursor:
@@ -65,9 +66,9 @@ class EventsDAO:
             end_date=request.end_date,
             event_type=request.event_type,
             create_time=now,
-            update_time=now,
+            update_time=None,
         )
-    
+
     def events_get(self, filter: EventsGetFilter) -> List[Event]:
         selects = f"""
             SELECT {', '.join(self.EVENT_SELECTS)} from event as e
@@ -75,10 +76,6 @@ class EventsDAO:
 
         wheres = []
         binds = []
-
-        if filter.event_type:
-            wheres.append("e.event_type = %s")
-            binds.append(filter.event_type)
 
         if filter.start_date:
             wheres.append("e.start_date = DATE(FROM_UNIXTIME(%s))")
@@ -106,7 +103,7 @@ class EventsDAO:
             events.append(event)
 
         return events
-    
+
     def _build_event_from_db_row(self, db_row: Dict[str, any]) -> Event:
         assert_row_key_exists(db_row, EventsDBAlias.EVENT_ID)
         event_id = int(db_row[EventsDBAlias.EVENT_ID])
@@ -130,8 +127,11 @@ class EventsDAO:
         event_create_time = db_row[EventsDBAlias.EVENT_CREATE_TIME]
 
         assert_row_key_exists(db_row, EventsDBAlias.EVENT_UPDATE_TIME)
-        event_update_time = db_row[EventsDBAlias.EVENT_UPDATE_TIME] if db_row[EventsDBAlias.EVENT_UPDATE_TIME] else None
-
+        event_update_time = (
+            db_row[EventsDBAlias.EVENT_UPDATE_TIME]
+            if db_row[EventsDBAlias.EVENT_UPDATE_TIME]
+            else None
+        )
 
         return Event(
             id=event_id,

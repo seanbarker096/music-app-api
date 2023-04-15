@@ -1,5 +1,6 @@
 from typing import Optional
 
+from api.midlayer.events_mid import EventsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerMixin
 from api.midlayer.performances_mid import (
     PerformanceAttendancesMidlayerMixin,
@@ -20,6 +21,7 @@ class Midlayer(
     TagsMidlayerMixin,
     PerformancesMidlayerMixin,
     PerformanceAttendancesMidlayerMixin,
+    EventsMidlayerMixin,
 ):
     def __init__(self, config):
         super().__init__(config)

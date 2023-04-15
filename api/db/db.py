@@ -1,14 +1,10 @@
-import json
 import logging
-import os
-import traceback
-import uuid
 from random import randint
 from typing import Any, Dict
 
 import flask
 import pymysql
-from mysql.connector import IntegrityError, MySQLConnection
+from mysql.connector import errorcode
 from mysql.connector.cursor import MySQLCursor
 
 from api.db.config import DBConfig
@@ -136,7 +132,10 @@ class DBConnectionManager:
             if self.db_connection.connection.get_autocommit() is False:
                 self.db_connection.connection.rollback()
 
-            if isinstance(exception_value, pymysql.err.IntegrityError):
+            if (
+                isinstance(exception_value, pymysql.err.IntegrityError)
+                and exception_value.args[0] == errorcode.ER_DUP_ENTRY
+            ):
                 raise DBDuplicateKeyException(exception_value.args[1]) from exception_value
 
             raise exception_value
