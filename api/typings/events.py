@@ -67,16 +67,19 @@ class EventCreateResult:
 
 
 class EventsGetFilter:
+    ids: Optional[list[int]] = ...
     start_date: Optional[int] = ...
     end_date: Optional[int] = ...
     venue_name: Optional[str] = ...
 
     def __init__(
         self,
+        ids: Optional[list[int]] = None,
         start_date: Optional[int] = None,
         end_date: Optional[int] = None,
         venue_name: Optional[str] = None,
     ):
+        self.ids = ids
         self.start_date = start_date
         self.end_date = end_date
         self.venue_name = venue_name

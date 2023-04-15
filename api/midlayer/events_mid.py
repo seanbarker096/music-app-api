@@ -65,15 +65,22 @@ class EventsMidlayerMixin(BaseMidlayerMixin):
                 f"Failed to create event because {str(e)}. Request: {json.dumps(vars(request))}"
             )        
 
-    def events_get(self, filter: EventsGetFilter):
+    def events_get(self, filter: EventsGetFilter) -> EventsGetResult:
         process_string_request_param("venue_name", filter.venue_name)
         process_int_request_param("start_date", filter.start_date)
         process_int_request_param("end_date", filter.end_date)
+        
+        if filter.ids and len(filter.ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field ids: {filter.ids}. At least one event id must be provided",
+                "filter.ids",
+            )
 
         if (
             not filter.start_date
             and not filter.end_date
             and not filter.venue_name
+            and not filter.ids
         ):
             raise InvalidArgumentException(
                 f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",

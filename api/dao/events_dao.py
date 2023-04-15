@@ -89,6 +89,10 @@ class EventsDAO:
             wheres.append("e.venue_name = %s")
             binds.append(filter.venue_name)
 
+        if filter.ids:
+            wheres.append("e.id in %s")
+            binds.append(filter.ids)
+
         where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string

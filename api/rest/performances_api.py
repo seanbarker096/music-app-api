@@ -90,6 +90,9 @@ def performance_create():
         optional=False,
     )
 
+    if performance_date < event_start_date or performance_date > event_end_date:
+        raise Exception("Performance date must be within event dates")
+
     ## check if event exists. If it doesn't then create it
     event_filter = EventsGetFilter(
         start_date=event_start_date,

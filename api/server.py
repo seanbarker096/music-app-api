@@ -12,6 +12,7 @@ from api.db.db import DBConnection
 from api.debugger import initialize_flask_server_debugger_if_needed
 from api.rest import (
     auth_api,
+    events_api,
     features_api,
     file_service_api,
     performances_api,
@@ -48,6 +49,7 @@ app.register_blueprint(performer_api.blueprint, url_prefix="/api/performers/0.1"
 app.register_blueprint(features_api.blueprint, url_prefix="/api/features/0.1")
 app.register_blueprint(tags_api.blueprint, url_prefix="/api/tags/0.1")
 app.register_blueprint(performances_api.blueprint, url_prefix="/api/performances/0.1")
+app.register_blueprint(events_api.blueprint, url_prefix="/api/events/0.1")
 
 
 @app.before_request
