@@ -51,7 +51,7 @@ class EventsMidlayerMixin(BaseMidlayerMixin):
         
         if request.start_date > request.end_date:
             raise InvalidArgumentException(
-                f"Start date must be before end date. Request: {json.dumps(vars(request))}",
+                f"Start date must be before or equal to end date. Request: {json.dumps(vars(request))}",
                 "start_date",
             )
 

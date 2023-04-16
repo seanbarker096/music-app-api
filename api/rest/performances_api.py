@@ -1,3 +1,4 @@
+import datetime
 import json
 
 import flask
@@ -63,7 +64,7 @@ def performance_create():
     performer_id = process_int_request_param(
         parameter_name="performer_id", parameter=data.get("performer_id", None), optional=False
     )
-    performance_date = process_int_request_param(
+    performance_date_unix_timestamp = process_int_request_param(
         parameter_name="performance_date",
         parameter=data.get("performance_date", None),
         optional=False,
@@ -73,13 +74,13 @@ def performance_create():
         parameter_name="venue_name", parameter=data.get("venue_name", None), optional=False
     )
 
-    event_start_date = process_int_request_param(
+    event_start_date_unix_timestamp = process_int_request_param(
         parameter_name="event_start_date",
         parameter=data.get("event_start_date", None),
         optional=False,
     )
 
-    event_end_date = process_int_request_param(
+    event_end_date_unix_timestamp = process_int_request_param(
         parameter_name="event_end_date", parameter=data.get("event_end_date", None), optional=False
     )
 
@@ -89,14 +90,24 @@ def performance_create():
         parameter=data.get("event_type", None),
         optional=False,
     )
+    
+    performance_date = datetime.datetime.fromtimestamp(performance_date_unix_timestamp)
+    # Extract date part from datetime object
+    performance_date = performance_date.date()
 
-    if performance_date < event_start_date or performance_date > event_end_date:
-        raise Exception("Performance date must be within event dates")
+    event_start_date = datetime.datetime.fromtimestamp(event_start_date_unix_timestamp)
+    event_start_date = event_start_date.date()
+
+    event_end_date = datetime.datetime.fromtimestamp(event_end_date_unix_timestamp)
+    event_end_date = event_end_date.date()
+
+    if performance_date > event_end_date or performance_date < event_start_date:
+        raise Exception("Performance date must fall within event dates")
 
     ## check if event exists. If it doesn't then create it
     event_filter = EventsGetFilter(
-        start_date=event_start_date,
-        end_date=event_end_date,
+        start_date=event_start_date_unix_timestamp,
+        end_date=event_end_date_unix_timestamp,
         venue_name=venue_name,
     )
 
@@ -104,8 +115,8 @@ def performance_create():
 
     if len(events) == 0:
         event_create_request = EventCreateRequest(
-            start_date=event_start_date,
-            end_date=event_end_date,
+            start_date=event_start_date_unix_timestamp,
+            end_date=event_end_date_unix_timestamp,
             venue_name=venue_name,
             event_type=event_type,
         )
@@ -120,7 +131,7 @@ def performance_create():
     performance_create_request = PerformanceCreateRequest(
         event_id=event_id,
         performer_id=performer_id,
-        performance_date=performance_date,
+        performance_date=performance_date_unix_timestamp,
     )
 
     performance = flask.current_app.conns.midlayer.performance_create(
