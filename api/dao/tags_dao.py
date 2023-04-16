@@ -74,6 +74,14 @@ class TagsDAO:
             wheres.append("tagged_entity_type = %s")
             binds.append(filter.tagged_entity_type)
 
+        if filter.tagged_in_entity_id:
+            wheres.append("tagged_in_entity_id = %s")
+            binds.append(filter.tagged_in_entity_id)
+
+        if filter.tagged_in_entity_type:
+            wheres.append("tagged_in_entity_type = %s")
+            binds.append(filter.tagged_in_entity_type)
+
         where_string = build_where_query_string(wheres, "AND")
 
         sql = selects + where_string

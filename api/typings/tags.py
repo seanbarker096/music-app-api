@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 
 class TaggedEntityType(Enum):
@@ -68,12 +68,16 @@ class TagCreateResult:
 
 
 class TagsGetFilter:
-    tagged_entity_id: int = ...
-    tagged_entity_type: TaggedEntityType = ...
+    tagged_entity_id: Optional[int] = ...
+    tagged_entity_type: Optional[TaggedEntityType] = ...
+    tagged_in_entity_type: Optional[TaggedInEntityType] = ...
+    tagged_in_entity_id: Optional[int] = ...
 
-    def __init__(self, tagged_entity_id: int, tagged_entity_type: TaggedEntityType) -> None:
+    def __init__(self, tagged_entity_id: Optional[int] = None, tagged_entity_type: Optional[TaggedEntityType] = None, tagged_in_entity_type: Optional[TaggedInEntityType] = None, tagged_in_entity_id: Optional[int] = None) -> None:
         self.tagged_entity_id = tagged_entity_id
         self.tagged_entity_type = tagged_entity_type
+        self.tagged_in_entity_type = tagged_in_entity_type
+        self.tagged_in_entity_id = tagged_in_entity_id
 
 
 class TagsGetResult:

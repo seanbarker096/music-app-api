@@ -2,7 +2,12 @@ import json
 
 import flask
 
-from api.typings.tags import TagCreateRequest, TaggedEntityType, TagsGetFilter
+from api.typings.tags import (
+    TagCreateRequest,
+    TaggedEntityType,
+    TaggedInEntityType,
+    TagsGetFilter,
+)
 from api.utils.rest_utils import (
     auth,
     class_to_dict,
@@ -55,10 +60,19 @@ def tag_create():
 @blueprint.route("/tags/", methods=["GET"])
 @auth
 def tags_get():
-    tagged_entiy_id = process_int_api_request_param("tagged_entity_id")
+    tagged_entity_id = process_int_api_request_param("tagged_entity_id")
     tagged_entity_type = process_enum_api_request_param("tagged_entity_type", TaggedEntityType)
+    tagged_in_entity_type = process_enum_api_request_param(
+        "tagged_in_entity_type", TaggedInEntityType
+    )
+    tagged_in_entity_id = process_int_api_request_param("tagged_in_entity_id")
 
-    request = TagsGetFilter(tagged_entity_id=tagged_entiy_id, tagged_entity_type=tagged_entity_type)
+    request = TagsGetFilter(
+        tagged_entity_id=tagged_entity_id, 
+        tagged_entity_type=tagged_entity_type, 
+        tagged_in_entity_type=tagged_in_entity_type, 
+        tagged_in_entity_id=tagged_in_entity_id
+        )
 
     tags = flask.current_app.conns.midlayer.tags_get(request).tags
 

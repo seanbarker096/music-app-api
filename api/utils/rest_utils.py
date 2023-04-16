@@ -77,13 +77,16 @@ def process_enum_api_request_param(parameter_name: str, enum: Enum, optional=Tru
 
 def process_enum_request_param(
     parameter_name: str, parameter: any, enum: Enum, optional=True
-) -> str | int:
+) -> str | int: 
 
     if parameter is None and optional:
         return None
 
     if not parameter:
         raise Exception(f"Missing required request parameter '{parameter_name}'")
+
+    print(parameter in set(item.value for item in enum))
+    print( set(item.value for item in enum))
 
     if parameter not in set(item.value for item in enum):
         raise Exception(
