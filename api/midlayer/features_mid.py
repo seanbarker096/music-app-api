@@ -11,6 +11,7 @@ from api.typings.features import (
     FeaturesGetFilter,
     FeaturesGetResult,
 )
+from api.utils.rest_utils import process_enum_request_param, process_int_request_param
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -53,6 +54,15 @@ class FeaturesMidlayerMixin(BaseMidlayerMixin):
             )
 
         features = self.features_dao.features_get(filter)
+
+        return FeaturesGetResult(features=features)
+    
+    def get_users_posts_features(self, post_owner_id: int, featurer_type: FeaturerType)-> FeaturesGetResult:
+        
+        process_int_request_param(parameter_name="post_owner_id", parameter=post_owner_id, optional=False)
+        process_enum_request_param(parameter_name="featurer_type", parameter=featurer_type, enum=FeaturerType, optional=False)
+
+        features = self.features_dao.get_users_posts_features(post_owner_id=post_owner_id, featurer_type=featurer_type)
 
         return FeaturesGetResult(features=features)
 

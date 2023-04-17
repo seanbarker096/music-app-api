@@ -163,14 +163,16 @@ class PerformancesDAO:
         if filter.include_features_count:
             joins.append(
                 """
+                LEFT JOIN performers
+                    ON performers.id = p.performer_id
                 LEFT JOIN feature as f
-                    ON f.featurer_id = p.id
+                    ON f.featurer_id = performers.id
                     AND f.featurer_type = %s
                     AND f.featured_entity_type = %s
                 """
             )
 
-            binds.append(FeaturerType.PERFORMANCE.value)
+            binds.append(FeaturerType.PERFORMER.value)
             # For now we just support feature counts for performance posts
             binds.append(FeaturedEntityType.POST.value)
 
@@ -188,6 +190,8 @@ class PerformancesDAO:
             {where_string}
             GROUP BY p.id
             """
+        
+        print(sql)
 
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)

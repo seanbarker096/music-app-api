@@ -2,7 +2,13 @@ from typing import Dict, List, Optional
 
 from api.db.db import DBConnectionManager, FlaskDBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
-from api.typings.features import Feature, FeatureCreateRequest, FeaturesGetFilter
+from api.typings.features import (
+    Feature,
+    FeatureCreateRequest,
+    FeaturedEntityType,
+    FeaturerType,
+    FeaturesGetFilter,
+)
 
 
 class FeaturesDBAlias:
@@ -17,13 +23,22 @@ class FeaturesDBAlias:
 class FeaturesDAO:
     db: DBConnectionManager
 
+    FEATURE_COLUMNS = [
+        "f.id",
+        "f.featured_entity_type",
+        "f.featured_entity_id",
+        "f.featurer_type",
+        "f.featurer_id",
+        "f.creator_id",
+    ]
+
     FEATURE_SELECTS = [
-        "id as " + FeaturesDBAlias.FEATURE_ID,
-        "featured_entity_type as " + FeaturesDBAlias.FEATURE_FEATURED_ENTITY_TYPE,
-        "featured_entity_id as " + FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID,
-        "featurer_type as " + FeaturesDBAlias.FEATURE_FEATURER_TYPE,
-        "featurer_id as " + FeaturesDBAlias.FEATURE_FEATURER_ID,
-        "creator_id as " + FeaturesDBAlias.FEATURE_CREATOR_ID,
+        f"{FEATURE_COLUMNS[0]} as {FeaturesDBAlias.FEATURE_ID}",
+        f"{FEATURE_COLUMNS[1]} as {FeaturesDBAlias.FEATURE_FEATURED_ENTITY_TYPE}",
+        f"{FEATURE_COLUMNS[2]} as {FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID}",
+        f"{FEATURE_COLUMNS[3]} as {FeaturesDBAlias.FEATURE_FEATURER_TYPE}",
+        f"{FEATURE_COLUMNS[4]} as {FeaturesDBAlias.FEATURE_FEATURER_ID}",
+        f"{FEATURE_COLUMNS[5]} as {FeaturesDBAlias.FEATURE_CREATOR_ID}",
     ]
 
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
@@ -59,26 +74,26 @@ class FeaturesDAO:
 
     def features_get(self, filter: FeaturesGetFilter) -> List[Feature]:
         selects = f"""
-            SELECT {', '.join(self.FEATURE_SELECTS)} from feature
+            SELECT {', '.join(self.FEATURE_SELECTS)} from feature as f
         """
 
         wheres = []
         binds = []
 
         if filter.featured_entity_id:
-            wheres.append("featured_entity_id = %s")
+            wheres.append("f.featured_entity_id = %s")
             binds.append(int(filter.featured_entity_id))
 
         if filter.featured_entity_type:
-            wheres.append("featured_entity_type = %s")
+            wheres.append("f.featured_entity_type = %s")
             binds.append(filter.featured_entity_type)
 
         if filter.featurer_id:
-            wheres.append("featurer_id = %s")
+            wheres.append("f.featurer_id = %s")
             binds.append(int(filter.featurer_id))
 
         if filter.featurer_type:
-            wheres.append("featurer_type = %s")
+            wheres.append("f.featurer_type = %s")
             binds.append(filter.featurer_type)
 
         where_string = build_where_query_string(wheres, "AND")
@@ -95,6 +110,43 @@ class FeaturesDAO:
             features.append(feature)
 
         return features
+    
+    def get_users_posts_features(self, post_owner_id: int, featurer_type: FeaturerType) -> List[Feature]:
+        selects = f"""
+            SELECT {', '.join(self.FEATURE_SELECTS)} from feature as f
+            INNER JOIN post p
+                ON p.id = f.featured_entity_id
+            GROUP BY {', '.join(self.FEATURE_COLUMNS)}
+        """
+
+        wheres = []
+        binds = []
+
+        wheres.append("f.featured_entity_type = %s")
+        binds.append(FeaturedEntityType.POST.value)
+
+        wheres.append("f.featurer_type = %s")
+        binds.append(featurer_type)
+
+        wheres.append("p.owner_id = %s")
+        binds.append(post_owner_id)
+
+        where_string = build_where_query_string(wheres, "AND")
+
+        sql = selects + where_string
+
+        with self.db(self.config) as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
+
+        features = []
+        for row in rows:
+            feature = self._build_feature_from_db_row(row)
+            features.append(feature)
+
+        return features
+    
+
 
     def _build_feature_from_db_row(self, db_row: Dict[str, any]) -> Feature:
 

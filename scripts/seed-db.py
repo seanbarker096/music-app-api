@@ -379,8 +379,8 @@ tag_two_create_request = TagCreateRequest(
 feature_create_request = FeatureCreateRequest(
     featured_entity_id=post_one.id,
     featured_entity_type=FeaturedEntityType.POST.value,
-    featurer_id=performance_one.id,
-    featurer_type=FeaturerType.PERFORMANCE.value,
+    featurer_id=performer.id,
+    featurer_type=FeaturerType.PERFORMER.value,
     creator_id=user_two.id,
 )
 
@@ -389,8 +389,8 @@ feature = features_mid.feature_create(feature_create_request).feature
 feature_two_create_request = FeatureCreateRequest(
     featured_entity_id=post_two.id,
     featured_entity_type=FeaturedEntityType.POST.value,
-    featurer_id=performance_one.id,
-    featurer_type=FeaturerType.PERFORMANCE.value,
+    featurer_id=performer.id,
+    featurer_type=FeaturerType.PERFORMER.value,
     creator_id=user_two.id,
 )
 
@@ -399,8 +399,8 @@ feature_two = features_mid.feature_create(feature_two_create_request).feature
 feature_three_create_request = FeatureCreateRequest(
     featured_entity_id=post_three.id,
     featured_entity_type=FeaturedEntityType.POST.value,
-    featurer_id=performance_two.id,
-    featurer_type=FeaturerType.PERFORMANCE.value,
+    featurer_id=performer.id,
+    featurer_type=FeaturerType.PERFORMER.value,
     creator_id=user_two.id,
 )
 

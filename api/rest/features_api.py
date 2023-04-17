@@ -14,6 +14,7 @@ from api.utils.rest_utils import (
     process_api_set_request_param,
     process_enum_api_request_param,
     process_int_api_request_param,
+    process_int_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -51,6 +52,40 @@ def features_get():
     feature_dicts = [class_to_dict(feature) for feature in features]
 
     response["features"] = feature_dicts
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+@blueprint.route('/posts/', methods=['GET'])
+@auth
+def get_users_posts_features():
+    """
+    Get all features for all posts owned by a user
+    """
+    post_owner_id = process_int_api_request_param(parameter_name='post_owner_id', optional=False)
+    featurer_type = process_enum_api_request_param(parameter_name='featurer_type', enum=FeaturerType, optional=False)
+
+    features = flask.current_app.conns.midlayer.get_users_posts_features(post_owner_id=post_owner_id, featurer_type=featurer_type).features
+
+
+    # Sort all features by their post id
+    features_by_post_id = {}
+    for feature in features:
+        if feature.featured_entity_id not in features_by_post_id:
+            features_by_post_id[feature.featured_entity_id] = []
+        features_by_post_id[feature.featured_entity_id].append(class_to_dict(feature))
+
+    features_by_post_id_arr = []
+    for key, val in features_by_post_id.items():
+        features_by_post_id_arr.append(
+            {
+                key: val
+            }
+        )
+        
+    response = {}
+    response["features_by_post_id"] = features_by_post_id_arr
 
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
