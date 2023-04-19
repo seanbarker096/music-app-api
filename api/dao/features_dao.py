@@ -111,6 +111,81 @@ class FeaturesDAO:
 
         return features
     
+
+    def get_features_for_featured_entity(
+            self,
+            featured_entity_ids: List[int],
+            featured_entity_type: FeaturedEntityType,
+            featurer_type: FeaturerType
+            )-> List[Feature]:
+        
+        selects = f"""
+            SELECT {', '.join(self.FEATURE_SELECTS)} from feature as f
+            """
+        
+        wheres = []
+        binds = []
+
+        wheres.append("f.featured_entity_id IN %s")
+        binds.append(featured_entity_ids)
+
+        wheres.append("f.featured_entity_type = %s")
+        binds.append(featured_entity_type)
+
+        wheres.append("f.featurer_type = %s")
+        binds.append(featurer_type)
+
+        where_string = build_where_query_string(wheres, "AND")
+
+        sql = selects + where_string
+
+        with self.db(self.config) as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
+
+        features = []
+        for row in rows:
+            feature = self._build_feature_from_db_row(row)
+            features.append(feature)
+
+        return features
+
+    def get_featured_entity_feature_counts(self, featured_entity_ids: List[int], featured_entity_type: FeaturedEntityType) -> Dict[int, int]:
+        selects = f"""
+            SELECT f.featured_entity_id as {FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID}, count(*) as feature_count from feature as f
+            """
+
+        wheres = []
+        binds = []
+
+        wheres.append("f.featured_entity_id IN %s")
+        binds.append(featured_entity_ids)
+
+        wheres.append("f.featured_entity_type = %s")
+        binds.append(featured_entity_type)
+
+        where_string = build_where_query_string(wheres, "AND")
+
+        sql = f"""
+            {selects}
+            {where_string}
+            GROUP BY f.featured_entity_id
+            """
+
+        with self.db(self.config) as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
+
+        featured_entity_feature_counts = {}
+        for row in rows:
+            assert_row_key_exists(row, FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID)
+            featured_entity_id = int(row[FeaturesDBAlias.FEATURE_FEATURED_ENTITY_ID])
+            count = row['feature_count']
+            featured_entity_feature_counts[featured_entity_id] = count
+            
+        return featured_entity_feature_counts
+    
+
     def get_users_posts_features(self, post_owner_id: int, featurer_type: FeaturerType) -> List[Feature]:
         selects = f"""
             SELECT {', '.join(self.FEATURE_SELECTS)} from feature as f

@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, patch
 import flask
 
 import api
+from api.typings.features import FeaturedEntityType, FeaturerType
+from api.typings.performers import PerformersGetFilter
 from api.typings.posts import (
     PostAttachmentsCreateRequest,
     PostAttachmentsGetFilter,
@@ -122,6 +124,7 @@ def posts_get():
 
     attachment_dicts = []
     if len(posts) > 0:
+        # Get all attachments for the posts
         post_ids = [post.id for post in posts]
         post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
 
@@ -132,6 +135,50 @@ def posts_get():
         attachments = post_attachments_get_result.post_attachments
 
         attachment_dicts = [rest_utils.class_to_dict(attachment) for attachment in attachments]
+
+        # Get total feature count for each post
+        post_id_to_feature_count_dict = flask.current_app.conns.midlayer.get_featured_entity_feature_counts(
+            featured_entity_ids=post_ids,
+            featured_entity_type=FeaturedEntityType.POST.value,
+        )
+
+        # Get all featuring artists for the posts
+        post_features = flask.current_app.conns.midlayer.get_features_for_featured_entitys(
+            featured_entity_ids=post_ids,
+            featured_entity_type=FeaturedEntityType.POST.value,
+            featurer_type=FeaturerType.PERFORMER.value
+            )
+        
+        post_features_dict = {}
+        artist_ids = []
+
+        # We should only have one feature per post
+        for post_feature in post_features:
+            post_id = post_feature.featured_entity_id
+            post_features_dict[post_id] = post_feature
+            artist_ids.append(post_feature.featurer_id)
+
+        # Get all artists for the posts
+        artists = []
+        if len(artist_ids) > 0:
+            performers_get_filter = PerformersGetFilter(ids=artist_ids)
+            artists = flask.current_app.conns.midlayer.performers_get(performers_get_filter).performers
+
+        artists_by_id = {}
+        for artist in artists:
+            artists_by_id[artist.id] = artist
+
+        for post in posts:
+            post.featuring_artist = None
+
+            artist_post_feature = post_features_dict.get(post.id, None)
+            # Convert the artist to a dict 
+            if artist_post_feature:
+                featuring_artist = artists_by_id.get(artist_post_feature.featurer_id, None)
+                
+                post.featuring_artist = rest_utils.class_to_dict(featuring_artist) if featuring_artist else None
+                
+            post.feature_count = post_id_to_feature_count_dict.get(post.id, 0)
 
     response = {}
 

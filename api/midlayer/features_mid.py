@@ -1,9 +1,10 @@
 import json
-from typing import Optional
+from typing import Dict, List, Optional
 
 from api.dao.features_dao import FeaturesDAO
 from api.midlayer import BaseMidlayerMixin
 from api.typings.features import (
+    Feature,
     FeatureCreateRequest,
     FeatureCreateResult,
     FeaturedEntityType,
@@ -11,7 +12,11 @@ from api.typings.features import (
     FeaturesGetFilter,
     FeaturesGetResult,
 )
-from api.utils.rest_utils import process_enum_request_param, process_int_request_param
+from api.utils.rest_utils import (
+    process_enum_request_param,
+    process_enum_set_param,
+    process_int_request_param,
+)
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -56,6 +61,60 @@ class FeaturesMidlayerMixin(BaseMidlayerMixin):
         features = self.features_dao.features_get(filter)
 
         return FeaturesGetResult(features=features)
+    
+
+    # Todo: Ideally we would just use the features_get above but this doesn't work yet for passing in lists of feature properties e.g a list of featured_entity_ids
+    def get_features_for_featured_entitys(
+            self, 
+            featured_entity_ids: List[int],
+            featured_entity_type: FeaturedEntityType,
+            featurer_type: FeaturerType
+            ) -> List[Feature]:
+        
+        if not featured_entity_ids or len(featured_entity_ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for featured_entity_ids: {featured_entity_ids}. At least one featured_entity_id must be provided",
+                "featured_entity_ids",
+            )
+        
+        process_enum_request_param(parameter_name="featured_entity_type", parameter=featured_entity_type, enum=FeaturedEntityType, optional=False)
+
+        process_enum_request_param(parameter_name="featurer_type", parameter=featurer_type, enum=FeaturerType, optional=False)
+
+
+        features = self.features_dao.get_features_for_featured_entity(
+            featured_entity_ids=featured_entity_ids,
+            featured_entity_type=featured_entity_type,
+            featurer_type=featurer_type
+        )   
+
+        return features
+
+
+    def get_featured_entity_feature_counts(
+        self,
+        featured_entity_ids: List[int], 
+        featured_entity_type: FeaturedEntityType
+    ) -> Dict[int, int]:
+        if not featured_entity_ids or len(featured_entity_ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for featured_entity_ids: {featured_entity_ids}. At least one featured_entity_id must be provided",
+                "featured_entity_ids",
+            )
+        
+        process_enum_request_param(
+            parameter_name="featured_entity_type", 
+            parameter=featured_entity_type, 
+            enum=FeaturedEntityType, 
+            optional=False
+        )
+        
+        feature_id_to_count_dict = self.features_dao.get_featured_entity_feature_counts(
+            featured_entity_ids=featured_entity_ids, 
+            featured_entity_type=featured_entity_type
+        )
+
+        return feature_id_to_count_dict
     
     def get_users_posts_features(self, post_owner_id: int, featurer_type: FeaturerType)-> FeaturesGetResult:
         
