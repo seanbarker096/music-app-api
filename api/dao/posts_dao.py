@@ -3,9 +3,14 @@ import time
 from typing import Dict, List, Optional
 
 from api.db.db import DBConnectionManager, FlaskDBConnectionManager
-from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
+from api.db.utils.db_util import (
+    assert_row_key_exists,
+    build_having_query_string,
+    build_where_query_string,
+)
 from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.posts import (
+    FeaturedPostsGetFilter,
     Post,
     PostAttachment,
     PostAttachmentsGetFilter,
@@ -31,6 +36,17 @@ class PostDBAlias:
 
 class PostsDAO(object):
     db: DBConnectionManager
+
+    POST_COLUMNS = [
+        "p.id",
+        "p.owner_id",
+        "p.owner_type",
+        "p.content",
+        "p.creator_id",
+        "p.create_time",
+        "p.update_time",
+        "p.is_deleted",
+    ]
 
     POST_SELECTS = [
         "p.id as " + PostDBAlias.POST_ID,
@@ -233,6 +249,76 @@ class PostsDAO(object):
             posts.append(post)
 
         return posts
+    
+
+    ## TODO: COuld update this to include posts when counts=0 if filtes are set to false
+    def featured_posts_get(self, filter: FeaturedPostsGetFilter) -> List[Post]:
+        """
+        Get all posts that have been featured by at least one user or performer, depending on the filter.
+        """
+        selects = [*self.POST_SELECTS]
+
+        joins = []
+        wheres = []
+        havings = []
+        binds = []
+
+        # Handle select binds first as they need to be injected into query first
+        if filter.is_featured_by_performers:
+            selects.append(
+                'COUNT(CASE WHEN f.featurer_type = %s THEN f.id END) AS featured_by_performers_count'
+            )
+            binds.append(FeaturerType.PERFORMER.value)
+            havings.append('featured_by_performers_count > 0')
+
+        if filter.is_featured_by_users:
+            selects.append(
+                'COUNT(CASE WHEN f.featurer_type = %s THEN f.id END) AS featured_by_users_count'
+            )
+            binds.append(FeaturerType.USER.value)
+            havings.append('featured_by_users_count > 0')
+
+        
+        joins.append(
+                f"""
+                INNER JOIN feature f
+                    ON f.featured_entity_id = p.id
+                    AND f.featured_entity_type = %s
+                """
+            )  
+        binds.append(FeaturedEntityType.POST.value)
+
+        # Post owner filters should be defined here
+        wheres.append("p.owner_id = %s")
+        binds.append(filter.owner_id)
+        
+        wheres.append("p.owner_type = %s")
+        binds.append(filter.owner_type)
+
+        wheres_string = build_where_query_string(wheres, "AND")
+        havings_string = build_having_query_string(havings, "AND")
+
+        sql = f"""
+            SELECT {', '.join(selects)} from post as p
+            {"".join(joins)}
+            {wheres_string}
+            GROUP BY {", ".join(self.POST_COLUMNS)}
+            {havings_string}
+            """
+        print(sql)
+        with self.db(self.config) as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
+
+        posts = []
+        for row in rows:
+            post = self._build_post_from_db_row(row)
+            posts.append(post)
+
+        return posts
+    
+
+
 
     def _build_post_from_db_row(self, db_row: Dict[str, any]) -> Post:
 

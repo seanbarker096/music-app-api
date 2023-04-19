@@ -70,9 +70,7 @@ features_mid = FeaturesMidlayerMixin(config_dict, feature_conns)
 posts_dao = PostsDAO(config_dict, db=TestingDBConnectionManager)
 post_attachments_dao = PostAttachmentsDAO(config_dict, db=TestingDBConnectionManager)
 
-posts_midlayer_conns = PostMidlayerConnections(config,
-   posts_dao=posts_dao
-)
+posts_midlayer_conns = PostMidlayerConnections(config, posts_dao=posts_dao)
 posts_mid = PostsMidlayerMixin(config_dict, conns=posts_midlayer_conns)
 
 
@@ -117,7 +115,9 @@ tag_event_subject = TagEventSubject(
         )
     ],
 )
-tags_mid = TagsMidlayerMixin(config=config_dict, conns=tags_mid_conns, tag_event_subject=tag_event_subject)
+tags_mid = TagsMidlayerMixin(
+    config=config_dict, conns=tags_mid_conns, tag_event_subject=tag_event_subject
+)
 
 
 ## Create user 1 and their avatar image
@@ -291,20 +291,20 @@ post_attachment = post_attachments_dao.post_attachment_create(
 
 #### CREATE EVENTS ####
 event_create_request = EventCreateRequest(
-    venue_name = 'Glastonbury',
-    event_type = EventType.MUSIC_FESTIVAL.value,
-    start_date= 1681551032,
-    end_date = 1681551032 + 100000,
+    venue_name="Glastonbury",
+    event_type=EventType.MUSIC_FESTIVAL.value,
+    start_date=1681551032,
+    end_date=1681551032 + 100000,
 )
 
 event_one = events_mid.event_create(event_create_request).event
 
 
 event_create_request = EventCreateRequest(
-    venue_name = 'O2 Academy Brixton',
-    event_type = EventType.MUSIC_CONCERT.value,
-    start_date= 1681551032 + 200000,
-    end_date = 1681551032 + 300000,
+    venue_name="O2 Academy Brixton",
+    event_type=EventType.MUSIC_CONCERT.value,
+    start_date=1681551032 + 200000,
+    end_date=1681551032 + 300000,
 )
 
 event_two = events_mid.event_create(event_create_request).event
@@ -406,4 +406,15 @@ feature_three_create_request = FeatureCreateRequest(
     creator_id=user_two.id,
 )
 
+
 feature_three = features_mid.feature_create(feature_three_create_request).feature
+
+feature_create_request = FeatureCreateRequest(
+    featured_entity_id=post_one.id,
+    featured_entity_type=FeaturedEntityType.POST.value,
+    featurer_id=user_two.id,
+    featurer_type=FeaturerType.USER.value,
+    creator_id=user_two.id,
+)
+
+feature = features_mid.feature_create(feature_create_request).feature

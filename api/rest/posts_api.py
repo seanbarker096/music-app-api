@@ -1,5 +1,6 @@
 import json
 from test import test_utils
+from typing import List
 from unittest.mock import MagicMock, patch
 
 import flask
@@ -8,6 +9,8 @@ import api
 from api.typings.features import FeaturedEntityType, FeaturerType
 from api.typings.performers import PerformersGetFilter
 from api.typings.posts import (
+    FeaturedPostsGetFilter,
+    Post,
     PostAttachmentsCreateRequest,
     PostAttachmentsGetFilter,
     PostCreateRequest,
@@ -17,12 +20,6 @@ from api.typings.posts import (
     ProfileType,
 )
 from api.utils import rest_utils
-from api.utils.rest_utils import (
-    process_api_set_request_param,
-    process_bool_api_request_param,
-    process_enum_api_request_param,
-    process_enum_set_api_request_param,
-)
 
 blueprint = flask.Blueprint("posts", __name__)
 
@@ -124,61 +121,55 @@ def posts_get():
 
     attachment_dicts = []
     if len(posts) > 0:
-        # Get all attachments for the posts
-        post_ids = [post.id for post in posts]
-        post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
+        posts, attachment_dicts = build_posts(posts)
 
-        post_attachments_get_result = flask.current_app.conns.midlayer.post_attachments_get(
-            post_attachments_get_filter
+    response = {}
+
+    response["posts"] = [rest_utils.class_to_dict(post) for post in posts]
+
+    response["attachments"] = attachment_dicts
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+
+@blueprint.route("/featured/", methods=["GET"])
+@auth
+def featured_posts_get():
+    owner_id = rest_utils.process_int_api_request_param("owner_id", optional=False)
+    owner_type = rest_utils.process_enum_api_request_param(
+        "owner_type", PostOwnerType, optional=False
+    )
+    
+    is_featured_by_users = rest_utils.process_bool_api_request_param(
+        "is_featured_by_users", optional=True
+    )
+    is_featured_by_performers = rest_utils.process_bool_api_request_param(
+        "is_featured_by_performers", optional=True
+    )
+
+    if not is_featured_by_users and not is_featured_by_performers:
+        raise Exception(
+            "Invalid request. Must provide at least one of is_featured_by_users or is_featured_by_performers in request"
         )
 
-        attachments = post_attachments_get_result.post_attachments
+    featured_posts_get_filter = FeaturedPostsGetFilter(
+        owner_id=owner_id, 
+        owner_type=owner_type,
+        is_featured_by_users=is_featured_by_users,
+        is_featured_by_performers=is_featured_by_performers,
+    )
 
-        attachment_dicts = [rest_utils.class_to_dict(attachment) for attachment in attachments]
+    featured_posts_get_result = flask.current_app.conns.midlayer.featured_posts_get(
+        featured_posts_get_filter
+    )
 
-        # Get total feature count for each post
-        post_id_to_feature_count_dict = flask.current_app.conns.midlayer.get_featured_entity_feature_counts(
-            featured_entity_ids=post_ids,
-            featured_entity_type=FeaturedEntityType.POST.value,
-        )
+    posts = featured_posts_get_result.posts
 
-        # Get all featuring artists for the posts
-        post_features = flask.current_app.conns.midlayer.get_features_for_featured_entitys(
-            featured_entity_ids=post_ids,
-            featured_entity_type=FeaturedEntityType.POST.value,
-            featurer_type=FeaturerType.PERFORMER.value
-            )
-        
-        post_features_dict = {}
-        artist_ids = []
-
-        # We should only have one feature per post
-        for post_feature in post_features:
-            post_id = post_feature.featured_entity_id
-            post_features_dict[post_id] = post_feature
-            artist_ids.append(post_feature.featurer_id)
-
-        # Get all artists for the posts
-        artists = []
-        if len(artist_ids) > 0:
-            performers_get_filter = PerformersGetFilter(ids=artist_ids)
-            artists = flask.current_app.conns.midlayer.performers_get(performers_get_filter).performers
-
-        artists_by_id = {}
-        for artist in artists:
-            artists_by_id[artist.id] = artist
-
-        for post in posts:
-            post.featuring_artist = None
-
-            artist_post_feature = post_features_dict.get(post.id, None)
-            # Convert the artist to a dict 
-            if artist_post_feature:
-                featuring_artist = artists_by_id.get(artist_post_feature.featurer_id, None)
-                
-                post.featuring_artist = rest_utils.class_to_dict(featuring_artist) if featuring_artist else None
-                
-            post.feature_count = post_id_to_feature_count_dict.get(post.id, 0)
+    attachment_dicts = []
+    if len(posts) > 0:
+        posts, attachment_dicts = build_posts(posts)
 
     response = {}
 
@@ -222,10 +213,10 @@ def get_profiles_posts(profile_id: str):
     # Because profile_id is in the middle of the url, it is a string. We need to convert it to an int
     profile_id = int(profile_id)
 
-    include_tagged = process_bool_api_request_param("include_tagged")
-    include_owned = process_bool_api_request_param("include_owned")
-    include_featured = process_bool_api_request_param("include_featured")
-    profile_type = process_enum_api_request_param("profile_type", ProfileType)
+    include_tagged = rest_utils.process_bool_api_request_param("include_tagged")
+    include_owned = rest_utils.process_bool_api_request_param("include_owned")
+    include_featured = rest_utils.process_bool_api_request_param("include_featured")
+    profile_type = rest_utils.process_enum_api_request_param("profile_type", ProfileType)
 
     profile_posts_get_filter = ProfilePostsGetFilter(
         profile_id=profile_id,
@@ -238,18 +229,8 @@ def get_profiles_posts(profile_id: str):
     posts = flask.current_app.conns.midlayer.profile_posts_get(profile_posts_get_filter).posts
 
     attachment_dicts = []
-
     if len(posts) > 0:
-        post_ids = [post.id for post in posts]
-        post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
-
-        post_attachments_get_result = flask.current_app.conns.midlayer.post_attachments_get(
-            post_attachments_get_filter
-        )
-
-        attachments = post_attachments_get_result.post_attachments
-
-        attachment_dicts = [rest_utils.class_to_dict(attachment) for attachment in attachments]
+        posts, attachment_dicts = build_posts(posts)
 
     response = {}
     response["posts"] = [rest_utils.class_to_dict(post) for post in posts]
@@ -258,3 +239,68 @@ def get_profiles_posts(profile_id: str):
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
     )
+
+
+def build_posts(posts: List[Post]):
+    # Get all attachments for the posts
+    post_ids = [post.id for post in posts]
+    attachment_dicts = []
+    post_attachments_get_filter = PostAttachmentsGetFilter(post_ids=post_ids)
+
+    post_attachments_get_result = flask.current_app.conns.midlayer.post_attachments_get(
+        post_attachments_get_filter
+    )
+
+    attachments = post_attachments_get_result.post_attachments
+
+    attachment_dicts = [rest_utils.class_to_dict(attachment) for attachment in attachments]
+
+    # Get total feature count for each post
+    post_id_to_feature_count_dict = (
+        flask.current_app.conns.midlayer.get_featured_entity_feature_counts(
+            featured_entity_ids=post_ids,
+            featured_entity_type=FeaturedEntityType.POST.value,
+        )
+    )
+
+    # Get all featuring artists for the posts
+    post_features = flask.current_app.conns.midlayer.get_features_for_featured_entitys(
+        featured_entity_ids=post_ids,
+        featured_entity_type=FeaturedEntityType.POST.value,
+        featurer_type=FeaturerType.PERFORMER.value,
+    )
+
+    post_features_dict = {}
+    artist_ids = []
+
+    # We should only have one feature per post
+    for post_feature in post_features:
+        post_id = post_feature.featured_entity_id
+        post_features_dict[post_id] = post_feature
+        artist_ids.append(post_feature.featurer_id)
+
+    # Get all artists for the posts
+    artists = []
+    if len(artist_ids) > 0:
+        performers_get_filter = PerformersGetFilter(ids=artist_ids)
+        artists = flask.current_app.conns.midlayer.performers_get(performers_get_filter).performers
+
+    artists_by_id = {}
+    for artist in artists:
+        artists_by_id[artist.id] = artist
+
+    for post in posts:
+        post.featuring_performer = None
+
+        artist_post_feature = post_features_dict.get(post.id, None)
+        # Convert the artist to a dict
+        if artist_post_feature:
+            featuring_performer = artists_by_id.get(artist_post_feature.featurer_id, None)
+
+            post.featuring_performer = (
+                rest_utils.class_to_dict(featuring_performer) if featuring_performer else None
+            )
+
+        post.feature_count = post_id_to_feature_count_dict.get(post.id, 0)
+
+    return posts, attachment_dicts

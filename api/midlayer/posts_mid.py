@@ -1,8 +1,10 @@
+import json
 from typing import Optional
 
 from api.dao.posts_dao import PostAttachmentsDAO, PostsDAO
 from api.midlayer import BaseMidlayerMixin
 from api.typings.posts import (
+    FeaturedPostsGetFilter,
     PostAttachmentsCreateRequest,
     PostAttachmentsCreateResult,
     PostAttachmentsGetFilter,
@@ -15,7 +17,12 @@ from api.typings.posts import (
     ProfilePostsGetFilter,
     ProfileType,
 )
-from api.utils.rest_utils import process_enum_set_param
+from api.utils.rest_utils import (
+    process_bool_request_param,
+    process_enum_request_param,
+    process_enum_set_param,
+    process_int_request_param,
+)
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -148,10 +155,35 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
 
         except Exception as err:
             raise Exception(
-                f"Failed to get posts for profile with id {filter.profile_id} and type {filter.profile_type} because {str(err)}. Request: {vars(filter)}"
+                f"Failed to get posts for profile with id {filter.profile_id} and type {filter.profile_type} because {json.dumps(str(err))}. Request: {vars(filter)}"
             )
 
         return PostsGetResult(posts=posts)
+    
+    ## TODO: COuld update this to include posts when counts=0 if filtes are set to false rather than throwing if at least one is not true
+    def featured_posts_get(self, filter: FeaturedPostsGetFilter) -> PostsGetResult:
+        process_int_request_param("owner_id", filter.owner_id, optional=False)
+        process_enum_request_param("owner_type", filter.owner_type, PostOwnerType, optional=False)
+        process_bool_request_param("is_featured_by_users", filter.is_featured_by_users)
+        process_bool_request_param("is_featured_by_performers", filter.is_featured_by_performers)
+
+        if not filter.is_featured_by_users and not filter.is_featured_by_performers:
+            raise InvalidArgumentException(
+                f"Must include at least one of is_featured_by_users or is_featured_by_performers.",
+                "filter.is_featured_by_users, filter.is_featured_by_performers",
+            )
+        
+        try:
+            posts = self.posts_dao.featured_posts_get(filter)
+
+            return PostsGetResult(posts=posts)
+
+        except Exception as err:
+            raise Exception(
+                f"Failed to get featured posts for user with id {filter.owner_id} because {json.dumps(str(err))}. Request: {vars(filter)}"
+            )
+
+
 
 
 class PostAttachmentsMidlayerConnections:

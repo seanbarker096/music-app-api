@@ -117,6 +117,26 @@ class ProfilePostsGetFilter(object):
         self.include_owned = True if include_owned is None else include_owned
 
 
+
+class FeaturedPostsGetFilter:
+    owner_id: int
+    owner_type: PostOwnerType
+    is_featured_by_users: bool
+    is_featured_by_performers: bool
+
+    def __init__(
+        self,
+        owner_id: int,
+        owner_type: PostOwnerType,
+        is_featured_by_users: bool,
+        is_featured_by_performers: bool,
+    ) -> None:
+        self.owner_id = owner_id
+        self.owner_type = owner_type
+        self.is_featured_by_users = is_featured_by_users
+        self.is_featured_by_performers = is_featured_by_performers
+
+
 # ********* POST ATTACHMENTS ************* #
 class PostAttachment(object):
     id: int = ...
