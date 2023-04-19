@@ -11,9 +11,9 @@ from api.typings.performances import (
     PerformanceAttendanceCreateRequest,
     PerformanceCounts,
     PerformanceCreateRequest,
-    PerformancesCountsGetFilter,
     PerformancesCountsGetResult,
     PerformancesGetFilter,
+    PerformancesGetProjection,
 )
 from api.typings.tags import TaggedEntityType, TaggedInEntityType
 
@@ -128,15 +128,29 @@ class PerformancesDAO:
         return performances
 
     def performances_counts_get(
-        self, filter: PerformancesCountsGetFilter
-    ) -> PerformancesCountsGetResult:
+        self, 
+        performance_ids: List[int], 
+        include_attendee_count = False, 
+        include_tag_count = False, 
+        include_features_count = False
+    ) -> Dict[int, PerformanceCounts]:
+        """
+            returns: Dict of performance_id to PerformanceCounts
+        """
         wheres = []
         joins = []
         binds = []
 
         selects = [*self.PERFORMANCE_SELECTS]
 
-        if filter.include_attendee_count:
+
+        if not include_attendee_count and not include_tag_count and not include_features_count:
+            raise Exception("Must provide at least one count to include")
+        
+        if len(performance_ids) == 0:
+            return {}
+
+        if include_attendee_count:
             joins.append(
                 """
                 LEFT JOIN performance_attendance as pa
@@ -145,7 +159,7 @@ class PerformancesDAO:
             )
             selects.append("COUNT(DISTINCT pa.id) as attendance_count")
 
-        if filter.include_tag_count:
+        if include_tag_count:
             joins.append(
                 """
                 LEFT JOIN tag as t
@@ -160,7 +174,7 @@ class PerformancesDAO:
 
             selects.append("COUNT(DISTINCT t.id) as tag_count")
 
-        if filter.include_features_count:
+        if include_features_count:
             joins.append(
                 """
                 LEFT JOIN performers
@@ -179,7 +193,7 @@ class PerformancesDAO:
             selects.append("COUNT(DISTINCT f.id) as features_count")
 
         wheres.append("p.id in %s")
-        binds.append(filter.performance_ids)
+        binds.append(performance_ids)
 
         where_string = build_where_query_string(wheres, "AND")
 
@@ -190,15 +204,14 @@ class PerformancesDAO:
             {where_string}
             GROUP BY p.id
             """
-        
-        print(sql)
 
+
+        print(sql)
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
-        performances = []
-        counts = []
+        result = {}
 
         for row in rows:
             performance = self._build_performance_from_row(row)
@@ -214,10 +227,9 @@ class PerformancesDAO:
                 features_count=features_count,
             )
 
-            performances.append(performance)
-            counts.append(performance_counts)
+            result[performance.id] = performance_counts
 
-        return PerformancesCountsGetResult(performances=performances, counts=counts)
+        return result
 
     def _build_performance_from_row(self, db_row: Dict[str, any]) -> Performance:
         assert_row_key_exists(db_row, PerformancesDBAlias.PERFORMANCE_ID)

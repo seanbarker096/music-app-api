@@ -8,6 +8,7 @@ class Performance:
     performance_date: int = ...
     create_time: int = ...
     update_time: int = ...
+    attendance_count: Optional[int] = ...
 
     def __init__(
         self,
@@ -17,6 +18,7 @@ class Performance:
         create_time: int,
         update_time: int,
         event_id: Optional[int] = None,
+        attendance_count: Optional[int] = None,
     ) -> None:
         self.id = id
         self.event_id = event_id
@@ -24,6 +26,7 @@ class Performance:
         self.performance_date = performance_date
         self.create_time = create_time
         self.update_time = update_time
+        self.attendance_count = attendance_count
 
 
 class PerformancesGetFilter:
@@ -43,6 +46,16 @@ class PerformancesGetFilter:
         self.ids = ids
         self.performer_ids = performer_ids
         self.performance_date = performance_date
+
+
+class PerformancesGetProjection:
+    include_attendance_count: Optional[bool] = ...
+
+    def __init__(
+        self,
+        include_attendance_count: Optional[bool] = False,
+    ) -> None:
+        self.include_attendance_count = include_attendance_count
 
 
 class PerformancesGetResult:
@@ -122,24 +135,6 @@ class PerformanceAttendanceCreateResult:
     ) -> None:
         self.performance_attendance = performance_attendance
 
-class PerformancesCountsGetFilter:
-    performance_ids: List[int] = ...
-    include_attendee_count: bool = ...
-    include_tag_count: bool = ...
-    include_features_count: bool = ...
-
-    def __init__(
-        self,
-        performance_ids:List[int],
-        include_attendee_count: bool = False,
-        include_tag_count: bool = False,
-        include_features_count: bool = False,
-    ) -> None:
-        self.performance_ids = performance_ids
-        self.include_attendee_count = include_attendee_count
-        self.include_tag_count = include_tag_count
-        self.include_features_count = include_features_count
-
 
 class PerformanceCounts:
     performance_id: int = ...
@@ -171,10 +166,3 @@ class PerformancesCountsGetResult:
     ) -> None:
         self.performances = performances
         self.counts = counts
-
-
-    
-    
-    
-    
-    

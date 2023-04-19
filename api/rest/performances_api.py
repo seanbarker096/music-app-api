@@ -6,8 +6,8 @@ import flask
 from api.typings.events import EventCreateRequest, EventsGetFilter, EventType
 from api.typings.performances import (
     PerformanceCreateRequest,
-    PerformancesCountsGetFilter,
     PerformancesGetFilter,
+    PerformancesGetProjection,
 )
 from api.utils.rest_utils import (
     auth,
@@ -40,13 +40,22 @@ def performances_get():
         parameter_name="attendee_ids[]", type=int, optional=True
     )
 
+    include_attendance_count = process_bool_api_request_param(
+        parameter_name="include_attendance_count", optional=True
+    )
+
     filter = PerformancesGetFilter(
         attendee_ids=attendee_ids,
         ids=performance_ids,
         performer_ids=performer_ids,
         performance_date=performance_date,
     )
-    performances = flask.current_app.conns.midlayer.performances_get(filter).performances
+
+    projection = PerformancesGetProjection(
+        include_attendance_count=include_attendance_count
+    )
+
+    performances = flask.current_app.conns.midlayer.performances_get(filter, projection).performances
 
     response = {}
     response["performances"] = [class_to_dict(performance) for performance in performances]
@@ -90,7 +99,7 @@ def performance_create():
         parameter=data.get("event_type", None),
         optional=False,
     )
-    
+
     performance_date = datetime.datetime.fromtimestamp(performance_date_unix_timestamp)
     # Extract date part from datetime object
     performance_date = performance_date.date()
@@ -169,46 +178,6 @@ def attendance_create():
 
     response = {}
     response["attendance"] = vars(attendance)
-
-    return flask.current_app.response_class(
-        response=json.dumps(response), status=200, mimetype="application/json"
-    )
-
-
-@blueprint.route("/performances/counts/", methods=["GET"])
-@auth
-def performance_counts_get():
-    performance_ids = process_api_set_request_param(
-        parameter_name="performance_ids[]", type=int, optional=False
-    )
-
-    include_attendee_count = process_bool_api_request_param(
-        parameter_name="include_attendee_count", optional=True
-    )
-
-    include_tag_count = process_bool_api_request_param(
-        parameter_name="include_tag_count", optional=True
-    )
-
-    include_features_count = process_bool_api_request_param(
-        parameter_name="include_features_count", optional=True
-    )
-
-    filter = PerformancesCountsGetFilter(
-        performance_ids=performance_ids,
-        include_attendee_count=include_attendee_count,
-        include_tag_count=include_tag_count,
-        include_features_count=include_features_count,
-    )
-
-    result = flask.current_app.conns.midlayer.performance_counts_get(filter)
-
-    performances = result.performances
-    counts = result.counts
-
-    response = {}
-    response["performances"] = [class_to_dict(performance) for performance in performances]
-    response["counts"] = [class_to_dict(count) for count in counts]
 
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"

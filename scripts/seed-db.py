@@ -375,6 +375,8 @@ tag_two_create_request = TagCreateRequest(
     creator_id=user_two.id,
 )
 
+tag = tags_mid.tag_create(tag_two_create_request)
+
 ################### CREATE FEATURES for the performances ####################
 feature_create_request = FeatureCreateRequest(
     featured_entity_id=post_one.id,

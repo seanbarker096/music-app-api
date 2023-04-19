@@ -8,9 +8,8 @@ from api.typings.performances import (
     PerformanceAttendanceCreateResult,
     PerformanceCreateRequest,
     PerformanceCreateResult,
-    PerformancesCountsGetFilter,
-    PerformancesCountsGetResult,
     PerformancesGetFilter,
+    PerformancesGetProjection,
     PerformancesGetResult,
 )
 from api.utils.rest_utils import process_bool_request_param, process_int_request_param
@@ -25,7 +24,9 @@ class PerformancesMidlayerConnections:
 
 class PerformancesMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[PerformancesMidlayerConnections] = None):
-        self.performances_dao = conns.performances_dao if conns and conns.performances_dao else PerformancesDAO(config)
+        self.performances_dao = (
+            conns.performances_dao if conns and conns.performances_dao else PerformancesDAO(config)
+        )
 
         ## Call the next mixins constructor
         super().__init__(config)
@@ -53,7 +54,9 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
                 f"Failed to create performance because {str(e)}. Request: {vars(request)}"
             )
 
-    def performances_get(self, filter: PerformancesGetFilter):
+    def performances_get(
+        self, filter: PerformancesGetFilter, projection: Optional[PerformancesGetProjection] = PerformancesGetProjection()
+    ):
         if filter.ids and len(filter.ids) == 0:
             raise InvalidArgumentException(
                 f"Invalid value provided for filter field ids: {filter.ids}. At least one post_id must be provided",
@@ -85,49 +88,31 @@ class PerformancesMidlayerMixin(BaseMidlayerMixin):
                 "filter",
             )
 
+        process_bool_request_param(
+            parameter_name="include_attendance_count",
+            parameter=projection.include_attendance_count,
+            optional=True,
+        )
+
         try:
             performances = self.performances_dao.performances_get(filter=filter)
+
+            if projection.include_attendance_count:
+                performance_ids = [performance.id for performance in performances]
+
+                performance_counts = self.performances_dao.performances_counts_get(
+                    performance_ids=performance_ids, include_tag_count=True
+                )
+
+                for performance in performances:
+                    performance_count = performance_counts[performance.id]
+                    performance.attendance_count = performance_count.tag_count
 
             return PerformancesGetResult(performances=performances)
 
         except Exception as e:
             raise Exception(
                 f"Failed to get performances because {str(e)}. Filter: {json.dumps(vars(filter))}"
-            )
-
-    def performance_counts_get(self, filter: PerformancesCountsGetFilter):
-        if not filter.performance_ids or (
-            filter.performance_ids and len(filter.performance_ids) == 0
-        ):
-            raise InvalidArgumentException(
-                f"Invalid value provided for filter field performance_ids: {filter.performance_ids}. At least one performance_id must be provided",
-                "filter.performance_ids",
-            )
-
-        process_bool_request_param(
-            "include_attendee_count", filter.include_attendee_count, optional=True
-        )
-        process_bool_request_param("include_tag_count", filter.include_tag_count, optional=True)
-        process_bool_request_param(
-            "include_features_count", filter.include_features_count, optional=True
-        )
-
-        if (
-            not filter.include_attendee_count
-            and not filter.include_tag_count
-            and not filter.include_featured_post_count
-        ):
-            raise InvalidArgumentException(
-                f"At least one count filter field must be provided. Filter: {json.dumps(vars(filter))}",
-                "filter",
-            )
-
-        try:
-            return self.performances_dao.performances_counts_get(filter=filter)
-
-        except Exception as e:
-            raise Exception(
-                f"Failed to get performance counts because {str(e)}. Filter: {json.dumps(vars(filter))}"
             )
 
 
@@ -153,7 +138,11 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
             performances_mid if performances_mid else PerformancesMidlayerMixin(config)
         )
 
-        self.performance_attendances_dao = conns.performance_attendances_dao if conns and conns.performance_attendances_dao else PerformanceAttendancesDAO(config)
+        self.performance_attendances_dao = (
+            conns.performance_attendances_dao
+            if conns and conns.performance_attendances_dao
+            else PerformanceAttendancesDAO(config)
+        )
 
         ## Call the next mixins constructor
         super().__init__(config)
