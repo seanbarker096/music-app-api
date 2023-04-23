@@ -108,6 +108,7 @@ CREATE TABLE gigs.tag (
   tagged_in_entity_id int(10) unsigned NOT NULL,
   tagged_entity_type varchar(60) NOT NULL,
   tagged_entity_id int(10) unsigned NOT NULL,
+  is_deleted tinyint(1) NOT NULL DEFAULT 0,
   creator_id int(10) unsigned NOT NULL,
   PRIMARY KEY (id),
   INDEX tagged_in_id_tagged_entity_type_idx(tagged_entity_id, tagged_entity_type),

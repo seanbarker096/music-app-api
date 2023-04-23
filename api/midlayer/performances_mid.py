@@ -4,8 +4,10 @@ from typing import Optional
 from api.dao.performances_dao import PerformanceAttendancesDAO, PerformancesDAO
 from api.midlayer import BaseMidlayerMixin
 from api.typings.performances import (
+    PeformanceAttendancesGetResult,
     PerformanceAttendanceCreateRequest,
     PerformanceAttendanceCreateResult,
+    PerformanceAttendancesGetFilter,
     PerformanceCreateRequest,
     PerformanceCreateResult,
     PerformancesGetFilter,
@@ -190,4 +192,35 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
         except Exception as e:
             raise Exception(
                 f"Failed to create performance attendance because {str(e)}. Request: {vars(request)}"
+            )
+
+    def performance_attedances_get(self, filter: PerformanceAttendancesGetFilter) -> PeformanceAttendancesGetResult:
+        if filter.performance_ids and len(filter.performance_ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field performance_ids: {filter.performance_ids}. At least one performance_id must be provided",
+                "filter.performance_ids",
+            )
+        
+        if filter.attendee_ids and len(filter.attendee_ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field attendee_ids: {filter.attendee_ids}. At least one attendee_id must be provided",
+                "filter.attendee_ids",
+            )
+
+        if not filter.performance_ids and not filter.attendee_ids:
+            raise InvalidArgumentException(
+                f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",
+                "filter",
+            )
+        
+        try:
+            performance_attendances = self.performance_attendances_dao.performance_attendances_get(
+                filter=filter
+            )
+
+            return PeformanceAttendancesGetResult(performance_attendances=performance_attendances)
+
+        except Exception as e:
+            raise Exception(
+                f"Failed to get performance attendances because {str(e)}. Request: {vars(filter)}"
             )

@@ -102,6 +102,7 @@ class DBConnection(Singleton):
         return self._cursor
 
 
+# To enable multiple queries to be run in a single transcation, we can add an instance property which modifies the __exit__ behabiour, and that can be configred in certain places to not immediately rollback or commit on __exit__. We can then run multiple queries and multiple with statements in a single transaction.
 class DBConnectionManager:
     """
     This class should not be used directly, but should be extended by a parent class which provides the connection uuids.

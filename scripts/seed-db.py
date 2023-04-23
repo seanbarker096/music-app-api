@@ -116,7 +116,7 @@ tag_event_subject = TagEventSubject(
     ],
 )
 tags_mid = TagsMidlayerMixin(
-    config=config_dict, conns=tags_mid_conns, tag_event_subject=tag_event_subject
+    config=config_dict, conns=tags_mid_conns, tag_event_subject=tag_event_subject, performances_mid=performances_mid
 )
 
 
@@ -418,3 +418,27 @@ feature_create_request = FeatureCreateRequest(
 )
 
 feature = features_mid.feature_create(feature_create_request).feature
+
+
+################### create some user TAGS for posts so we cna view them from the Manage pages ####################
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=performer.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=post_one.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id
+)
+
+tag = tags_mid.tag_create(tag_create_request)
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=performer.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=post_two.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id
+)
+
+tag = tags_mid.tag_create(tag_create_request)
+

@@ -4,6 +4,7 @@ import flask
 
 from api.typings.tags import (
     TagCreateRequest,
+    TagDeleteRequest,
     TaggedEntityType,
     TaggedInEntityType,
     TagsGetFilter,
@@ -13,6 +14,7 @@ from api.utils.rest_utils import (
     class_to_dict,
     process_enum_api_request_param,
     process_int_api_request_param,
+    process_int_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -28,7 +30,8 @@ def tag_create():
     tagged_in_entity_id = data.get("tagged_in_entity_id", None)
     tagged_entity_type = data.get("tagged_entity_type", None)
     tagged_entity_id = data.get("tagged_entity_id", None)
-    creator_id = data.get("creator_id", None)
+
+    creator_id = int(flask.g.auth_user.user_id)
 
     if (
         not tagged_in_entity_type
@@ -47,7 +50,7 @@ def tag_create():
         creator_id=creator_id,
     )
 
-    tag = flask.current_app.conns.midlayer.tag_create(tag_create_request).tag
+    tag = flask.current_app.conns.midlayer.tag_create(request=tag_create_request).tag
 
     response = {}
     response["tag"] = class_to_dict(tag)
@@ -82,3 +85,16 @@ def tags_get():
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
     )
+
+@blueprint.route("/tags/", methods=["DELETE"])
+@auth
+def tag_delete():
+    data = flask.request.get_json()
+
+    tag_ids = data.get("ids", None)
+    process_int_request_param(parameter_name="ids", parameter=tag_ids, optional=False)
+
+    tag_delete_request = TagDeleteRequest(ids=tag_ids)
+    flask.current_app.conns.midlayer.tags_delete(request=tag_delete_request)
+
+    return flask.current_app.response_class(status=204, mimetype="application/json")

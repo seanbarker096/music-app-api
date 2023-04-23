@@ -9,6 +9,7 @@ from api.typings.performances import (
     Performance,
     PerformanceAttendance,
     PerformanceAttendanceCreateRequest,
+    PerformanceAttendancesGetFilter,
     PerformanceCounts,
     PerformanceCreateRequest,
     PerformancesCountsGetResult,
@@ -128,14 +129,14 @@ class PerformancesDAO:
         return performances
 
     def performances_counts_get(
-        self, 
-        performance_ids: List[int], 
-        include_attendee_count = False, 
-        include_tag_count = False, 
-        include_features_count = False
+        self,
+        performance_ids: List[int],
+        include_attendee_count=False,
+        include_tag_count=False,
+        include_features_count=False,
     ) -> Dict[int, PerformanceCounts]:
         """
-            returns: Dict of performance_id to PerformanceCounts
+        returns: Dict of performance_id to PerformanceCounts
         """
         wheres = []
         joins = []
@@ -143,10 +144,9 @@ class PerformancesDAO:
 
         selects = [*self.PERFORMANCE_SELECTS]
 
-
         if not include_attendee_count and not include_tag_count and not include_features_count:
             raise Exception("Must provide at least one count to include")
-        
+
         if len(performance_ids) == 0:
             return {}
 
@@ -204,7 +204,6 @@ class PerformancesDAO:
             {where_string}
             GROUP BY p.id
             """
-
 
         print(sql)
         with self.db(self.config) as cursor:
@@ -276,17 +275,18 @@ class PerformanceAttendancesDBAlias:
 
 
 class PerformanceAttendancesDAO:
+    PERFORMANCE_ATTENDANCE_SELECTS = [
+        "pa.id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID,
+        "pa.performance_id as "
+        + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID,
+        "pa.attendee_id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID,
+        "UNIX_TIMESTAMP(pa.create_time) as "
+        + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME,
+    ]
+
     def __init__(self, config, db: Optional[DBConnectionManager] = None):
         self.db = db if db else FlaskDBConnectionManager
         self.config = config
-
-    PERFORMANCE_ATTENDANCE_SELECTS = [
-        "id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID,
-        "performance_id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID,
-        "attendee_id as " + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID,
-        "UNIX_TIMESTAMP(create_time) as "
-        + PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME,
-    ]
 
     def performance_attendance_create(
         self, request: PerformanceAttendanceCreateRequest
@@ -313,4 +313,57 @@ class PerformanceAttendancesDAO:
             performance_id=request.performance_id,
             attendee_id=request.attendee_id,
             create_time=now,
+        )
+
+    def performance_attendances_get(
+        self, filter: PerformanceAttendancesGetFilter
+    ) -> List[Performance]:
+
+        sql = f"""
+        SELECT {self.PERFORMANCE_ATTENDANCE_SELECTS}
+        FROM performance_attendance as pa
+        """
+
+        binds = []
+        wheres = []
+
+        if filter.performance_ids:
+            wheres.append("pa.performance_id in %s")
+            binds.append(filter.performance_ids)
+
+        if filter.attendee_ids:
+            wheres.append("pa.attendee_id in %s")
+            binds.append(filter.attendee_ids)
+
+        with self.db(self.config) as cursor:
+            cursor.execute(sql, binds)
+            rows = cursor.fetchall()
+
+        result = []
+
+        for row in rows:
+            performance_attendance = self._build_performance_attendance_from_db_row(row)
+            result.append(performance_attendance)
+
+        return result
+    
+
+    def _build_performance_attendance_from_db_row(self, row: Dict[str, any]) -> PerformanceAttendance:
+        assert_row_key_exists(row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID)
+        performance_attendance_id = int(row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID])
+
+        assert_row_key_exists(row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID)
+        performance_id = int(row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID])
+
+        assert_row_key_exists(row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID)
+        attendee_id = int(row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID])
+
+        assert_row_key_exists(row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME)
+        create_time = int(row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_CREATE_TIME])
+
+        return PerformanceAttendance(
+            id=performance_attendance_id,
+            performance_id=performance_id,
+            attendee_id=attendee_id,
+            create_time=create_time,
         )

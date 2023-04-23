@@ -1,6 +1,6 @@
-from api.events.tags.tag_event_producer import TagEventProducer
+from api.events.tags.tag_event_subject import TagEventSubject
 
 if __name__ == "__main__":
-    producer = TagEventProducer()
+    producer = TagEventSubject()
 
     producer.publishEvent({})

@@ -135,6 +135,28 @@ class PerformanceAttendanceCreateResult:
     ) -> None:
         self.performance_attendance = performance_attendance
 
+class PerformanceAttendancesGetFilter:
+    performance_ids: Optional[list[int]] = ...
+    attendee_ids: Optional[list[int]] = ...
+
+    def __init__(
+        self,
+        performance_ids: Optional[list[int]] = None,
+        attendee_ids: Optional[list[int]] = None,
+    ) -> None:
+        self.performance_ids = performance_ids
+        self.attendee_ids = attendee_ids
+
+
+class PeformanceAttendancesGetResult:
+    performance_attendances: List[PerformanceAttendance] = ...
+
+    def __init__(
+        self,
+        performance_attendances: List[PerformanceAttendance],
+    ) -> None:
+        self.performance_attendances = performance_attendances
+
 
 class PerformanceCounts:
     performance_id: int = ...

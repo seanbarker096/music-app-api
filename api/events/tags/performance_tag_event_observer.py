@@ -13,6 +13,7 @@ from api.midlayer.posts_mid import PostsMidlayerMixin
 from api.typings.performances import (
     PerformanceAttendance,
     PerformanceAttendanceCreateRequest,
+    PerformanceAttendancesGetFilter,
 )
 from api.typings.posts import PostsGetFilter
 from api.typings.tags import TaggedEntityType, TaggedInEntityType
@@ -77,20 +78,14 @@ class PerformanceTagEventObserver(TagEventObserver):
 
         post = posts[0]
 
+        # Check if performance attendance already exists
+        filter = PerformanceAttendancesGetFilter(
+            performance_ids=[tag.tagged_entity_id], attendee_ids=[post.owner_id]
+        )
+        performance_attendances = self.performance_attendances_midlayer.performance_attedances_get(filter=filter).performance_attendances
 
-        # TODO: Add this check once we set up performance attendance get apis
-        # # Check if performance attendance already exists
-        # performance_attendances = self.performance_attendances_midlayer.performance_attendances_get(
-        #     filter=PerformanceAttendancesGetFilter(
-        #         performance_ids=[tag.tagged_entity_id], attendee_ids=[post.owner_id]
-        #     )
-        # ).performance_attendances
-
-        # if len(performance_attendances) > 0:
-        #     logging.info(
-        #         f"Performance attendance already exists for performance with id {tag.tagged_entity_id} and attendee with id {post.owner_id}. Skipping performance attendance creation."
-        #     )
-        #     return None
+        if len(performance_attendances) > 0:
+            return None
 
         request = PerformanceAttendanceCreateRequest(
             performance_id=tag.tagged_entity_id, attendee_id=post.owner_id

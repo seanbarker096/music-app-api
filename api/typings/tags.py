@@ -20,6 +20,7 @@ class Tag:
     tagged_in_entity_type: TaggedInEntityType = ...
     tagged_in_entity_id: int = ...
     creator_id: int = ...  # The user who created the tag object
+    is_deleted: bool = ...
 
     def __init__(
         self,
@@ -29,6 +30,7 @@ class Tag:
         tagged_in_entity_type: TaggedInEntityType,
         tagged_in_entity_id: int,
         creator_id: int,
+        is_deleted: bool,
     ) -> None:
         self.id = id
         self.tagged_entity_type = tagged_entity_type
@@ -36,6 +38,7 @@ class Tag:
         self.tagged_in_entity_type = tagged_in_entity_type
         self.tagged_in_entity_id = tagged_in_entity_id
         self.creator_id = creator_id
+        self.is_deleted = is_deleted
 
 
 class TagCreateRequest:
@@ -85,3 +88,10 @@ class TagsGetResult:
 
     def __init__(self, tags: List[Tag]) -> None:
         self.tags = tags
+
+
+class TagDeleteRequest:
+    ids: List[int] = ...
+
+    def __init__(self, ids: List[int]) -> None:
+        self.ids = ids
