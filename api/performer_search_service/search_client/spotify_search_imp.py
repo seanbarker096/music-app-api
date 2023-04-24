@@ -83,7 +83,6 @@ class SpotifySearchImp(SearchImp):
         )
 
         try:
-            print(response.json())
             response.raise_for_status()
             access_token = response.json()["access_token"]
             return access_token

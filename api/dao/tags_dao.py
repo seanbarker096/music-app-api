@@ -107,14 +107,13 @@ class TagsDAO:
         return [self._build_tag_from_db_row(row) for row in rows]
     
     def tags_delete(self, request: TagDeleteRequest) -> None:
-
         query = """
-            DELETE FROM tag
-            WHERE id in %s
+            DELETE FROM tag t
+            WHERE t.id in %s
         """
 
         binds = (
-            request.ids
+            set(request.ids) # PyMySQL requires a unique list of values for DELETE statements
         )
 
         with self.db(self.config) as cursor:
@@ -132,7 +131,7 @@ class TagsDAO:
             AND tagged_entity_id in (
                 SELECT p.id from performance p
                 INNER JOIN performers pf
-                ON p.performer_id = pf.id
+                    ON p.performer_id = pf.id
                 WHERE pf.id = %s
             )
         """

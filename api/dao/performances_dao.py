@@ -205,7 +205,6 @@ class PerformancesDAO:
             GROUP BY p.id
             """
 
-        print(sql)
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
@@ -319,8 +318,8 @@ class PerformanceAttendancesDAO:
         self, filter: PerformanceAttendancesGetFilter
     ) -> List[Performance]:
 
-        sql = f"""
-        SELECT {self.PERFORMANCE_ATTENDANCE_SELECTS}
+        selects = f"""
+        SELECT {' ,'.join(self.PERFORMANCE_ATTENDANCE_SELECTS)}
         FROM performance_attendance as pa
         """
 
@@ -335,25 +334,35 @@ class PerformanceAttendancesDAO:
             wheres.append("pa.attendee_id in %s")
             binds.append(filter.attendee_ids)
 
+        where_string = build_where_query_string(wheres, "AND")
+
+        sql = selects + where_string
+
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
-        result = []
-
+        performance_attendances = []
         for row in rows:
             performance_attendance = self._build_performance_attendance_from_db_row(row)
-            result.append(performance_attendance)
+            performance_attendances.append(performance_attendance)
 
-        return result
-    
+        return performance_attendances
 
-    def _build_performance_attendance_from_db_row(self, row: Dict[str, any]) -> PerformanceAttendance:
+    def _build_performance_attendance_from_db_row(
+        self, row: Dict[str, any]
+    ) -> PerformanceAttendance:
         assert_row_key_exists(row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID)
-        performance_attendance_id = int(row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID])
+        performance_attendance_id = int(
+            row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ID]
+        )
 
-        assert_row_key_exists(row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID)
-        performance_id = int(row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID])
+        assert_row_key_exists(
+            row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID
+        )
+        performance_id = int(
+            row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_PERFORMANCE_ID]
+        )
 
         assert_row_key_exists(row, PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID)
         attendee_id = int(row[PerformanceAttendancesDBAlias.PERFORMANCE_ATTENDANCE_ATTENDEE_ID])

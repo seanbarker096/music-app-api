@@ -111,8 +111,7 @@ CREATE TABLE gigs.tag (
   is_deleted tinyint(1) NOT NULL DEFAULT 0,
   creator_id int(10) unsigned NOT NULL,
   PRIMARY KEY (id),
-  INDEX tagged_in_id_tagged_entity_type_idx(tagged_entity_id, tagged_entity_type),
-  INDEX tagged_entity_id_tagged_entity_type_idx(tagged_entity_id, tagged_entity_type)
+  UNIQUE KEY tgd_in_ent_type_tgd_in_ent_id_tgd_ent_type_tgd_ent_id(tagged_in_entity_type, tagged_in_entity_id, tagged_entity_type, tagged_entity_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 

@@ -12,6 +12,7 @@ from api.typings.tags import (
 from api.utils.rest_utils import (
     auth,
     class_to_dict,
+    process_api_set_request_param,
     process_enum_api_request_param,
     process_int_api_request_param,
     process_int_request_param,
@@ -89,10 +90,7 @@ def tags_get():
 @blueprint.route("/tags/", methods=["DELETE"])
 @auth
 def tag_delete():
-    data = flask.request.get_json()
-
-    tag_ids = data.get("ids", None)
-    process_int_request_param(parameter_name="ids", parameter=tag_ids, optional=False)
+    tag_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=False)
 
     tag_delete_request = TagDeleteRequest(ids=tag_ids)
     flask.current_app.conns.midlayer.tags_delete(request=tag_delete_request)

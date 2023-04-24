@@ -90,7 +90,6 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             )
 
         if filter.owner_types:
-            print(filter.owner_types)
             process_enum_set_param("owner_types", filter.owner_types, PostOwnerType)
 
         if (filter.owner_ids and not filter.owner_types) or (
@@ -101,10 +100,15 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 "filter.owner_types or filter.owner_ids",
             )
 
-        if not filter.ids and not filter.is_deleted and not filter.owner_ids and not filter.owner_types:
+        if (
+            not filter.ids
+            and not filter.is_deleted
+            and not filter.owner_ids
+            and not filter.owner_types
+        ):
             raise InvalidArgumentException(
                 f"Ubounded request made to posts_get. Must provide at least one filter field. Filter: {vars(filter)}",
-                "PostsGetFilter"
+                "PostsGetFilter",
             )
 
         posts = self.posts_dao.posts_get(filter)
@@ -159,7 +163,7 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             )
 
         return PostsGetResult(posts=posts)
-    
+
     ## TODO: COuld update this to include posts when counts=0 if filtes are set to false rather than throwing if at least one is not true
     def featured_posts_get(self, filter: FeaturedPostsGetFilter) -> PostsGetResult:
         process_int_request_param("owner_id", filter.owner_id, optional=False)
@@ -172,7 +176,7 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 f"Must include at least one of is_featured_by_users or is_featured_by_performers.",
                 "filter.is_featured_by_users, filter.is_featured_by_performers",
             )
-        
+
         try:
             posts = self.posts_dao.featured_posts_get(filter)
 
@@ -184,8 +188,6 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
             )
 
 
-
-
 class PostAttachmentsMidlayerConnections:
     def __init__(self, config, post_attachments_dao: Optional[PostsDAO] = None):
         self.post_attachments_dao = (
@@ -194,8 +196,14 @@ class PostAttachmentsMidlayerConnections:
 
 
 class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
-    def __init__(self, config, conns: Optional[PostAttachmentsMidlayerConnections] = None, **kwargs):
-        self.posts_attachments_dao = conns.post_attachments_dao if conns and conns.post_attachments_dao else PostAttachmentsDAO(config)
+    def __init__(
+        self, config, conns: Optional[PostAttachmentsMidlayerConnections] = None, **kwargs
+    ):
+        self.posts_attachments_dao = (
+            conns.post_attachments_dao
+            if conns and conns.post_attachments_dao
+            else PostAttachmentsDAO(config)
+        )
 
         ## Call the next mixins constructor
         super().__init__(config)
@@ -212,7 +220,6 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
 
         file_ids = request.file_ids
 
-        print("file_ids", type(file_ids))
         if not isinstance(file_ids, list):
             raise InvalidArgumentException(
                 f"Invalid value {file_ids} for field file_ids. Field must be iterable",

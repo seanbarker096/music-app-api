@@ -305,7 +305,7 @@ class PostsDAO(object):
             GROUP BY {", ".join(self.POST_COLUMNS)}
             {havings_string}
             """
-        print(sql)
+        
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()

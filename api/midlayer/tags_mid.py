@@ -1,4 +1,6 @@
 import json
+import logging
+from logging import Logger
 from typing import Optional
 
 from api.dao.tags_dao import TagsDAO
@@ -72,22 +74,26 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
                 "request.creator_id",
             )
 
-        try:  
+        try:
             if request.tagged_in_entity_type == TaggedInEntityType.POST.value and request.tagged_entity_type == TaggedEntityType.PERFORMANCE.value:
-
-                # get the performance to get the performer
-                performances_get_filter = PerformancesGetFilter(
-                    ids=[request.tagged_entity_id]
+                # We only allow a performer to create a single unique tag between one of their performances and a post.We therefore delete any existing tags between the post and the performer's performances. To avoid deleting a tag and recreating the exact one, first check to see if the tag in the create request exists already. If it does, do not delete and recreate it. We just return the existing tag.
+                tags_get_filter = TagsGetFilter(
+                    tagged_in_entity_type=request.tagged_in_entity_type,
+                    tagged_in_entity_id=request.tagged_in_entity_id,
+                    tagged_entity_type=request.tagged_entity_type,
+                    tagged_entity_id=request.tagged_entity_id,
                 )
-                performances = self.performances_mid.performances_get(performances_get_filter).performances
 
-                if len(performances) == 0:
-                    raise Exception(f"Failed to create tag between post with id {request.tagged_in_entity_id} and performance with id {request.tagged_entity_id} because the performance does not exist")
+                tags = self.tags_dao.tags_get(filter=tags_get_filter)
+
+                if len(tags) == 1:
+                    return TagCreateResult(tag=tags[0])
+
+                if len(tags) > 1:
+                    logging.warning(f"""More than one tag found between post with id {request.tagged_in_entity_id} and performance with id {request.tagged_entity_id}. These will be deleted.""")
                 
-                performer_id = performances[0].performer_id
-
-                self._remove_performer_performances_linked_to_post(post_id=request.tagged_in_entity_id, performer_id=performer_id)
-
+                self._remove_existing_performer_performances_linked_to_post(request)
+            
             created_tag = self.tags_dao.tag_create(request)
 
             # Notify observers
@@ -100,11 +106,25 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
                 f"Failed to create tag because {json.dumps(str(err))}. Request: {json.dumps(vars(request))}"
             )
         
-    def _remove_performer_performances_linked_to_post(self, post_id: int, performer_id: int) -> None:
+    def _remove_existing_performer_performances_linked_to_post(self, request: TagCreateRequest) -> None:
         """
         For a given performer, delete all tags between a specific post and any of their performances.
-        """     
-        return self.tags_dao.delete_performance_post_tags_by_performer_id(post_id=post_id, performer_id=performer_id)
+        """    
+        # get the performance to get the performer
+        performances_get_filter = PerformancesGetFilter(
+            ids=[request.tagged_entity_id]
+        )
+        performances = self.performances_mid.performances_get(performances_get_filter).performances
+
+        if len(performances) == 0:
+            raise Exception(f"Failed to create tag between post with id {request.tagged_in_entity_id} and performance with id {request.tagged_entity_id} because the performance does not exist")
+        
+        performer_id = performances[0].performer_id
+
+        return self.tags_dao.delete_performance_post_tags_by_performer_id(
+            post_id=request.tagged_in_entity_id,
+            performer_id=performer_id
+        )
 
     def tags_get(self, request: TagsGetFilter) -> TagsGetResult:
         process_enum_request_param(parameter_name="tagged_entity_type", parameter=request.tagged_entity_type, enum=TaggedEntityType)
