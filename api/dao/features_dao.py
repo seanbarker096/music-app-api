@@ -7,6 +7,7 @@ from api.typings.features import (
     FeatureCreateRequest,
     FeaturedEntityType,
     FeaturerType,
+    FeaturesDeleteRequest,
     FeaturesGetFilter,
 )
 
@@ -221,6 +222,16 @@ class FeaturesDAO:
 
         return features
     
+    def features_delete(self, request: FeaturesDeleteRequest) -> None:
+        query = """
+            DELETE FROM feature
+            WHERE id in %s
+        """
+
+        binds = set(request.ids)  # PyMySQL requires a unique list of values for DELETE statements
+
+        with self.db(self.config) as cursor:
+            cursor.execute(query, binds)
 
 
     def _build_feature_from_db_row(self, db_row: Dict[str, any]) -> Feature:

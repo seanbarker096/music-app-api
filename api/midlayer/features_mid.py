@@ -9,6 +9,7 @@ from api.typings.features import (
     FeatureCreateResult,
     FeaturedEntityType,
     FeaturerType,
+    FeaturesDeleteRequest,
     FeaturesGetFilter,
     FeaturesGetResult,
 )
@@ -168,3 +169,12 @@ class FeaturesMidlayerMixin(BaseMidlayerMixin):
             raise Exception(
                 f"Failed to create Feature because {json.dumps(str(err))}. Request: {json.dumps(vars(request))}"
             )
+        
+    def features_delete(self, request: FeaturesDeleteRequest) -> None:
+        if not request.ids or len(request.ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for ids: {request.ids}. At least one id must be provided",
+                "request.ids",
+            )
+        
+        return self.features_dao.features_delete(request)

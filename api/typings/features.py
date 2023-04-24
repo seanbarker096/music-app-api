@@ -91,3 +91,10 @@ class FeatureCreateResult:
 
     def __init__(self, feature: Feature) -> None:
         self.feature = feature
+
+
+class FeaturesDeleteRequest:
+    ids: List[int] = ...
+
+    def __init__(self, ids: List[int]) -> None:
+        self.ids = ids

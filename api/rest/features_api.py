@@ -6,6 +6,7 @@ from api.typings.features import (
     FeatureCreateRequest,
     FeaturedEntityType,
     FeaturerType,
+    FeaturesDeleteRequest,
     FeaturesGetFilter,
 )
 from api.utils.rest_utils import (
@@ -14,7 +15,6 @@ from api.utils.rest_utils import (
     process_api_set_request_param,
     process_enum_api_request_param,
     process_int_api_request_param,
-    process_int_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -57,6 +57,8 @@ def features_get():
         response=json.dumps(response), status=200, mimetype="application/json"
     )
 
+
+#TODO: Delete this api endpoint as dont think its used anymore
 @blueprint.route('/posts/', methods=['GET'])
 @auth
 def get_users_posts_features():
@@ -124,3 +126,13 @@ def feature_create():
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"
     )
+
+@blueprint.route("/features/", methods=["DELETE"])
+@auth
+def feature_delete():
+    feature_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=False)
+
+    tag_delete_request = FeaturesDeleteRequest(ids=feature_ids) 
+    flask.current_app.conns.midlayer.features_delete(request=tag_delete_request)
+
+    return flask.current_app.response_class(status=204, mimetype="application/json")
