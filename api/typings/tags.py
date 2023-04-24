@@ -75,12 +75,22 @@ class TagsGetFilter:
     tagged_entity_type: Optional[TaggedEntityType] = ...
     tagged_in_entity_type: Optional[TaggedInEntityType] = ...
     tagged_in_entity_id: Optional[int] = ...
+    # Filter out tags where the tagged_in_entity is linked to other tagged_entity_types (e.g. if a performance and a performer are tagged in the same post, only_single_tagged_entity_type = True would filter these tags out of any request). NOTE: This is current only implemented for PERFORMER and PERFORMANCE tagged_in_entity_types
+    only_single_tagged_entity_type: Optional[bool] = ... 
 
-    def __init__(self, tagged_entity_id: Optional[int] = None, tagged_entity_type: Optional[TaggedEntityType] = None, tagged_in_entity_type: Optional[TaggedInEntityType] = None, tagged_in_entity_id: Optional[int] = None) -> None:
+    def __init__(
+            self, 
+            tagged_entity_id: Optional[int] = None, 
+            tagged_entity_type: Optional[TaggedEntityType] = None, 
+            tagged_in_entity_type: Optional[TaggedInEntityType] = None, 
+            tagged_in_entity_id: Optional[int] = None,
+            only_single_tagged_entity_type: Optional[bool] = None
+            ) -> None:
         self.tagged_entity_id = tagged_entity_id
         self.tagged_entity_type = tagged_entity_type
         self.tagged_in_entity_type = tagged_in_entity_type
         self.tagged_in_entity_id = tagged_in_entity_id
+        self.only_single_tagged_entity_type = only_single_tagged_entity_type
 
 
 class TagsGetResult:

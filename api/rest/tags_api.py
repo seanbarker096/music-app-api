@@ -13,6 +13,7 @@ from api.utils.rest_utils import (
     auth,
     class_to_dict,
     process_api_set_request_param,
+    process_bool_api_request_param,
     process_enum_api_request_param,
     process_int_api_request_param,
     process_int_request_param,
@@ -70,12 +71,14 @@ def tags_get():
         "tagged_in_entity_type", TaggedInEntityType
     )
     tagged_in_entity_id = process_int_api_request_param("tagged_in_entity_id")
+    only_single_tagged_entity_type = process_bool_api_request_param("only_single_tagged_entity_type")
 
     request = TagsGetFilter(
         tagged_entity_id=tagged_entity_id, 
         tagged_entity_type=tagged_entity_type, 
         tagged_in_entity_type=tagged_in_entity_type, 
-        tagged_in_entity_id=tagged_in_entity_id
+        tagged_in_entity_id=tagged_in_entity_id,
+        only_single_tagged_entity_type=only_single_tagged_entity_type
         )
 
     tags = flask.current_app.conns.midlayer.tags_get(request).tags

@@ -26,13 +26,13 @@ class TagsDAO:
     db: FlaskDBConnectionManager
 
     TAG_SELECTS = [
-        "id as " + TagsDBAlias.TAG_ID,
-        "tagged_entity_type as " + TagsDBAlias.TAG_TAGGED_ENTITY_TYPE,
-        "tagged_entity_id as " + TagsDBAlias.TAG_TAGGED_ENTITY_ID,
-        "tagged_in_entity_type as " + TagsDBAlias.TAG_TAGGED_IN_ENTITY_TYPE,
-        "tagged_in_entity_id as " + TagsDBAlias.TAG_TAGGED_IN_ENTITY_ID,
-        "creator_id as " + TagsDBAlias.TAG_CREATOR_ID,
-        "is_deleted as " + TagsDBAlias.TAG_IS_DELETED,
+        "t.id as " + TagsDBAlias.TAG_ID,
+        "t.tagged_entity_type as " + TagsDBAlias.TAG_TAGGED_ENTITY_TYPE,
+        "t.tagged_entity_id as " + TagsDBAlias.TAG_TAGGED_ENTITY_ID,
+        "t.tagged_in_entity_type as " + TagsDBAlias.TAG_TAGGED_IN_ENTITY_TYPE,
+        "t.tagged_in_entity_id as " + TagsDBAlias.TAG_TAGGED_IN_ENTITY_ID,
+        "t.creator_id as " + TagsDBAlias.TAG_CREATOR_ID,
+        "t.is_deleted as " + TagsDBAlias.TAG_IS_DELETED,
     ]
 
     def __init__(self, config, db: Optional[FlaskDBConnectionManager] = None) -> None:
@@ -52,7 +52,7 @@ class TagsDAO:
             request.tagged_in_entity_type,
             request.tagged_in_entity_id,
             request.creator_id,
-            0
+            0,
         )
 
         with self.db(self.config) as cursor:
@@ -66,59 +66,76 @@ class TagsDAO:
             tagged_in_entity_type=request.tagged_in_entity_type,
             tagged_in_entity_id=request.tagged_in_entity_id,
             creator_id=request.creator_id,
-            is_deleted=False
+            is_deleted=False,
         )
 
     def tags_get(self, filter: TagsGetFilter) -> List[Tag]:
         selects = f"""
-            SELECT {', '.join(self.TAG_SELECTS)} from tag
+            SELECT {', '.join(self.TAG_SELECTS)} from tag as t
         """
 
         wheres = []
         binds = []
+        joins = []
 
-        wheres.append("is_deleted = %s")
+        wheres.append("t.is_deleted = %s")
         binds.append(0)
 
+        if filter.only_single_tagged_entity_type is True and filter.tagged_entity_type in (TaggedEntityType.PERFORMANCE.value, TaggedEntityType.PERFORMER.value):
+            joins.append(
+                """
+                LEFT JOIN tag t2
+                ON t.tagged_in_entity_type = t2.tagged_in_entity_type
+                AND t.tagged_in_entity_id = t2.tagged_in_entity_id
+                AND t2.tagged_entity_type = %s
+                """
+            )
+            other_tagged_entity_type = TaggedEntityType.PERFORMER.value if filter.tagged_entity_type == TaggedEntityType.PERFORMANCE.value else TaggedEntityType.PERFORMANCE.value
+
+            binds.append(other_tagged_entity_type)
+            wheres.append('t2.id is null')
+
         if filter.tagged_entity_id:
-            wheres.append("tagged_entity_id = %s")
+            wheres.append("t.tagged_entity_id = %s")
             binds.append(filter.tagged_entity_id)
 
         if filter.tagged_entity_type:
-            wheres.append("tagged_entity_type = %s")
+            wheres.append("t.tagged_entity_type = %s")
             binds.append(filter.tagged_entity_type)
 
         if filter.tagged_in_entity_id:
-            wheres.append("tagged_in_entity_id = %s")
+            wheres.append("t.tagged_in_entity_id = %s")
             binds.append(filter.tagged_in_entity_id)
 
         if filter.tagged_in_entity_type:
-            wheres.append("tagged_in_entity_type = %s")
+            wheres.append("t.tagged_in_entity_type = %s")
             binds.append(filter.tagged_in_entity_type)
 
         where_string = build_where_query_string(wheres, "AND")
 
-        sql = selects + where_string
+        sql = f"""
+            {selects}
+            {''.join(joins)}
+            {where_string}
+            """
 
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
         return [self._build_tag_from_db_row(row) for row in rows]
-    
+
     def tags_delete(self, request: TagDeleteRequest) -> None:
         query = """
             DELETE FROM tag t
             WHERE t.id in %s
         """
 
-        binds = (
-            set(request.ids) # PyMySQL requires a unique list of values for DELETE statements
-        )
+        binds = set(request.ids)  # PyMySQL requires a unique list of values for DELETE statements
 
         with self.db(self.config) as cursor:
             cursor.execute(query, binds)
-        
+
     def delete_performance_post_tags_by_performer_id(self, post_id: int, performer_id: int) -> None:
         """
         For a given performer, delete all tags between a specific post and any of their performances.
@@ -140,7 +157,7 @@ class TagsDAO:
             TaggedEntityType.PERFORMANCE.value,
             TaggedInEntityType.POST.value,
             post_id,
-            performer_id
+            performer_id,
         )
 
         with self.db(self.config) as cursor:
@@ -176,5 +193,5 @@ class TagsDAO:
             tagged_in_entity_type=tagged_in_entity_type,
             tagged_in_entity_id=tagged_in_entity_id,
             creator_id=creator_id,
-            is_deleted=is_deleted
+            is_deleted=is_deleted,
         )

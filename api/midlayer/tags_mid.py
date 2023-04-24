@@ -19,7 +19,11 @@ from api.typings.tags import (
     TagsGetFilter,
     TagsGetResult,
 )
-from api.utils.rest_utils import process_enum_request_param, process_int_request_param
+from api.utils.rest_utils import (
+    process_bool_request_param,
+    process_enum_request_param,
+    process_int_request_param,
+)
 from exceptions.exceptions import InvalidArgumentException
 
 
@@ -131,6 +135,7 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
         process_int_request_param("tagged_entity_id", request.tagged_entity_id)
         process_enum_request_param(parameter_name="tagged_in_entity_type", parameter=request.tagged_in_entity_type, enum=TaggedInEntityType)
         process_int_request_param("tagged_in_entity_id", request.tagged_in_entity_id)
+        process_bool_request_param(parameter_name="only_single_tagged_entity_type", parameter=request.only_single_tagged_entity_type)
 
         if not request.tagged_entity_id and not request.tagged_in_entity_id and not request.tagged_in_entity_type and not request.tagged_entity_type:
             raise InvalidArgumentException(
