@@ -6,6 +6,7 @@ class User:
     username: str
     first_name: str
     second_name: str
+    full_name: str
     create_time: float
     is_deleted: bool
     email: str
@@ -20,6 +21,7 @@ class User:
         username: str,
         first_name: str,
         second_name: str,
+        full_name: str,
         create_time: int,
         is_deleted: bool,
         email: str,
@@ -32,6 +34,7 @@ class User:
         self.username = username
         self.first_name = first_name
         self.second_name = second_name
+        self.full_name = full_name
         self.create_time = create_time
         self.is_deleted = is_deleted
         self.email = email
@@ -51,6 +54,7 @@ class UserWithPassword:
         self.username = user.username
         self.first_name = user.first_name
         self.second_name = user.second_name
+        self.full_name = user.full_name
         self.create_time = user.create_time
         self.is_deleted = user.is_deleted
         self.email = user.email
@@ -65,12 +69,15 @@ class UserWithPassword:
 
 class UsersGetFilter:
     user_ids: Optional[List[str]] = None
+    search_query: Optional[str] = None
 
     def __init__(
         self,
         user_ids: Optional[List[str]] = None,
+        search_query: Optional[str] = None,
     ) -> None:
         self.user_ids = user_ids
+        self.search_query = search_query
 
 
 class UsersGetProjection:

@@ -24,6 +24,7 @@ class UserDBAlias:
     USER_USERNAME = "user_username"
     USER_FIRST_NAME = "user_first_name"
     USER_SECOND_NAME = "user_second_name"
+    USER_FULL_NAME = "user_full_name"
     USER_CREATE_TIME = "user_create_time"
     USER_IS_DELETED = "user_is_deleted"
     USER_EMAIL = "user_email"
@@ -38,11 +39,13 @@ class UserDBAlias:
 class UsersDAO(object):
     db: DBConnectionManager
 
+    # TODO: Add full_name if we decide we want it returned for GET requests
     USER_SELECTS = [
         "id as " + UserDBAlias.USER_ID,
         "username as " + UserDBAlias.USER_USERNAME,
         "first_name as " + UserDBAlias.USER_FIRST_NAME,
         "second_name as " + UserDBAlias.USER_SECOND_NAME,
+        "full_name as " + UserDBAlias.USER_FULL_NAME,
         "UNIX_TIMESTAMP(create_time) as " + UserDBAlias.USER_CREATE_TIME,
         "is_deleted as " + UserDBAlias.USER_IS_DELETED,
         "email as " + UserDBAlias.USER_EMAIL,
@@ -74,6 +77,17 @@ class UsersDAO(object):
         if filter.user_ids and isinstance(filter.user_ids, list):
             wheres.append("id in %s")
             binds.append(filter.user_ids)
+
+        if filter.search_query:
+            search_wheres = []
+            search_wheres.append("username LIKE %s")
+            binds.append("%" + filter.search_query + "%")
+            search_wheres.append('full_name LIKE %s')
+            binds.append("%" + filter.search_query + "%")
+
+            search_where_string = '(' + ' OR '.join(search_wheres) + ')'
+            wheres.append(search_where_string)
+
 
         where_string = build_where_query_string(wheres, "AND")
 
@@ -131,8 +145,8 @@ class UsersDAO(object):
     def user_create(self, request: UserCreateRequest, password_hash: str) -> User:
 
         sql = """
-            INSERT INTO users(username, first_name, second_name, create_time, is_deleted, email, avatar_file_uuid, last_login_date, language_id, timezone_id, password_hash, salt)
-            VALUES(%s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
+            INSERT INTO users(username, first_name, second_name, full_name, create_time, is_deleted, email, avatar_file_uuid, last_login_date, language_id, timezone_id, password_hash, salt)
+            VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
         """
 
         now = time.time()
@@ -143,6 +157,7 @@ class UsersDAO(object):
             request.username,
             request.first_name,
             request.second_name,
+            request.first_name + request.second_name,
             now,
             0,
             request.email,
@@ -165,6 +180,7 @@ class UsersDAO(object):
                     username=request.username,
                     first_name=request.first_name,
                     second_name=request.second_name,
+                    full_name=request.first_name + request.second_name,
                     create_time=now,
                     is_deleted=False,
                     avatar_file_uuid=None,
@@ -243,6 +259,9 @@ class UsersDAO(object):
         assert_row_key_exists(db_row, UserDBAlias.USER_SECOND_NAME)
         second_name = db_row[UserDBAlias.USER_SECOND_NAME]
 
+        assert_row_key_exists(db_row, UserDBAlias.USER_FULL_NAME)
+        full_name = db_row[UserDBAlias.USER_FULL_NAME]
+
         assert_row_key_exists(db_row, UserDBAlias.USER_CREATE_TIME)
         create_unix_time = int(db_row[UserDBAlias.USER_CREATE_TIME])
 
@@ -269,6 +288,7 @@ class UsersDAO(object):
             username=username,
             first_name=first_name,
             second_name=second_name,
+            full_name=full_name,
             create_time=create_unix_time,
             is_deleted=is_deleted,
             email=email,

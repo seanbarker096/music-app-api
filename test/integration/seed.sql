@@ -56,6 +56,7 @@ CREATE TABLE gigs.users (
   username varchar(16) NOT NULL,
   first_name varchar(128) NOT NULL,
   second_name varchar(128) NOT NULL,
+  full_name varchar(256) NOT NULL,
   create_time datetime NOT NULL,
   is_deleted tinyint(1) NOT NULL DEFAULT '0',
   email varchar(100) NOT NULL,

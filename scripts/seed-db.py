@@ -132,7 +132,16 @@ request = UserCreateRequest(
 
 user_one = users_dao.user_create(request=request, password_hash=password_hash)
 
-print(user_one)
+request = UserCreateRequest(
+    username="gregory",
+    first_name="Greg",
+    second_name="Baxter",
+    email="gg_no_re@sky.com",
+    password="password",
+)
+
+user_one = users_dao.user_create(request=request, password_hash=password_hash)
+
 
 
 # Create avatar file

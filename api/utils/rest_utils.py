@@ -13,21 +13,24 @@ from exceptions.response.exceptions import (
 )
 
 
-def process_string_api_request_param(parameter_name: str, optional=True) -> str:
+def process_string_api_request_param(parameter_name: str, optional=True, allow_empty_string = False) -> str:
     """Validates and returns a flask request string parameter"""
     parameter = flask.request.values.get(parameter_name, None)
 
-    return process_string_request_param(parameter_name, parameter, optional)
+    return process_string_request_param(parameter_name, parameter, optional, allow_empty_string)
 
 
 def process_string_api_post_request_param(request_body: Dict[str, any], parameter_name: str) -> str:
     """Validates and returns a flask json request body string parameter"""
     parameter = request_body.get(parameter_name, None)
 
-    return process_string_request_param(parameter_name, parameter, optional=False)
+    return process_string_request_param(
+        parameter_name,
+        parameter, optional=False,
+    )
 
 
-def process_string_request_param(parameter_name: str, parameter: any, optional=True) -> str:
+def process_string_request_param(parameter_name: str, parameter: any, optional=True, allow_empty_string=False) -> str:
     """Validates and returns a flask request body string parameter"""
 
     if parameter is None and optional:
@@ -36,7 +39,7 @@ def process_string_request_param(parameter_name: str, parameter: any, optional=T
     if parameter is None and not optional:
         raise Exception(f"Missing required request parameter '{parameter_name}'")
 
-    if not isinstance(parameter, str) or len(parameter) == 0:
+    if not isinstance(parameter, str) or (not allow_empty_string and len(parameter) == 0):
         raise Exception(
             f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid string"
         )

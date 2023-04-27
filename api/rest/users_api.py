@@ -6,8 +6,10 @@ import flask
 from api.typings.users import UsersGetFilter, UserUpdateRequest
 from api.utils.rest_utils import (
     auth,
+    class_to_dict,
     process_api_set_request_param,
     process_string_api_post_request_param,
+    process_string_api_request_param,
 )
 
 blueprint = flask.Blueprint("users", __name__)
@@ -66,6 +68,28 @@ def user_get_by_id(user_id: int):
 
     response = {}
     response["user"] = vars(user)
+
+    return flask.current_app.response_class(
+        response=json.dumps(response), status=200, mimetype="application/json"
+    )
+
+@blueprint.route("/search", methods=["GET"])
+@auth
+def user_search():
+    search_query = process_string_api_request_param(
+        request_body=flask.request.json, parameter_name="query", optional=False, allow_empty_string=True
+    )
+
+    filter = UsersGetFilter(search_query=search_query)
+    result = flask.current_app.conns.midlayer.users_get(filter)
+
+    response = {}
+
+    user_dicts = []
+    for user in result.users:
+        user_dicts.append(class_to_dict(user))
+
+    response["users"] = user_dicts
 
     return flask.current_app.response_class(
         response=json.dumps(response), status=200, mimetype="application/json"

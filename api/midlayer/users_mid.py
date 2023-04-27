@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from api.dao.users_dao import UsersDAO
@@ -15,6 +16,7 @@ from api.typings.users import (
     UserWithPassword,
 )
 from api.utils import hash_password, validate_password, verify_hash
+from api.utils.rest_utils import process_string_request_param
 from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
@@ -37,9 +39,17 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         super().__init__(config)
 
     def users_get(self, filter: UsersGetFilter) -> UsersGetResult:
-        if not isinstance(filter.user_ids, list) or len(filter.user_ids) == 0:
+        if filter.user_ids and (not isinstance(filter.user_ids, list) or len(filter.user_ids) == 0):
             raise InvalidArgumentException(
                 "user_ids filter field must be a non empty list", filter.user_ids
+            )
+        
+        search_query = process_string_request_param('search_query', filter.search_query, optional=True, allow_empty_string=True)
+
+        if not search_query and not filter.user_ids:
+            raise InvalidArgumentException(
+                 f"Must provide at least one filter field. Request: {vars(filter)}",
+                 "filter"
             )
 
         users = []
