@@ -77,7 +77,7 @@ def user_get_by_id(user_id: int):
 @auth
 def user_search():
     search_query = process_string_api_request_param(
-        request_body=flask.request.json, parameter_name="query", optional=False, allow_empty_string=True
+        parameter_name="search_query", optional=False, allow_empty_string=True
     )
 
     filter = UsersGetFilter(search_query=search_query)

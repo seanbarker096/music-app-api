@@ -327,6 +327,7 @@ class UsersDAO(object):
             username=user_with_password.username,
             first_name=user_with_password.first_name,
             second_name=user_with_password.second_name,
+            full_name=user_with_password.full_name,
             create_time=user_with_password.create_time,
             is_deleted=user_with_password.is_deleted,
             email=user_with_password.email,

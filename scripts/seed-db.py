@@ -140,9 +140,7 @@ request = UserCreateRequest(
     password="password",
 )
 
-user_one = users_dao.user_create(request=request, password_hash=password_hash)
-
-
+user_two = users_dao.user_create(request=request, password_hash=password_hash)
 
 # Create avatar file
 avatar_file_uuid = "123456"
