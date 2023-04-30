@@ -68,6 +68,7 @@ CREATE TABLE gigs.users (
   salt varchar(16) NULL,
   PRIMARY KEY (id),
   UNIQUE INDEX username_idx(username),
+  INDEX full_name_idx(full_name), -- For user search
   UNIQUE INDEX email_idx(email)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;

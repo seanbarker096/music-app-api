@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from api.file_service.typings.typings import FileServiceFile
+
 
 class User:
     id: int
@@ -12,6 +14,7 @@ class User:
     email: str
     last_login_date: float
     avatar_file_uuid: Optional[str]
+    avatar_file: Optional[FileServiceFile]
     language_id: Optional[str]
     timezone_id: Optional[int]
 
@@ -29,6 +32,7 @@ class User:
         language_id: Optional[str],
         timezone_id: Optional[str],
         avatar_file_uuid: Optional[str] = None,
+        avatar_file: Optional[FileServiceFile] = None,
     ):
         self.id = id
         self.username = username
@@ -42,6 +46,7 @@ class User:
         self.last_login_date = last_login_date
         self.language_id = language_id
         self.timezone_id = timezone_id
+        self.avatar_file = avatar_file
 
 
 class UserWithPassword:
@@ -82,9 +87,11 @@ class UsersGetFilter:
 
 class UsersGetProjection:
     password: bool = ...
+    include_profile_image: bool = ...
 
-    def __init__(self, password: bool = False):
+    def __init__(self, password: bool = False, include_profile_image: bool = False):
         self.password = password
+        self.include_profile_image = True if include_profile_image is True else False
 
 
 class UsersGetResult:

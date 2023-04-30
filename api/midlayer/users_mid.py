@@ -3,6 +3,8 @@ from typing import Optional
 
 from api.dao.users_dao import UsersDAO
 from api.db.db import DBConnectionManager, DBDuplicateKeyException
+from api.file_service.api import FileService
+from api.file_service.typings.typings import FilesGetFilter, FilesGetResult
 from api.midlayer import BaseMidlayerMixin
 from api.typings.users import (
     User,
@@ -27,18 +29,20 @@ from exceptions.response.exceptions import (
 
 
 class UserMidlayerConnections:
-    def __init__(self, config, users_dao: Optional[UsersDAO] = None):
+    def __init__(self, config, users_dao: Optional[UsersDAO] = None, file_service: Optional[FileService] = None):
         self.users_dao = users_dao if users_dao else UsersDAO(config=config)
+        self.file_service = file_service if file_service else FileService(config=config)
 
 
 class UsersMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[UserMidlayerConnections] = None, **kwargs):
         self.users_dao = conns.users_dao if conns and conns.users_dao else UsersDAO(config=config)
+        self.file_service = conns.file_service if conns and conns.file_service else FileService(config=config)
 
         ## Call the next mixins constructor
         super().__init__(config)
 
-    def users_get(self, filter: UsersGetFilter) -> UsersGetResult:
+    def users_get(self, filter: UsersGetFilter, projection: Optional[UsersGetProjection] = UsersGetProjection()) -> UsersGetResult:
         if filter.user_ids and (not isinstance(filter.user_ids, list) or len(filter.user_ids) == 0):
             raise InvalidArgumentException(
                 "user_ids filter field must be a non empty list", filter.user_ids
@@ -56,6 +60,23 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
 
         try:
             users = self.users_dao.users_get(filter)
+
+            if projection.include_profile_image is True:
+
+                profile_image_files_by_uuid = {}
+                uuids = [user.avatar_file_uuid for user in users if user.avatar_file_uuid is not None]
+
+                if len(uuids) > 0:
+                    filter = FilesGetFilter(uuids=uuids)
+
+                    profile_image_files = self.file_service.get_files(filter).files
+
+                    profile_image_files_by_uuid = {file.uuid: file for file in profile_image_files}
+
+                for user in users:
+                    if user.avatar_file_uuid:
+                        user.avatar_file = profile_image_files_by_uuid.get(user.avatar_file_uuid, None)
+
         except:
             raise Exception("Failed to get users")
 

@@ -3,11 +3,12 @@ from unittest.mock import Mock
 
 import flask
 
-from api.typings.users import UsersGetFilter, UserUpdateRequest
+from api.typings.users import UsersGetFilter, UsersGetProjection, UserUpdateRequest
 from api.utils.rest_utils import (
     auth,
     class_to_dict,
     process_api_set_request_param,
+    process_bool_api_request_param,
     process_string_api_post_request_param,
     process_string_api_request_param,
 )
@@ -44,14 +45,17 @@ def user_update(user_id: int):
 @auth
 def users_get():
     user_ids = process_api_set_request_param(parameter_name="user_ids[]", type=int)
+    include_profile_image = process_bool_api_request_param(parameter_name="include_profile_image", optional=True)
 
     filter = UsersGetFilter(user_ids=user_ids)
-    result = flask.current_app.conns.midlayer.users_get(filter)
+    projection = UsersGetProjection(include_profile_image=include_profile_image)
+    result = flask.current_app.conns.midlayer.users_get(filter, projection)
 
     response = {}
 
     user_dicts = []
     for user in result.users:
+        user.avatar_file = class_to_dict(user.avatar_file) if user.avatar_file else None
         user_dicts.append(vars(user))
 
     response["users"] = user_dicts
@@ -79,14 +83,18 @@ def user_search():
     search_query = process_string_api_request_param(
         parameter_name="search_query", optional=False, allow_empty_string=True
     )
+    include_profile_image = process_bool_api_request_param(parameter_name="include_profile_image", optional=True)
+    
 
     filter = UsersGetFilter(search_query=search_query)
-    result = flask.current_app.conns.midlayer.users_get(filter)
+    projection = UsersGetProjection(include_profile_image=include_profile_image)
+    result = flask.current_app.conns.midlayer.users_get(filter, projection)
 
     response = {}
 
     user_dicts = []
     for user in result.users:
+        user.avatar_file = class_to_dict(user.avatar_file) if user.avatar_file else None
         user_dicts.append(class_to_dict(user))
 
     response["users"] = user_dicts

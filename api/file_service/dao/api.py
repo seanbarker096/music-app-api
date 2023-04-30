@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List, Optional
 
 from api.db.db import DBConnectionManager, FlaskDBConnectionManager
@@ -128,7 +129,7 @@ class FileServiceDAO:
 
         if not filter.uuids and not filter.ids:
             raise InvalidArgumentException(
-                "Must provide at least one filter field when getting files", source="filter"
+                f"Must provide at least one filter field when getting files. Filter: {json.dumps(vars(filter))}", source="filter"
             )
 
         where_string = build_where_query_string(wheres, "AND")
