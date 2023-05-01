@@ -67,10 +67,15 @@ class AuthStateCreateResult:
 
 
 class AuthStateDeleteRequest:
-    refresh_token: str = ...
+    refresh_token: Optional[str] = ...
+    owner_id: Optional[int] = ...
+    session_id: Optional[str] = ...
 
-    def __init__(self, refresh_token: str):
+    def __init__(self, refresh_token: Optional[str] = None, owner_id: Optional[int] = None, session_id: Optional[str] = None):
         self.refresh_token = refresh_token
+        self.owner_id = owner_id
+        self.session_id = session_id
+
 
 
 class TokenCreateRequest:

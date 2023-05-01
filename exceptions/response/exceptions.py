@@ -44,10 +44,10 @@ class FileTooLargeException(ResponseBaseException):
     _http_code = 400
     _name = "FILE_TOO_LARGE"
     _code = ErrorCodes.FILE_TOO_LARGE.value
-    _message = "File is too large."
+    _detail = "File is too large."
 
-    def __init__(self, source: str):
-        super().__init__(source)
+    def __init__(self, source: str,  message: Optional[str] = None):
+        super().__init__(message, source)
 
 
 class FileUUIDNotUniqueException(ResponseBaseException):
@@ -56,7 +56,7 @@ class FileUUIDNotUniqueException(ResponseBaseException):
     _code = ErrorCodes.FILE_UUID_NOT_UNIQUE.value
     _detail = "File uuid must be unique."
 
-    def __init__(self, source: str, message: str):
+    def __init__(self, source: str, message: Optional[str] = None):
         super().__init__(message, source)
 
 
@@ -64,14 +64,10 @@ class FileNotFoundException(ResponseBaseException):
     _http_code = 404
     _name = "FILE_NOT_FOUND"
     _code = ErrorCodes.FILE_NOT_FOUND
-    _message = "File was not found"
+    _detail = "File was not found"
 
     def __init__(self, source: str, message: Optional[str] = None):
-        ## Allow overwriting of default message
-        if message:
-            self._message = message
-
-        super().__init__(message=self._message, source=source)
+        super().__init__(message=message, source=source)
 
 
 class BadRequestException(ResponseBaseException):
@@ -111,9 +107,9 @@ class UserNotFoundException(ResponseBaseException):
         super().__init__(message=message)
 
 
-class InvalidAuthTokenException(ResponseBaseException):
-    _http_code = 401
-    _name = "INVALID_AUTH_TOKEN"
+class InvalidTokenException(ResponseBaseException):
+    _http_code = 400
+    _name = "invalid_auth_token"
     _code = ErrorCodes.INVALID_AUTH_TOKEN.value
     _detail = "Invalid authentication token"
 

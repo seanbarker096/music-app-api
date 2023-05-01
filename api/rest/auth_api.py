@@ -24,7 +24,11 @@ from api.utils.rest_utils import (
     process_string_api_post_request_param,
     remove_bearer_from_token,
 )
-from exceptions.response.exceptions import UserAlreadyExistsException
+from exceptions.response.exceptions import (
+    InvalidTokenException,
+    ResponseBaseException,
+    UserAlreadyExistsException,
+)
 
 blueprint = flask.Blueprint("auth", __name__)
 
@@ -82,10 +86,18 @@ def login():
 def signup():
     request = flask.request.json
 
-    password = process_string_api_post_request_param(request_body=request, parameter_name="password")
-    username = process_string_api_post_request_param(request_body=request, parameter_name="username")
-    first_name = process_string_api_post_request_param(request_body=request, parameter_name="first_name")
-    second_name = process_string_api_post_request_param(request_body=request, parameter_name="second_name")
+    password = process_string_api_post_request_param(
+        request_body=request, parameter_name="password"
+    )
+    username = process_string_api_post_request_param(
+        request_body=request, parameter_name="username"
+    )
+    first_name = process_string_api_post_request_param(
+        request_body=request, parameter_name="first_name"
+    )
+    second_name = process_string_api_post_request_param(
+        request_body=request, parameter_name="second_name"
+    )
     email = process_string_api_post_request_param(request_body=request, parameter_name="email")
 
     user_create_request = UserCreateRequest(
@@ -153,9 +165,14 @@ def validate_auth_session():
 
 @blueprint.route("/token/", methods=["POST"])
 def get_token():
+    """
+    Use to create a new access token from a refresh token
+    """
     request = flask.request.json
 
-    token_type = process_string_api_post_request_param(request_body=request, parameter_name="token_type")
+    token_type = process_string_api_post_request_param(
+        request_body=request, parameter_name="token_type"
+    )
 
     if token_type == "access":
         refresh_token = flask.request.headers.get("Refresh-Token")
@@ -183,5 +200,18 @@ def get_token():
                 response=json.dumps(response), status=200, mimetype="application/json"
             )
 
-        except Exception:
-            raise Exception("Failed to create a new auth token")
+        except ResponseBaseException as err:
+            error_json = {
+                "status": "error",
+                "error": {
+                    "code": err.get_code(),
+                    "message": err.get_detail(),
+                }
+            }
+
+            return flask.current_app.response_class(
+                response=error_json, status=err.get_http_code(), mimetype="application/json"
+            )
+        
+        except Exception as err:
+            raise Exception(f"Failed to create a new token because {json.dumps(str(err))}")

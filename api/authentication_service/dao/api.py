@@ -1,8 +1,13 @@
 import json
+import logging
 from typing import Optional
 
-from api.authentication_service.typings import TokenCreateRequest
+from api.authentication_service.typings import (
+    AuthStateDeleteRequest,
+    TokenCreateRequest,
+)
 from api.db.db import DBConnectionManager, FlaskDBConnectionManager
+from api.db.utils.db_util import build_where_query_string
 
 
 class AuthTokenServiceDAO:
@@ -70,11 +75,30 @@ class AuthTokenServiceDAO:
 
         return encoded_token
 
-    def token_delete(self, token: str) -> int:
-        sql = f"""
-            DELETE FROM auth_tokens WHERE token = %s
+    def token_delete(self, request: AuthStateDeleteRequest) -> int:
+        delete = f"""
+            DELETE FROM auth_tokens
         """
-        binds = (token,)
+
+        wheres = []
+        binds = []
+
+        if request.refresh_token:
+            wheres.append("token = %s")
+            binds.append(request.refresh_token)
+        
+        if request.session_id:
+            wheres.append("session_id = %s")
+            binds.append(request.session_id)
+
+        if request.owner_id:
+            wheres.append("owner_id = %s")
+            binds.append(request.owner_id)
+
+        where_string = build_where_query_string(wheres, 'AND') 
+
+        sql = f"{delete} {where_string}"
+
         row_count = None
 
         with self.db(self.config) as cursor:
@@ -83,10 +107,9 @@ class AuthTokenServiceDAO:
             row_count = cursor.rowcount
 
         if row_count == 0:
-            raise Exception(f"Failed to remove token {token} from the database")
+            logging.info(f"Failed to remove token from the database. Request: {json.dumps(vars(request))}")
 
-        if row_count > 1:
-            ## TODO: Log warning here as token should be unique
-            ...
+        if row_count > 1 and (request.refresh_token or (request.session_id and request.owner_id)):
+            logging.info(f"More than one token removed from the database. Request: {json.dumps(vars(request))}")
 
         return row_count

@@ -7,10 +7,7 @@ import flask
 
 from api.authentication_service.typings import AuthUser, TokenType
 from exceptions.exceptions import InvalidArgumentException
-from exceptions.response.exceptions import (
-    InvalidAuthTokenException,
-    ResponseBaseException,
-)
+from exceptions.response.exceptions import InvalidTokenException, ResponseBaseException
 
 
 def process_string_api_request_param(parameter_name: str, optional=True, allow_empty_string = False) -> str:
@@ -235,7 +232,7 @@ def auth(func):
                 ## If auth token valid return
                 return func(*args, **kwargs)
 
-            except InvalidAuthTokenException:
+            except InvalidTokenException:
                 ## If auth service throws try to validate refresh token
                 pass
 

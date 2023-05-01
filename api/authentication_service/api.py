@@ -1,3 +1,4 @@
+import json
 import logging
 import secrets
 import time
@@ -19,9 +20,13 @@ from api.authentication_service.typings import (
     TokenCreateRequest,
     TokenType,
 )
-from api.utils.rest_utils import remove_bearer_from_token
+from api.utils.rest_utils import (
+    process_int_request_param,
+    process_string_request_param,
+    remove_bearer_from_token,
+)
 from exceptions.exceptions import InvalidArgumentException
-from exceptions.response.exceptions import InvalidAuthTokenException
+from exceptions.response.exceptions import InvalidTokenException
 
 
 class TokenAuthService(ABC):
@@ -118,7 +123,15 @@ class JWTTokenAuthService(TokenAuthService):
             return self._generate_token(payload, TokenType.ACCESS.value, auth_user.role)
 
         if token_type == TokenType.REFRESH.value:
-            token = self._generate_token(payload, TokenType.REFRESH.value, auth_user.role)
+            try:
+                # Delete any existing refresh tokens for this user
+                # TODO: Fine tune api to only delete tokens for this user + device combo, to ensure we don't log them 
+                # out of other devices
+                self.delete_auth_state(request=AuthStateDeleteRequest(owner_id=user_id))
+            except:
+                pass
+
+            token = self._generate_token(payload, TokenType.REFRESH.value, auth_user.role)        
             self._persist_token(token, owner_id=user_id, session_id=session_id)
 
             return token
@@ -132,18 +145,18 @@ class JWTTokenAuthService(TokenAuthService):
                 token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
             )
         except jwt.ExpiredSignatureError:
-            raise InvalidAuthTokenException(
+            raise InvalidTokenException(
                 f"Failed to validate token {token} because it has expired"
             )
 
+        ## We also need to check the REFRESH token is saved in the db for refresh tokens
         if token_type == TokenType.REFRESH.value:
-            try:
-                ## We also need to check the REFRESH token is saved in the db for this session
+            try:   
                 self.auth_dao.get_token_by_user_id_and_session_id(
                     user_id=decoded_token["user_id"], session_id=decoded_token["session_id"]
                 )
             except:
-                raise InvalidAuthTokenException(
+                raise InvalidTokenException(
                     f"Failed to validate token {token} of type {TokenType.REFRESH.value} as it could not be found. It may have been deleted and is therefore no longer valid"
                 )
         return decoded_token
@@ -181,12 +194,17 @@ class JWTTokenAuthService(TokenAuthService):
         ...
 
     def delete_auth_state(self, request: AuthStateDeleteRequest) -> None:
-        if not request.refresh_token or len(request.refresh_token) == 0:
+        process_string_request_param('refresh_token', request.refresh_token, optional=True)    
+        process_string_request_param('session_id', request.session_id, optional=True)
+        process_int_request_param('owner_id', request.owner_id, optional=True)
+
+        if not request.refresh_token and not request.session_id and not request.owner_id:
             raise InvalidArgumentException(
-                message=f"Invalid argument {request.refresh_token}", source="refresh_token"
+                f"Must provide at least one of refresh_token, session_id or owner_id when deleting auth state. Request: {json.dumps(vars(request))}",
+                'request'
             )
 
-        self.auth_dao.token_delete(request.refresh_token)
+        self.auth_dao.token_delete(request)
 
     # def authenticate(self, request: AuthenticateRequest) -> AuthState:
     #     """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
