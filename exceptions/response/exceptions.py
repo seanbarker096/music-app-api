@@ -11,7 +11,7 @@ class ResponseBaseException(Exception):
 
     _http_code: int  # Should be set by the parent error class
     _name: str
-    _code: int
+    _enum_value: ErrorCodes
     _detail: str  # Sent to front end but not shown to client. Set these in the Exception itself
     _source: Optional[str] = None
     _message: str  # For debugging and logging purposes. This message is passed in when creating the exception
@@ -30,8 +30,8 @@ class ResponseBaseException(Exception):
     def get_http_code(self):
         return self._http_code
 
-    def get_code(self):
-        return self._code
+    def get_enum_value(self):
+        return self._enum_value
 
     def get_name(self):
         return self._name
@@ -39,11 +39,19 @@ class ResponseBaseException(Exception):
     def get_source(self):
         return self._source
 
+class UnknownException(ResponseBaseException):
+    _http_code = 500
+    _name = "UNKNOWN_ERROR"
+    _enum_value = ErrorCodes.UNKNOWN_ERROR.value
+    _detail = "An unknown error occurred"
+
+    def __init__(self, source: Optional[str] = None, message: Optional[str] = None):
+        super().__init__(message, source)
 
 class FileTooLargeException(ResponseBaseException):
     _http_code = 400
     _name = "FILE_TOO_LARGE"
-    _code = ErrorCodes.FILE_TOO_LARGE.value
+    _enum_value = ErrorCodes.FILE_TOO_LARGE.value
     _detail = "File is too large."
 
     def __init__(self, source: str,  message: Optional[str] = None):
@@ -53,7 +61,7 @@ class FileTooLargeException(ResponseBaseException):
 class FileUUIDNotUniqueException(ResponseBaseException):
     _http_code = 400
     _name = "FILE_UUID_NOT_UNIQUE"
-    _code = ErrorCodes.FILE_UUID_NOT_UNIQUE.value
+    _enum_value = ErrorCodes.FILE_UUID_NOT_UNIQUE.value
     _detail = "File uuid must be unique."
 
     def __init__(self, source: str, message: Optional[str] = None):
@@ -63,7 +71,7 @@ class FileUUIDNotUniqueException(ResponseBaseException):
 class FileNotFoundException(ResponseBaseException):
     _http_code = 404
     _name = "FILE_NOT_FOUND"
-    _code = ErrorCodes.FILE_NOT_FOUND
+    _enum_value = ErrorCodes.FILE_NOT_FOUND
     _detail = "File was not found"
 
     def __init__(self, source: str, message: Optional[str] = None):
@@ -80,7 +88,7 @@ class CreateFileDownloadURLFailedException(ResponseBaseException):
     # why the action failed
     _http_code = 500
     _name = "CREATE_FILE_DOWNLOAD_URL_FAILED"
-    _code = ErrorCodes.CREATE_FILE_DOWNLOAD_URL_FAILED.value
+    _enum_value = ErrorCodes.CREATE_FILE_DOWNLOAD_URL_FAILED.value
     _detail = "Failed to create file download url."
 
     def __init__(self, message: str):
@@ -90,7 +98,7 @@ class CreateFileDownloadURLFailedException(ResponseBaseException):
 class UserAlreadyExistsException(ResponseBaseException):
     _http_code = 400
     _name = "USER_ALREADY_EXISTS"
-    _code = ErrorCodes.USER_ALREADY_EXISTS.value
+    _enum_value = ErrorCodes.USER_ALREADY_EXISTS.value
     _detail = "Failed to create user as they already exist."
 
     def __init__(self, message: str):
@@ -100,7 +108,7 @@ class UserAlreadyExistsException(ResponseBaseException):
 class UserNotFoundException(ResponseBaseException):
     _http_code = 404
     _name = "USER_NOT_FOUND"
-    _code = ErrorCodes.USER_NOT_FOUND.value
+    _enum_value = ErrorCodes.USER_NOT_FOUND.value
     _detail = "Failed to find user"
 
     def __init__(self, message: str):
@@ -110,7 +118,7 @@ class UserNotFoundException(ResponseBaseException):
 class InvalidTokenException(ResponseBaseException):
     _http_code = 400
     _name = "invalid_auth_token"
-    _code = ErrorCodes.INVALID_AUTH_TOKEN.value
+    _enum_value = ErrorCodes.INVALID_AUTH_TOKEN.value
     _detail = "Invalid authentication token"
 
     def __init__(self, message: str):
@@ -120,7 +128,7 @@ class InvalidTokenException(ResponseBaseException):
 class PerformanceNotFoundException(ResponseBaseException):
     _http_code = 404
     _name = "PERFORMANCE_NOT_FOUND"
-    _code = ErrorCodes.PERFORMANCE_NOT_FOUND.value
+    _enum_value = ErrorCodes.PERFORMANCE_NOT_FOUND.value
     _detail = "Failed to find performance"
 
     def __init__(self, message: str):
@@ -130,7 +138,7 @@ class PerformanceNotFoundException(ResponseBaseException):
 class PostNotFoundException(ResponseBaseException):
     _http_code = 404
     _name = "POST_NOT_FOUND"
-    _code = ErrorCodes.POST_NOT_FOUND.value
+    _enum_value = ErrorCodes.POST_NOT_FOUND.value
     _detail = "Failed to find post"
 
     def __init__(self, message: str):

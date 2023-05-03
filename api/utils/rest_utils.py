@@ -6,11 +6,18 @@ from typing import Dict, List
 import flask
 
 from api.authentication_service.typings import AuthUser, TokenType
+from exceptions.codes import ErrorCodes
 from exceptions.exceptions import InvalidArgumentException
-from exceptions.response.exceptions import InvalidTokenException, ResponseBaseException
+from exceptions.response.exceptions import (
+    InvalidTokenException,
+    ResponseBaseException,
+    UnknownException,
+)
 
 
-def process_string_api_request_param(parameter_name: str, optional=True, allow_empty_string = False) -> str:
+def process_string_api_request_param(
+    parameter_name: str, optional=True, allow_empty_string=False
+) -> str:
     """Validates and returns a flask request string parameter"""
     parameter = flask.request.values.get(parameter_name, None)
 
@@ -23,11 +30,14 @@ def process_string_api_post_request_param(request_body: Dict[str, any], paramete
 
     return process_string_request_param(
         parameter_name,
-        parameter, optional=False,
+        parameter,
+        optional=False,
     )
 
 
-def process_string_request_param(parameter_name: str, parameter: any, optional=True, allow_empty_string=False) -> str:
+def process_string_request_param(
+    parameter_name: str, parameter: any, optional=True, allow_empty_string=False
+) -> str:
     """Validates and returns a flask request body string parameter"""
 
     if parameter is None and optional:
@@ -186,15 +196,19 @@ def class_to_dict(class_instance: object):
     return vars(class_instance)
 
 
-def build_api_error_repsonse(e: ResponseBaseException, http_status_code: int):
+def api_error_response(e: Exception):
+
+    if not isinstance(e, ResponseBaseException):
+        e = UnknownException(message=f"An unknown error occured. {json.dumps(str(e))}")
+
     response = {
         "status": "error",
-        "message": e.get_message(),
-        "error_code": e.get_code(),
+        "error_code": e.get_name(),
         "detail": e.get_detail(),
     }
+
     return flask.current_app.response_class(
-        response=json.dumps(response), status=http_status_code, mimetype="application/json"
+        response=json.dumps(response), status=e.get_http_code(), mimetype="application/json"
     )
 
 

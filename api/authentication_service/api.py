@@ -5,6 +5,7 @@ import time
 from abc import ABC
 from typing import Dict, Optional
 
+import flask
 import jwt
 
 from api.authentication_service.dao.api import AuthTokenServiceDAO
@@ -125,13 +126,13 @@ class JWTTokenAuthService(TokenAuthService):
         if token_type == TokenType.REFRESH.value:
             try:
                 # Delete any existing refresh tokens for this user
-                # TODO: Fine tune api to only delete tokens for this user + device combo, to ensure we don't log them 
+                # TODO: Fine tune api to only delete tokens for this user + device combo, to ensure we don't log them
                 # out of other devices
                 self.delete_auth_state(request=AuthStateDeleteRequest(owner_id=user_id))
             except:
                 pass
 
-            token = self._generate_token(payload, TokenType.REFRESH.value, auth_user.role)        
+            token = self._generate_token(payload, TokenType.REFRESH.value, auth_user.role)
             self._persist_token(token, owner_id=user_id, session_id=session_id)
 
             return token
@@ -145,13 +146,11 @@ class JWTTokenAuthService(TokenAuthService):
                 token, self.signing_secret, leeway=self._LEWAY, algorithms=self.SIGNING_ALGORITHM
             )
         except jwt.ExpiredSignatureError:
-            raise InvalidTokenException(
-                f"Failed to validate token {token} because it has expired"
-            )
+            raise InvalidTokenException(f"Failed to validate token {token} because it has expired")
 
         ## We also need to check the REFRESH token is saved in the db for refresh tokens
         if token_type == TokenType.REFRESH.value:
-            try:   
+            try:
                 self.auth_dao.get_token_by_user_id_and_session_id(
                     user_id=decoded_token["user_id"], session_id=decoded_token["session_id"]
                 )
@@ -194,90 +193,14 @@ class JWTTokenAuthService(TokenAuthService):
         ...
 
     def delete_auth_state(self, request: AuthStateDeleteRequest) -> None:
-        process_string_request_param('refresh_token', request.refresh_token, optional=True)    
-        process_string_request_param('session_id', request.session_id, optional=True)
-        process_int_request_param('owner_id', request.owner_id, optional=True)
+        process_string_request_param("refresh_token", request.refresh_token, optional=True)
+        process_string_request_param("session_id", request.session_id, optional=True)
+        process_int_request_param("owner_id", request.owner_id, optional=True)
 
         if not request.refresh_token and not request.session_id and not request.owner_id:
             raise InvalidArgumentException(
                 f"Must provide at least one of refresh_token, session_id or owner_id when deleting auth state. Request: {json.dumps(vars(request))}",
-                'request'
+                "request",
             )
 
         self.auth_dao.token_delete(request)
-
-    # def authenticate(self, request: AuthenticateRequest) -> AuthState:
-    #     """Does not process any previous auth state. Just creates a new one e.g. when logging in"""
-    #     if not isinstance(request.token, str) or len(request.token) == 0:
-    #         raise Exception(f"Invalid token {request.token} provided")
-
-    #     payload = None
-    #     try:
-    #         payload = self.validate_token(request.token)
-    #         auth_status = AuthStatus.AUTHENTICATED.value
-
-    #         if payload["type"] == TokenType.REFRESH:
-    #             raise Exception(
-    #                 f"Invalid token receieved of type {payload['type']}. Authenticate should only be used with access tokens"
-    #             )
-
-    #         auth_user = AuthUser(user_id=payload["user_id"], role=payload["role"], permissions=[])
-
-    #     except Exception:
-    #         # Log cause of failed validation
-    #         logging.exception("message")
-    #         auth_status = AuthStatus.UNAUTHENTICATED.value
-    #         auth_user = None
-
-    #     auth_state = AuthState(
-    #         auth_user=auth_user,
-    #         access_token=request.token,
-    #         refresh_token=None,
-    #         status=auth_status,
-    #     )
-
-    #     return auth_state
-
-    # def process_header():
-    #     ...
-
-    # def process_cookie():
-    #     ...
-
-    # def _validate():
-    #     ...
-
-    # def _invalidate():
-    #     """Removes or invalidates the auth state"""
-    #     ...
-
-    # def refresh():
-    #     ...
-
-    # """these probably should be in auth state handler"""
-
-    # def update_auth_state():
-    #     ...
-
-    # def delete_auth_state():
-    #     ...
-
-    # What we want the service to do:
-
-    # Log user in
-    # Log user out
-    # Invalidate sessions
-    # Validate sessions by:
-    #   - checking they are logged in
-    #   - checking information trying to proove the session is valid is valid itself e.g. token     hasn't epxired
-    # Maintaing session validity/ lifetime
-    # Creating, updating and deleting any information related to user authentication
-    # Should not handle authorization beyond simple logged in authorization
-    # Managing sessions more generally e.g. removing invalid tokens etc.
-    # Probably shouldn't handle sign ups to be honest. Nor closing accounts. This should be a UserService if it were to be, as it manges the User resource.
-    # This should ideally not be interacting with our data models e.g. posts, users etc.
-    # Handle different types of auth e.g. admin auth vs normal user - it can handle auth roles but shouldn't handle too many permissions with that role. That would be authorization
-
-    # This should be done regardless of implementation details and therefore should be agnostic of the implementation as far as possible
-
-    # Maybe encapsulate authState into a class

@@ -29,7 +29,12 @@ from exceptions.response.exceptions import (
 
 
 class UserMidlayerConnections:
-    def __init__(self, config, users_dao: Optional[UsersDAO] = None, file_service: Optional[FileService] = None):
+    def __init__(
+        self,
+        config,
+        users_dao: Optional[UsersDAO] = None,
+        file_service: Optional[FileService] = None,
+    ):
         self.users_dao = users_dao if users_dao else UsersDAO(config=config)
         self.file_service = file_service if file_service else FileService(config=config)
 
@@ -37,23 +42,30 @@ class UserMidlayerConnections:
 class UsersMidlayerMixin(BaseMidlayerMixin):
     def __init__(self, config, conns: Optional[UserMidlayerConnections] = None, **kwargs):
         self.users_dao = conns.users_dao if conns and conns.users_dao else UsersDAO(config=config)
-        self.file_service = conns.file_service if conns and conns.file_service else FileService(config=config)
+        self.file_service = (
+            conns.file_service if conns and conns.file_service else FileService(config=config)
+        )
 
         ## Call the next mixins constructor
         super().__init__(config)
 
-    def users_get(self, filter: UsersGetFilter, projection: Optional[UsersGetProjection] = UsersGetProjection()) -> UsersGetResult:
+    def users_get(
+        self,
+        filter: UsersGetFilter,
+        projection: Optional[UsersGetProjection] = UsersGetProjection(),
+    ) -> UsersGetResult:
         if filter.user_ids and (not isinstance(filter.user_ids, list) or len(filter.user_ids) == 0):
             raise InvalidArgumentException(
                 "user_ids filter field must be a non empty list", filter.user_ids
             )
-        
-        search_query = process_string_request_param('search_query', filter.search_query, optional=True, allow_empty_string=True)
+
+        search_query = process_string_request_param(
+            "search_query", filter.search_query, optional=True, allow_empty_string=True
+        )
 
         if not search_query and not filter.user_ids:
             raise InvalidArgumentException(
-                 f"Must provide at least one filter field. Request: {vars(filter)}",
-                 "filter"
+                f"Must provide at least one filter field. Request: {vars(filter)}", "filter"
             )
 
         users = []
@@ -64,7 +76,9 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
             if projection.include_profile_image is True:
 
                 profile_image_files_by_uuid = {}
-                uuids = [user.avatar_file_uuid for user in users if user.avatar_file_uuid is not None]
+                uuids = [
+                    user.avatar_file_uuid for user in users if user.avatar_file_uuid is not None
+                ]
 
                 if len(uuids) > 0:
                     filter = FilesGetFilter(uuids=uuids)
@@ -75,7 +89,9 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
 
                 for user in users:
                     if user.avatar_file_uuid:
-                        user.avatar_file = profile_image_files_by_uuid.get(user.avatar_file_uuid, None)
+                        user.avatar_file = profile_image_files_by_uuid.get(
+                            user.avatar_file_uuid, None
+                        )
 
         except:
             raise Exception("Failed to get users")
@@ -83,14 +99,9 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         return UsersGetResult(users=users)
 
     def get_user_by_id(self, user_id: int) -> User:
-        filter = UsersGetFilter(user_id=user_id)
+        filter = UsersGetFilter(user_ids=[user_id])
 
         users = self.users_dao.users_get(filter)
-
-        if filter.password or filter.username:
-            raise Exception(
-                "get_user_by_id called with username or password filter set. Please use UsersMidlayerMixin:get_user_by_username_and_password instead"
-            )
 
         if len(users) == 0:
             raise UserNotFoundException(f"Could not find user with id {user_id}")

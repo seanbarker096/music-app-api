@@ -3,7 +3,8 @@ from enum import Enum
 
 class ErrorCodes(Enum):
     # 0 - 999 reserved for generic, non resource specific errors
-    INVALID_AUTH_TOKEN = 0
+    UNKNOWN_ERROR = 0
+    INVALID_AUTH_TOKEN = 1
 
     # Resource = File
     FILE_TOO_LARGE = 1000
