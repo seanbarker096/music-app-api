@@ -219,55 +219,55 @@ def get_token():
         return api_error_response(err)
 
 
-@blueprint.route("/refresh-token/", methods=["POST"])
-def get_refresh_token():
-    """
-    Used by applications to get a new refresh token on behalf of a user to prevent their session expiring. We also send them a new access token
-    """
-    try:
-        # Only allow authorized apps to request a refrehs token directly. Users can only get one by logging in
-        request = flask.request.json
-        api_key = flask.request.headers.get("x-appifr")
+# @blueprint.route("/refresh-token/", methods=["POST"])
+# def get_refresh_token():
+#     """
+#     Used by applications to get a new refresh token on behalf of a user to prevent their session expiring. We also send them a new access token
+#     """
+#     try:
+#         # Only allow authorized apps to request a refrehs token directly. Users can only get one by logging in
+#         request = flask.request.json
+#         api_key = flask.request.headers.get("x-appifr")
 
-        key = flask.current_app.config["config_file"]["app-api-key"].get("key")
+#         key = flask.current_app.config["config_file"]["app-api-key"].get("key")
 
-        # Verify the API key is valid
-        if api_key != key:
-            # If unauthorised app makes request we dont want to tell them why the request failed
-            raise UnknownException("Unauthorized application made request to /refresh-token/")
+#         # Verify the API key is valid
+#         if api_key != key:
+#             # If unauthorised app makes request we dont want to tell them why the request failed
+#             raise UnknownException("Unauthorized application made request to /refresh-token/")
 
-        user_id = process_int_request_param("user_id", request.get("user_id", None))
+#         user_id = process_int_request_param("user_id", request.get("user_id", None))
 
-        # Check if user exists. Will throw if not found
-        flask.current_app.conns.midlayer.get_user_by_id(user_id=user_id)
+#         # Check if user exists. Will throw if not found
+#         flask.current_app.conns.midlayer.get_user_by_id(user_id=user_id)
 
-        auth_state_request = AuthStateCreateRequest(
-            auth_user=AuthUser(user_id=user_id, role=AuthUserRole.USER.value)
-        )
+#         auth_state_request = AuthStateCreateRequest(
+#             auth_user=AuthUser(user_id=user_id, role=AuthUserRole.USER.value)
+#         )
 
-        result = flask.current_app.conns.auth_service.create_auth_state(request=auth_state_request)
+#         result = flask.current_app.conns.auth_service.create_auth_state(request=auth_state_request)
 
-        auth_state = result.auth_state
+#         auth_state = result.auth_state
 
-        ## This shouldn't really happen. If auth failed an error should be thrown
-        if auth_state.status != AuthStatus.AUTHENTICATED.value:
-            raise Exception(f"Failed to authenticate user with id {user_id}")
+#         ## This shouldn't really happen. If auth failed an error should be thrown
+#         if auth_state.status != AuthStatus.AUTHENTICATED.value:
+#             raise Exception(f"Failed to authenticate user with id {user_id}")
 
-        response = {
-            "user_id": auth_state.auth_user.user_id,
-            "auth_status": auth_state.status,
-            "role": auth_state.auth_user.role,
-            "access_token": auth_state.access_token,
-            "refresh_token": auth_state.refresh_token,
-        }
+#         response = {
+#             "user_id": auth_state.auth_user.user_id,
+#             "auth_status": auth_state.status,
+#             "role": auth_state.auth_user.role,
+#             "access_token": auth_state.access_token,
+#             "refresh_token": auth_state.refresh_token,
+#         }
 
-        response = flask.current_app.response_class(
-            response=json.dumps(response), status=200, mimetype="application/json"
-        )
+#         response = flask.current_app.response_class(
+#             response=json.dumps(response), status=200, mimetype="application/json"
+#         )
 
-        response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
+#         response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
 
-        return response
+#         return response
 
-    except Exception as err:
-        return api_error_response(err)
+#     except Exception as err:
+#         return api_error_response(err)

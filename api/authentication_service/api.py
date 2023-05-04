@@ -66,8 +66,8 @@ class TokenAuthService(ABC):
 ## TODO: Create getters and setters for these TTL, leways etc.
 class JWTTokenAuthService(TokenAuthService):
     _ACCESS_TOKEN_TTL = 60 * 60 * 1  # Valid for 1 hours
-    _REFRESH_TOKEN_TTL = 60 * 60 * 14  # Valid for 14 days
-    _LEWAY = 10
+    _REFRESH_TOKEN_TTL = 60 * 60 * 30 # Valid for 30 days
+    _LEWAY = 0
     SIGNING_ALGORITHM = "HS256"
 
     def __init__(self, config, auth_dao=None):
