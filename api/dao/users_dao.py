@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Dict, List, Optional
 
@@ -25,6 +26,7 @@ class UserDBAlias:
     USER_FIRST_NAME = "user_first_name"
     USER_SECOND_NAME = "user_second_name"
     USER_FULL_NAME = "user_full_name"
+    USER_BIO = "user_bio"
     USER_CREATE_TIME = "user_create_time"
     USER_IS_DELETED = "user_is_deleted"
     USER_EMAIL = "user_email"
@@ -46,6 +48,7 @@ class UsersDAO(object):
         "first_name as " + UserDBAlias.USER_FIRST_NAME,
         "second_name as " + UserDBAlias.USER_SECOND_NAME,
         "full_name as " + UserDBAlias.USER_FULL_NAME,
+        "bio as " + UserDBAlias.USER_BIO,
         "UNIX_TIMESTAMP(create_time) as " + UserDBAlias.USER_CREATE_TIME,
         "is_deleted as " + UserDBAlias.USER_IS_DELETED,
         "email as " + UserDBAlias.USER_EMAIL,
@@ -145,8 +148,8 @@ class UsersDAO(object):
     def user_create(self, request: UserCreateRequest, password_hash: str) -> User:
 
         sql = """
-            INSERT INTO users(username, first_name, second_name, full_name, create_time, is_deleted, email, avatar_file_uuid, last_login_date, language_id, timezone_id, password_hash, salt)
-            VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
+            INSERT INTO users(username, first_name, second_name, full_name, bio, create_time, is_deleted, email, avatar_file_uuid, last_login_date, language_id, timezone_id, password_hash, salt)
+            VALUES(%s, %s, %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, FROM_UNIXTIME(%s), %s, %s, %s, %s)
         """
 
         now = time.time()
@@ -158,6 +161,7 @@ class UsersDAO(object):
             request.first_name,
             request.second_name,
             request.first_name + request.second_name,
+            None,
             now,
             0,
             request.email,
@@ -180,7 +184,8 @@ class UsersDAO(object):
                     username=request.username,
                     first_name=request.first_name,
                     second_name=request.second_name,
-                    full_name=request.first_name + request.second_name,
+                    full_name=request.first_name + request.second_name if request.second_name and request.first_name else None,
+                    bio=None,
                     create_time=now,
                     is_deleted=False,
                     avatar_file_uuid=None,
@@ -220,11 +225,25 @@ class UsersDAO(object):
 
         if (
             request.avatar_file_uuid is not None
-            and user.avatar_file_uuid != request.avatar_file_uuid
         ):
             updates.append("avatar_file_uuid = %s")
             binds.append(request.avatar_file_uuid)
             user.avatar_file_uuid = request.avatar_file_uuid
+
+        if (request.bio is not None):
+            updates.append("bio = %s")
+            binds.append(request.bio)
+            user.bio = request.bio
+
+        if (request.first_name is not None):
+            updates.append("first_name = %s")
+            binds.append(request.first_name)
+            user.first_name = request.first_name
+
+        if (request.second_name is not None):
+            updates.append("second_name = %s")
+            binds.append(request.second_name)
+            user.second_name = request.second_name
 
         if len(updates) == 0:
             raise Exception(
@@ -241,7 +260,8 @@ class UsersDAO(object):
             cursor.execute(sql, binds)
 
             if cursor.rowcount == 0:
-                raise Exception("Failed to update any users for the provided request parameters")
+                # This can happen if no fields were actually updated on the user, because the request did not provide any different values
+                logging.warning("Failed to update any users for the provided request parameters")
 
         return user
 
@@ -261,6 +281,9 @@ class UsersDAO(object):
 
         assert_row_key_exists(db_row, UserDBAlias.USER_FULL_NAME)
         full_name = db_row[UserDBAlias.USER_FULL_NAME]
+
+        assert_row_key_exists(db_row, UserDBAlias.USER_BIO)
+        bio = db_row[UserDBAlias.USER_BIO]
 
         assert_row_key_exists(db_row, UserDBAlias.USER_CREATE_TIME)
         create_unix_time = int(db_row[UserDBAlias.USER_CREATE_TIME])
@@ -289,6 +312,7 @@ class UsersDAO(object):
             first_name=first_name,
             second_name=second_name,
             full_name=full_name,
+            bio=bio,
             create_time=create_unix_time,
             is_deleted=is_deleted,
             email=email,
@@ -328,6 +352,7 @@ class UsersDAO(object):
             first_name=user_with_password.first_name,
             second_name=user_with_password.second_name,
             full_name=user_with_password.full_name,
+            bio=user_with_password.bio,
             create_time=user_with_password.create_time,
             is_deleted=user_with_password.is_deleted,
             email=user_with_password.email,

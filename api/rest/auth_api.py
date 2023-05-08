@@ -98,19 +98,12 @@ def signup():
     username = process_string_api_post_request_param(
         request_body=request, parameter_name="username"
     )
-    first_name = process_string_api_post_request_param(
-        request_body=request, parameter_name="first_name"
-    )
-    second_name = process_string_api_post_request_param(
-        request_body=request, parameter_name="second_name"
-    )
+   
     email = process_string_api_post_request_param(request_body=request, parameter_name="email")
 
     user_create_request = UserCreateRequest(
         username=username,
         password=password,
-        first_name=first_name,
-        second_name=second_name,
         email=email,
     )
 

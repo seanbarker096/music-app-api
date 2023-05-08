@@ -13,6 +13,7 @@ class User:
     is_deleted: bool
     email: str
     last_login_date: float
+    bio: Optional[str]
     avatar_file_uuid: Optional[str]
     avatar_file: Optional[FileServiceFile]
     language_id: Optional[str]
@@ -29,6 +30,7 @@ class User:
         is_deleted: bool,
         email: str,
         last_login_date: float,
+        bio: Optional[str],
         language_id: Optional[str],
         timezone_id: Optional[str],
         avatar_file_uuid: Optional[str] = None,
@@ -39,6 +41,7 @@ class User:
         self.first_name = first_name
         self.second_name = second_name
         self.full_name = full_name
+        self.bio = bio
         self.create_time = create_time
         self.is_deleted = is_deleted
         self.email = email
@@ -60,6 +63,7 @@ class UserWithPassword:
         self.first_name = user.first_name
         self.second_name = user.second_name
         self.full_name = user.full_name
+        self.bio = user.bio
         self.create_time = user.create_time
         self.is_deleted = user.is_deleted
         self.email = user.email
@@ -103,18 +107,18 @@ class UsersGetResult:
 
 class UserCreateRequest:
     username: str
-    first_name: str
-    second_name: str
+    first_name: Optional[str]
+    second_name: Optional[str]
     email: str
     password: str
 
     def __init__(
         self,
         username: str,
-        first_name: str,
-        second_name: str,
         email: str,
         password: str,
+        first_name: Optional[str] = None,
+        second_name: Optional[str] = None,
     ):
         self.username = username
         self.first_name = first_name
@@ -133,10 +137,16 @@ class UserCreateResult:
 class UserUpdateRequest:
     user_id: int = ...
     avatar_file_uuid: Optional[str] = ...
+    bio: Optional[str] = ...
+    first_name: Optional[str] = ...
+    second_name: Optional[str] = ...
 
-    def __init__(self, user_id: int, avatar_file_uuid: Optional[str] = None):
+    def __init__(self, user_id: int, avatar_file_uuid: Optional[str] = None, bio: Optional[str] = None, first_name: Optional[str] = None, second_name: Optional[str] = None):
         self.user_id = user_id
         self.avatar_file_uuid = avatar_file_uuid
+        self.bio = bio
+        self.first_name = first_name
+        self.second_name = second_name
 
 
 class UserUpdateResult:

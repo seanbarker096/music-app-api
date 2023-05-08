@@ -143,10 +143,10 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         if not isinstance(request.username, str) or len(request.username) == 0:
             raise Exception(f"Invalid value {request.username} for request argument username")
 
-        if not isinstance(request.first_name, str) or len(request.first_name) == 0:
+        if request.first_name and (not isinstance(request.first_name, str) or len(request.first_name) == 0):
             raise Exception(f"Invalid value {request.first_name} for request argument first_name")
 
-        if not isinstance(request.second_name, str) or len(request.second_name) == 0:
+        if request.second_name and (not isinstance(request.second_name, str) or len(request.second_name) == 0):
             raise Exception(f"Invalid value {request.second_name} for request argument second_name")
 
         if not isinstance(request.email, str) or len(request.email) == 0:
@@ -171,6 +171,16 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
     def user_update(self, request: UserUpdateRequest) -> UserUpdateResult:
         if not request.user_id:
             raise Exception("Must provide a valid user_id")
+        
+        process_string_request_param('avatar_file_uuid', request.avatar_file_uuid)
+        process_string_request_param('bio', request.bio)
+        process_string_request_param('first_name', request.first_name)
+        process_string_request_param('second_name', request.second_name)
+
+        if not request.avatar_file_uuid and not request.bio and not request.first_name and not request.second_name:
+            raise InvalidArgumentException(
+                f"Must provide at least one User field to update. Request: {json.dumps(vars(request))}", source="request"
+            )
 
         try:
             updated_user = self.users_dao.user_update(request)
