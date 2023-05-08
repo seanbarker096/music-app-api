@@ -108,18 +108,25 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
 
         return users[0]
 
-    def get_user_by_username_and_password(
-        self, password: str, username: str, projection: UsersGetProjection
+    def get_user_by_username_or_email_and_password(
+        self,
+        password: str,
+        username: Optional[str],
+        email: Optional[str],
+        projection: UsersGetProjection,
     ) -> User | UserWithPassword:
 
-        if not password or not isinstance(password, str):
-            raise Exception(f"Invalid value {password} for filter argument password")
+        process_string_request_param("username", username, optional=True)
+        process_string_request_param("email", username, optional=True)
+        process_string_request_param("password", password, optional=False)
 
-        if not username or not isinstance(username, str):
-            raise Exception(f"Invalid value {username} for filter argument username")
+        if not username and not email:
+            raise InvalidArgumentException(
+                "Must provide at least one of username or email", "username, email"
+            )
 
-        user_with_password = self.users_dao.get_user_by_username(
-            username=username, include_password=True
+        user_with_password = self.users_dao.get_user_by_username_or_email(
+            username=username, email=email, include_password=True
         )
 
         if not self._is_correct_password(password, user_with_password.password_hash):
@@ -143,10 +150,14 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         if not isinstance(request.username, str) or len(request.username) == 0:
             raise Exception(f"Invalid value {request.username} for request argument username")
 
-        if request.first_name and (not isinstance(request.first_name, str) or len(request.first_name) == 0):
+        if request.first_name and (
+            not isinstance(request.first_name, str) or len(request.first_name) == 0
+        ):
             raise Exception(f"Invalid value {request.first_name} for request argument first_name")
 
-        if request.second_name and (not isinstance(request.second_name, str) or len(request.second_name) == 0):
+        if request.second_name and (
+            not isinstance(request.second_name, str) or len(request.second_name) == 0
+        ):
             raise Exception(f"Invalid value {request.second_name} for request argument second_name")
 
         if not isinstance(request.email, str) or len(request.email) == 0:
@@ -171,15 +182,21 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
     def user_update(self, request: UserUpdateRequest) -> UserUpdateResult:
         if not request.user_id:
             raise Exception("Must provide a valid user_id")
-        
-        process_string_request_param('avatar_file_uuid', request.avatar_file_uuid)
-        process_string_request_param('bio', request.bio)
-        process_string_request_param('first_name', request.first_name)
-        process_string_request_param('second_name', request.second_name)
 
-        if not request.avatar_file_uuid and not request.bio and not request.first_name and not request.second_name:
+        process_string_request_param("avatar_file_uuid", request.avatar_file_uuid)
+        process_string_request_param("bio", request.bio)
+        process_string_request_param("first_name", request.first_name)
+        process_string_request_param("second_name", request.second_name)
+
+        if (
+            not request.avatar_file_uuid
+            and not request.bio
+            and not request.first_name
+            and not request.second_name
+        ):
             raise InvalidArgumentException(
-                f"Must provide at least one User field to update. Request: {json.dumps(vars(request))}", source="request"
+                f"Must provide at least one User field to update. Request: {json.dumps(vars(request))}",
+                source="request",
             )
 
         try:

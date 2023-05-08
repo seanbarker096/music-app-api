@@ -22,11 +22,15 @@ from api.utils.rest_utils import (
     api_error_response,
     auth,
     build_auth_user_from_token_payload,
-    process_int_request_param,
+    error_handler,
     process_string_api_post_request_param,
+    process_string_api_request_param,
+    process_string_request_param,
     remove_bearer_from_token,
 )
+from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
+    BadRequestException,
     InvalidTokenException,
     ResponseBaseException,
     UnknownException,
@@ -37,23 +41,25 @@ blueprint = flask.Blueprint("auth", __name__)
 
 
 @blueprint.route("/login/", methods=["POST"])
+@error_handler
 def login():
     request = flask.request.json
 
     password = request.get("password", None)
+    email = request.get("email", None)
     username = request.get("username", None)
 
-    if not password or not username:
-        raise Exception("Must provide username and password")
+    process_string_api_request_param("username", username, optional=True)
+    process_string_api_request_param("email", username, optional=True)
+    process_string_api_request_param("password", password, optional=False)
 
-    if not isinstance(password, str) or len(password) == 0:
-        raise Exception("Invalid argument password. Password must be a valid string")
+    if not username and not email:
+        raise BadRequestException(
+            "Must provide at least one of username or email", "username, email"
+        )
 
-    if not isinstance(username, str) or len(username) == 0:
-        raise Exception("Invalid argument username. Username must be a valid string")
-
-    user = flask.current_app.conns.midlayer.get_user_by_username_and_password(
-        username=request["username"], password=request["password"], projection=UsersGetProjection()
+    user = flask.current_app.conns.midlayer.get_user_by_username_or_email_and_password(
+        password=password, username=username, email=email, projection=UsersGetProjection()
     )
 
     auth_state_request = AuthStateCreateRequest(
@@ -98,7 +104,7 @@ def signup():
     username = process_string_api_post_request_param(
         request_body=request, parameter_name="username"
     )
-   
+
     email = process_string_api_post_request_param(request_body=request, parameter_name="email")
 
     user_create_request = UserCreateRequest(
@@ -182,7 +188,7 @@ def get_token():
             refresh_token = remove_bearer_from_token(refresh_token) if refresh_token else None
 
             if not refresh_token:
-                raise Exception(
+                raise InvalidTokenException(
                     "Request failed as invalid refresh token provided. A valid refresh token is required to obtain an acess token"
                 )
 
@@ -205,10 +211,14 @@ def get_token():
 
         else:
             raise InvalidTokenException(
-                message="Invalid token type provided. Token must of type 'acess'"
+                message="Invalid token type provided. Token must of type 'access'"
             )
 
-    except Exception as err:
+    except ResponseBaseException as err:
+        return api_error_response(err)
+
+    except Exception:
+        err = UnknownException("Unknown error occurred")
         return api_error_response(err)
 
 

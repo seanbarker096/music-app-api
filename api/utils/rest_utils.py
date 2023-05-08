@@ -9,6 +9,7 @@ from api.authentication_service.typings import AuthUser, TokenType
 from exceptions.codes import ErrorCodes
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
+    BadRequestException,
     InvalidTokenException,
     ResponseBaseException,
     UnknownException,
@@ -16,12 +17,13 @@ from exceptions.response.exceptions import (
 
 
 def process_string_api_request_param(
-    parameter_name: str, optional=True, allow_empty_string=False
+    parameter_name: str, parameter: any, optional=True, allow_empty_string=False
 ) -> str:
-    """Validates and returns a flask request string parameter"""
-    parameter = flask.request.values.get(parameter_name, None)
-
-    return process_string_request_param(parameter_name, parameter, optional, allow_empty_string)
+    """Validates and returns a flask request string parameter. Throws a BadRequestException if invalid"""
+    try:
+        return process_string_request_param(parameter_name, parameter, optional, allow_empty_string)
+    except InvalidArgumentException as e:
+        raise BadRequestException(e.get_message(), e.get_source())
 
 
 def process_string_api_post_request_param(request_body: Dict[str, any], parameter_name: str) -> str:
@@ -44,11 +46,14 @@ def process_string_request_param(
         return None
 
     if parameter is None and not optional:
-        raise Exception(f"Missing required request parameter '{parameter_name}'")
+        raise InvalidArgumentException(
+            f"Missing required request parameter '{parameter_name}'", parameter_name
+        )
 
     if not isinstance(parameter, str) or (not allow_empty_string and len(parameter) == 0):
-        raise Exception(
-            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid string"
+        raise InvalidArgumentException(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid string",
+            parameter_name,
         )
 
     return parameter
@@ -66,13 +71,16 @@ def process_int_request_param(parameter_name: str, parameter: any, optional=True
         return None
 
     if parameter is None and not optional:
-        raise Exception(f"Missing required request parameter '{parameter_name}'")
+        raise InvalidArgumentException(
+            f"Missing required request parameter '{parameter_name}'", parameter_name
+        )
 
     parameter = int(parameter)
 
     if not isinstance(parameter, int):
-        raise Exception(
-            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid integer"
+        raise InvalidArgumentException(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid integer",
+            parameter_name,
         )
 
     return parameter
@@ -93,11 +101,14 @@ def process_enum_request_param(
         return None
 
     if not parameter:
-        raise Exception(f"Missing required request parameter '{parameter_name}'")
+        raise InvalidArgumentException(
+            f"Missing required request parameter '{parameter_name}'", parameter_name
+        )
 
     if parameter not in set(item.value for item in enum):
-        raise Exception(
-            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter} does not exist in enum {enum.__class__.__name__}"
+        raise InvalidArgumentException(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter} does not exist in enum {enum.__class__.__name__}",
+            parameter_name,
         )
 
     return parameter
@@ -107,7 +118,9 @@ def process_enum_set_api_request_param(
     parameter_name: str, enum: Enum, type: str | int = str, optional=True
 ) -> str | int:
     if not optional and parameter_name not in flask.request.values:
-        raise Exception(f"Missing required request parameter '{parameter_name}'")
+        raise InvalidArgumentException(
+            f"Missing required request parameter '{parameter_name}'", parameter_name
+        )
 
     if optional and not parameter_name in flask.request.values:
         return None
@@ -139,8 +152,9 @@ def process_bool_api_request_param(parameter_name: str, optional=True) -> bool:
 
     if isinstance(parameter, str):
         if parameter.lower() not in ["true", "false"]:
-            raise Exception(
-                f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean"
+            raise InvalidArgumentException(
+                f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean",
+                parameter_name,
             )
         else:
             parameter = parameter.lower() == "true"
@@ -154,11 +168,14 @@ def process_bool_request_param(parameter_name: str, parameter: any, optional=Tru
         return None
 
     if parameter is None and not optional:
-        raise Exception(f"Missing required request parameter '{parameter_name}'")
+        raise InvalidArgumentException(
+            f"Missing required request parameter '{parameter_name}'", parameter_name
+        )
 
     if parameter not in [True, False]:
-        raise Exception(
-            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean"
+        raise InvalidArgumentException(
+            f"Invalid value {parameter} for parameter '{parameter_name}'. {parameter_name} must be a valid boolean",
+            parameter_name,
         )
 
     return parameter
@@ -183,7 +200,9 @@ def process_api_set_request_param(
 
         return processed_list
 
-    raise Exception(f"Missing required request parameter '{parameter_name}'")
+    raise InvalidArgumentException(
+        f"Missing required request parameter '{parameter_name}'", parameter_name
+    )
 
 
 def class_to_dict(class_instance: object):
@@ -197,8 +216,9 @@ def class_to_dict(class_instance: object):
 
 
 def api_error_response(e: Exception):
-
+    print(str(e))
     if not isinstance(e, ResponseBaseException):
+        print("test")
         e = UnknownException(message=f"An unknown error occured. {json.dumps(str(e))}")
 
     response = {
@@ -229,6 +249,17 @@ def after_request_setup(response: flask.Response):
     return response
 
 
+def error_handler(func):
+    @functools.wraps(func)
+    def wrapped_f(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            return api_error_response(e)
+
+    return wrapped_f
+
+
 ## TODO: Consider if this should jsut return AuthState set to Unauthenticated
 def auth(func):
     @functools.wraps(func)
@@ -246,40 +277,38 @@ def auth(func):
                 ## If auth token valid return
                 return func(*args, **kwargs)
 
-            except InvalidTokenException:
-                ## If auth service throws try to validate refresh token
-                pass
+            except InvalidTokenException as e:
+                return api_error_response(e)
 
         refresh_token = flask.request.headers.get("Refresh-Token")
         refresh_token = remove_bearer_from_token(refresh_token) if refresh_token else None
 
         if not refresh_token:
-            print("exception 1")
-            raise Exception(
-                "Authorization of the request failed. Please try logging out and in again to revalidate your session"
-            )
+            e = InvalidTokenException("No access or refrehs token provided in API request")
+            return api_error_response(e)
         try:
             decoded_token = flask.current_app.conns.auth_service.validate_token(refresh_token)
 
             auth_user = build_auth_user_from_token_payload(decoded_token)
             flask.g.auth_user = auth_user
 
-            new_auth_token = flask.current_app.conns.auth_service.create_token(
-                auth_user=auth_user,
-                token_type=TokenType.ACCESS.value,
-                refresh_token=refresh_token,
-            )
-
             ## Updated auth tokens for all routes other than /logout. This is a authed route but we want to invalidate auth tokens here
             if func.__name__ != "logout":
+                new_auth_token = flask.current_app.conns.auth_service.create_token(
+                    auth_user=auth_user,
+                    token_type=TokenType.ACCESS.value,
+                    refresh_token=refresh_token,
+                )
+
                 ## If generation of new auth_token succeeds then set it as a global so we can add to the response header later
                 flask.g.new_auth_token = new_auth_token
 
-        except Exception:
-            print("exception 2")
-            raise Exception(
-                "Authorization of the request failed. Please try logging out and in again to revalidate your session"
-            )
+        except InvalidTokenException as e:
+            return api_error_response(e)
+
+        except Exception as e:
+            e = UnknownException()
+            return api_error_response(e)
 
         return func(*args, **kwargs)
 

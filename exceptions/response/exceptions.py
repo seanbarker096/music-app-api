@@ -39,6 +39,7 @@ class ResponseBaseException(Exception):
     def get_source(self):
         return self._source
 
+
 class UnknownException(ResponseBaseException):
     _http_code = 500
     _name = "UNKNOWN_ERROR"
@@ -48,13 +49,14 @@ class UnknownException(ResponseBaseException):
     def __init__(self, source: Optional[str] = None, message: Optional[str] = None):
         super().__init__(message, source)
 
+
 class FileTooLargeException(ResponseBaseException):
     _http_code = 400
     _name = "FILE_TOO_LARGE"
     _enum_value = ErrorCodes.FILE_TOO_LARGE.value
     _detail = "File is too large."
 
-    def __init__(self, source: str,  message: Optional[str] = None):
+    def __init__(self, source: str, message: Optional[str] = None):
         super().__init__(message, source)
 
 
@@ -78,10 +80,6 @@ class FileNotFoundException(ResponseBaseException):
         super().__init__(message=message, source=source)
 
 
-class BadRequestException(ResponseBaseException):
-    ...
-
-
 class CreateFileDownloadURLFailedException(ResponseBaseException):
     # We are creating this error purely to avoid throwing an S3 error. Otherwise we wouldn't
     # usually create errors for a specific action. Instead we would throw an error indicating
@@ -103,6 +101,16 @@ class UserAlreadyExistsException(ResponseBaseException):
 
     def __init__(self, message: str):
         super().__init__(message=message)
+
+
+class BadRequestException(ResponseBaseException):
+    _http_code = 400
+    _name = "BAD_REQUEST"
+    _enum_value = ErrorCodes.INVALID_REQUEST.value
+    _detail = "One or more request parameters are not valid"
+
+    def __init__(self, message: str, source: str):
+        super().__init__(message=message, source=source)
 
 
 class UserNotFoundException(ResponseBaseException):

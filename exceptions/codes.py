@@ -5,6 +5,7 @@ class ErrorCodes(Enum):
     # 0 - 999 reserved for generic, non resource specific errors
     UNKNOWN_ERROR = 0
     INVALID_AUTH_TOKEN = 1
+    INVALID_REQUEST = 2
 
     # Resource = File
     FILE_TOO_LARGE = 1000

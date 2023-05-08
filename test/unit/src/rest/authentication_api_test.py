@@ -64,7 +64,7 @@ class AuthApiTest(AuthAPITestCase):
 
         self.app.conns.midlayer = Mock()
 
-        self.app.conns.midlayer.get_user_by_username_and_password = Mock(
+        self.app.conns.midlayer.get_user_by_username_or_email_and_password = Mock(
             return_value=self.test_user
         )
 
@@ -118,7 +118,7 @@ class AuthApiTest(AuthAPITestCase):
         self.app.conns.auth_service = Mock()
         self.app.conns.midlayer = Mock()
         self.app.conns.midlayer.user_create(return_value=expected_user)
-        self.app.conns.midlayer.get_user_by_username_and_password = Mock(return_value=expected_user)
+        self.app.conns.midlayer.get_user_by_username_or_email_and_password = Mock(return_value=expected_user)
 
         auth_user = AuthUser(user_id=expected_user.id, role=AuthUserRole.USER.value)
 

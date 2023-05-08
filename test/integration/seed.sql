@@ -53,7 +53,7 @@ CREATE TABLE gigs.auth_tokens (
 DROP TABLE IF EXISTS gigs.users;
 CREATE TABLE gigs.users (
   id int(10) unsigned auto_increment,
-  username varchar(16) NOT NULL,
+  username varchar(60) NOT NULL,
   first_name varchar(128) DEFAULT NULL,
   second_name varchar(128) DEFAULT NULL,
   full_name varchar(256) DEFAULT NULL,

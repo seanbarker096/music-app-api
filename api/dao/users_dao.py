@@ -85,12 +85,11 @@ class UsersDAO(object):
             search_wheres = []
             search_wheres.append("username LIKE %s")
             binds.append("%" + filter.search_query + "%")
-            search_wheres.append('full_name LIKE %s')
+            search_wheres.append("full_name LIKE %s")
             binds.append("%" + filter.search_query + "%")
 
-            search_where_string = '(' + ' OR '.join(search_wheres) + ')'
+            search_where_string = "(" + " OR ".join(search_wheres) + ")"
             wheres.append(search_where_string)
-
 
         where_string = build_where_query_string(wheres, "AND")
 
@@ -108,34 +107,50 @@ class UsersDAO(object):
 
             return users
 
-    def get_user_by_username(
-        self, username: str, include_password=False
+    def get_user_by_username_or_email(
+        self, username: Optional[str], email: Optional[str], include_password=False
     ) -> User | UserWithPassword:
 
         selects = [*self.USER_SELECTS_WITH_PASSWORD] if include_password else [*self.USER_SELECTS]
+
+        wheres = []
+        binds = []
+
+        if username:
+            wheres.append("username = %s")
+            binds.append(username)
+
+        if email:
+            wheres.append("email = %s")
+            binds.append(email)
+
+        where_string = build_where_query_string(wheres, "AND")
+
         sql = f"""
             SELECT {', '.join(selects)}
             FROM users
-            WHERE username = %s
+            {where_string}
         """
-
-        binds = (username,)
 
         try:
             with self.db(self.config) as cursor:
                 cursor.execute(sql, binds)
                 rows = cursor.fetchall()
 
-        except Exception:
-            raise Exception(f"Failed to get user with username {username} from the database")
+        except Exception as err:
+            raise Exception(
+                f"Failed to get user from the database because {str(err)}. Email: {email}. Username: {username}"
+            )
 
         if len(rows) == 0:
-            raise Exception(
-                f"Failed to find user with username {username} because they do not exist"
+            raise UserNotFoundException(
+                f"Failed to find user. Username provided: {username}. Email provided: {email}"
             )
 
         if len(rows) > 1:
-            raise Exception(f"Found more than one user with username {username}")
+            raise Exception(
+                f"Found more than one user. Email provided: {email}. Username provided: {username}"
+            )
 
         user = (
             self._build_user_with_password_from_db_row(db_row=rows[0])
@@ -156,11 +171,16 @@ class UsersDAO(object):
 
         hash_password(request.password)
 
+        fullname = (
+            request.first_name + request.second_name
+            if request.second_name and request.first_name
+            else None
+        )
         binds = (
             request.username,
             request.first_name,
             request.second_name,
-            request.first_name + request.second_name,
+            fullname,
             None,
             now,
             0,
@@ -180,24 +200,24 @@ class UsersDAO(object):
                 user_id = cursor.lastrowid
 
             return User(
-                    id=user_id,
-                    username=request.username,
-                    first_name=request.first_name,
-                    second_name=request.second_name,
-                    full_name=request.first_name + request.second_name if request.second_name and request.first_name else None,
-                    bio=None,
-                    create_time=now,
-                    is_deleted=False,
-                    avatar_file_uuid=None,
-                    email=request.email,
-                    last_login_date=now,
-                    language_id=1,
-                    timezone_id=1,
+                id=user_id,
+                username=request.username,
+                first_name=request.first_name,
+                second_name=request.second_name,
+                full_name=fullname,
+                bio=None,
+                create_time=now,
+                is_deleted=False,
+                avatar_file_uuid=None,
+                email=request.email,
+                last_login_date=now,
+                language_id=1,
+                timezone_id=1,
             )
 
         except DBDuplicateKeyException as e:
             raise e
-        
+
         except Exception:
             raise Exception(
                 f"Failed to create user with username {request.username} and email {request.email}"
@@ -223,24 +243,22 @@ class UsersDAO(object):
         updates = []
         binds = []
 
-        if (
-            request.avatar_file_uuid is not None
-        ):
+        if request.avatar_file_uuid is not None:
             updates.append("avatar_file_uuid = %s")
             binds.append(request.avatar_file_uuid)
             user.avatar_file_uuid = request.avatar_file_uuid
 
-        if (request.bio is not None):
+        if request.bio is not None:
             updates.append("bio = %s")
             binds.append(request.bio)
             user.bio = request.bio
 
-        if (request.first_name is not None):
+        if request.first_name is not None:
             updates.append("first_name = %s")
             binds.append(request.first_name)
             user.first_name = request.first_name
 
-        if (request.second_name is not None):
+        if request.second_name is not None:
             updates.append("second_name = %s")
             binds.append(request.second_name)
             user.second_name = request.second_name

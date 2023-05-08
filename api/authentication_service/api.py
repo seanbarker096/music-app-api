@@ -123,11 +123,9 @@ class JWTTokenAuthService(TokenAuthService):
             ## TODO: Check the token payload matches that of the auth_user in request
             return self._generate_token(payload, TokenType.ACCESS.value, auth_user.role)
 
+        # Delete any old refresh tokens that might be stored for the user to ensure they only have one active refresh token
         if token_type == TokenType.REFRESH.value:
             try:
-                # Delete any existing refresh tokens for this user
-                # TODO: Fine tune api to only delete tokens for this user + device combo, to ensure we don't log them
-                # out of other devices
                 self.delete_auth_state(request=AuthStateDeleteRequest(owner_id=user_id))
             except:
                 pass

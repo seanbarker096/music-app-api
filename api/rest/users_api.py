@@ -92,9 +92,16 @@ def user_get_by_id(user_id: int):
 @blueprint.route("/search", methods=["GET"])
 @auth
 def user_search():
+
+    request = flask.request.values
+
     search_query = process_string_api_request_param(
-        parameter_name="search_query", optional=False, allow_empty_string=True
+        parameter_name="search_query",
+        parameter=request.get("search_query", None),
+        optional=False,
+        allow_empty_string=True,
     )
+
     include_profile_image = process_bool_api_request_param(
         parameter_name="include_profile_image", optional=True
     )

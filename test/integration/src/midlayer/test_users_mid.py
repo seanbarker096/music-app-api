@@ -98,7 +98,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(1, user.timezone_id, "Should return the correct timezone id")
 
         ## Assert password stored correctly
-        user_with_password = self.users_mid.get_user_by_username_and_password(
+        user_with_password = self.users_mid.get_user_by_username_or_email_and_password(
             password="testPassword",
             username="testUser123",
             projection=UsersGetProjection(password=True),
@@ -148,10 +148,10 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             new_request.username = "testUser888"
             self.users_mid.user_create(new_request)
 
-    def test_get_user_by_username_and_password(self):
+    def test_get_user_by_username_or_email_and_password(self):
         self._seed_user()
 
-        user_result = self.users_mid.get_user_by_username_and_password(
+        user_result = self.users_mid.get_user_by_username_or_email_and_password(
             password="password1", username="testUser123", projection=UsersGetProjection()
         )
 
@@ -180,7 +180,7 @@ class UsersMidIntegrationTestCase(IntegrationTestCase):
             expected_regex=f"Cannot get user with username testUser123. Incorrect password provided",
             msg="Should raise exception with correct error message",
         ):
-            self.users_mid.get_user_by_username_and_password(
+            self.users_mid.get_user_by_username_or_email_and_password(
                 password="thisPasswordIsWrong",
                 username="testUser123",
                 projection=UsersGetProjection(),
