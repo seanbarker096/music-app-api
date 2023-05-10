@@ -23,6 +23,7 @@ from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
     ResponseBaseException,
+    UnauthorizedException,
     UserAlreadyExistsException,
     UserNotFoundException,
 )
@@ -130,8 +131,8 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         )
 
         if not self._is_correct_password(password, user_with_password.password_hash):
-            raise Exception(
-                f"Cannot get user with username {username}. Incorrect password provided"
+            raise UnauthorizedException(
+                f"Cannot get user with username {username} or email {email}. Incorrect password provided"
             )
 
         if projection.password:
@@ -167,16 +168,23 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
 
         password_hash = hash_password(request.password)
 
+        existing_user = None
+
         try:
-            user = self.users_dao.user_create(request, password_hash=password_hash)
-        ## TODO: Update to use our own duplicate key error and move to dao as mmidlayer shoiuyldnt know about db duplicate key exceptions
-        except DBDuplicateKeyException as e:
-            duplicate_key = e.get_column()
-            duplicate_value = request.username if duplicate_key == "username" else request.email
-            raise UserAlreadyExistsException(
-                f"Cannot create user. User with {duplicate_key} {duplicate_value} already exists."
+            # First check if user exists already
+            existing_user = self.users_dao.get_user_by_username_or_email(
+                username=request.username, email=request.email
             )
 
+        except UserNotFoundException:
+            pass
+
+        if existing_user:
+            raise UserAlreadyExistsException(
+                f"Cannot create user. User with username {request.username} or email {request.email} already exists."
+            )
+
+        user = self.users_dao.user_create(request, password_hash=password_hash)
         return UserCreateResult(user=user)
 
     def user_update(self, request: UserUpdateRequest) -> UserUpdateResult:

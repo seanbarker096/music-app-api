@@ -6,6 +6,7 @@ class ErrorCodes(Enum):
     UNKNOWN_ERROR = 0
     INVALID_AUTH_TOKEN = 1
     INVALID_REQUEST = 2
+    UNAUTHORIZED = 3
 
     # Resource = File
     FILE_TOO_LARGE = 1000

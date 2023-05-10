@@ -34,7 +34,6 @@ from exceptions.response.exceptions import (
     InvalidTokenException,
     ResponseBaseException,
     UnknownException,
-    UserAlreadyExistsException,
 )
 
 blueprint = flask.Blueprint("auth", __name__)
@@ -87,14 +86,12 @@ def login():
     )
 
     response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
-
-    key = flask.current_app.config["config_file"]["app-api-key"].get("key")
-    response.headers["x-appifr"] = key
-
+    
     return response
 
 
 @blueprint.route("/signup/", methods=["POST"])
+@error_handler
 def signup():
     request = flask.request.json
 
@@ -112,12 +109,9 @@ def signup():
         password=password,
         email=email,
     )
-
-    try:
-        user = flask.current_app.conns.midlayer.user_create(request=user_create_request).user
-    except UserAlreadyExistsException as e:
-        return api_error_response(e)
-
+ 
+    user = flask.current_app.conns.midlayer.user_create(request=user_create_request).user
+   
     ## now authenticate the new user
     auth_state_request = AuthStateCreateRequest(
         auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER.value)

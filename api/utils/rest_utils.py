@@ -1,5 +1,7 @@
 import functools
 import json
+import logging
+import traceback
 from enum import Enum
 from typing import Dict, List
 
@@ -216,7 +218,6 @@ def class_to_dict(class_instance: object):
 
 
 def api_error_response(e: Exception):
-    print(str(e))
     if not isinstance(e, ResponseBaseException):
         print("test")
         e = UnknownException(message=f"An unknown error occured. {json.dumps(str(e))}")
@@ -255,6 +256,7 @@ def error_handler(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
+            logging.error(traceback.format_exc())
             return api_error_response(e)
 
     return wrapped_f

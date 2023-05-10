@@ -122,6 +122,14 @@ class UserNotFoundException(ResponseBaseException):
     def __init__(self, message: str):
         super().__init__(message=message)
 
+class UnauthorizedException(ResponseBaseException):
+    _http_code = 401
+    _name = "UNAUTHORIZED"
+    _enum_value = ErrorCodes.UNAUTHORIZED.value
+    _detail = "You are not authorized to perform this action"
+
+    def __init__(self, message: str):
+        super().__init__(message=message) 
 
 class InvalidTokenException(ResponseBaseException):
     _http_code = 400

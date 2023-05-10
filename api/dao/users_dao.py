@@ -124,7 +124,7 @@ class UsersDAO(object):
             wheres.append("email = %s")
             binds.append(email)
 
-        where_string = build_where_query_string(wheres, "AND")
+        where_string = build_where_query_string(wheres, "OR")
 
         sql = f"""
             SELECT {', '.join(selects)}
