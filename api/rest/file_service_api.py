@@ -6,16 +6,24 @@ import flask
 
 import api
 from api.file_service.typings.typings import FileCreateRequest, FilesGetFilter
-from api.utils.rest_utils import class_to_dict, process_api_set_request_param
+from api.utils.rest_utils import (
+    class_to_dict,
+    error_handler,
+    process_api_set_request_param,
+)
+from exceptions.response.exceptions import FileTooLargeException
 
 blueprint = flask.Blueprint("file_service", __name__)
 
 auth = api.utils.rest_utils.auth
 
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+
 # TODO: Limit file extensions accepted (see https://flask.palletsprojects.com/en/2.2.x/patterns/fileuploads/)
 # TODO: use secure_filename function from flask. Rename to file_upload
 @blueprint.route("/files/upload_file/", methods=["POST"])
 @auth
+@error_handler
 def upload_file():
     """Upload the file meta data and return the file upload location. Accepts a multipart/form-data request"""
 
@@ -25,7 +33,22 @@ def upload_file():
     if not file:
         raise Exception("No file provided")
 
-    byte_stream = file.read()
+    # todo: This should be in the file service. Read in chunks in case of large files, so we don't have to load the entire file into memory. Instead each chunk will be freed up from memory after it is processed, meaning he memory is available for garbage collection sooner
+    chunk_size = 4096 
+    byte_stream = bytearray()
+
+    while True:
+        chunk = file.read(chunk_size)
+        if not chunk:
+            break
+
+        # Check the file size
+        
+        byte_stream.extend(chunk)
+
+        if len(byte_stream) > MAX_FILE_SIZE:
+            raise FileTooLargeException("File size exceeds the maximum allowed size")
+        
 
     # TODO: Validate the request
     request = FileCreateRequest(
