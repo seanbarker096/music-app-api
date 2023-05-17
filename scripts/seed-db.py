@@ -270,6 +270,17 @@ feature = features_mid.feature_create(feature_create_request).feature
 ###################### CREATE PERFORMERS ######################
 
 performer_create_request = PerformerCreateRequest(
+    name="Taylor Swift",
+    biography="Im a singer",
+    uuid="06HL4z0CvFAxyc27GXpf02",
+    owner_id=user_two.id,
+    image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
+)
+
+taylor_swift = performers_mid.performer_create(performer_create_request).performer
+
+
+performer_create_request = PerformerCreateRequest(
     name="Eminem",
     biography="I'm a rapper",
     uuid="7dGJo4pcD2V6oG8kP0tJRR",
@@ -347,6 +358,16 @@ performance_three_create_request = PerformanceCreateRequest(
 
 performance_three = performances_mid.performance_create(
     request=performance_three_create_request
+).performance
+
+performance_four_create_request = PerformanceCreateRequest(
+    performer_id=taylor_swift.id,
+    event_id=event_two.id,
+    performance_date=time.time() + 400000,
+)
+
+performance_four = performances_mid.performance_create(
+    request=performance_four_create_request
 ).performance
 
 
