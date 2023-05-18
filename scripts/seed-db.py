@@ -244,7 +244,7 @@ post_create_request = PostCreateRequest(
 post_three = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post_three.id, file_id=avatar_file.id
+    post_id=post_three.id, file_id=dog_video_file.id
 )
 
 feature_create_request = FeatureCreateRequest(
@@ -470,3 +470,22 @@ tag_create_request = TagCreateRequest(
 
 tag = tags_mid.tag_create(tag_create_request)
 
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=performer.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=post_three.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id
+)
+
+tag = tags_mid.tag_create(tag_create_request)
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=taylor_swift.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=post_four.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id
+)
+
+tag = tags_mid.tag_create(tag_create_request)
