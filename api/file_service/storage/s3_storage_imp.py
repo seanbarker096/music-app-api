@@ -60,7 +60,7 @@ class S3StorageImp(StorageImp):
     # Alternatively i could accept a very generic reuqest object to account for the fact that the storage implementation requirements for the information they need to do an upload can vary massively. Then we indirectly enforce strictness and valid requests at the implementation level via run time validation
     def process_upload_request(self, request: object) -> S3UploadRequest:
 
-        if not request.bytes or not isinstance(request.bytes, bytes):
+        if not request.bytes or not isinstance(request.bytes, bytearray):
             raise InvalidArgumentException(
                 f"Failed to process upload request to S3. Invalid value {request.bytes} for parameter bytes",
                 "request.bytes",
