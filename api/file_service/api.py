@@ -95,7 +95,7 @@ class FileService:
         #         f"Failed to upload file. Invalid or unnaccepted MIME type of type {request.mime_type}"
         #     )
 
-        if not isinstance(request.bytes, bytearray):
+        if not isinstance(request.bytes, bytearray) and not isinstance(request.bytes, bytes):
             raise TypeError("Failed to upload file because bytes argument is not valid")
 
         if isinstance(request.file_size, int) and request.file_size > self.MAX_FILE_SIZE:

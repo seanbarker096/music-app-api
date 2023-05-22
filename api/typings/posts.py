@@ -101,6 +101,8 @@ class ProfilePostsGetFilter(object):
     include_tagged: Optional[bool] = ...
     include_featured: Optional[bool] = ...
     include_owned: Optional[bool] = ...
+    limit: Optional[int] = ...
+    offset: Optional[int] = ...
 
     def __init__(
         self,
@@ -109,12 +111,16 @@ class ProfilePostsGetFilter(object):
         include_tagged: Optional[bool] = None,
         include_featured: Optional[bool] = None,
         include_owned: Optional[bool] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> None:
         self.profile_id = profile_id
         self.profile_type = profile_type
         self.include_tagged = True if include_tagged is None else include_tagged
         self.include_featured = True if include_featured is None else include_featured
         self.include_owned = True if include_owned is None else include_owned
+        self.limit = limit
+        self.offset = offset
 
 
 

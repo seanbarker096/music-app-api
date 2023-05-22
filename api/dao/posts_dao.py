@@ -137,10 +137,8 @@ class PostsDAO(object):
     def profile_posts_get(self, filter: ProfilePostsGetFilter) -> List[Post]:
         # IF THIS QUERY IS SLOW CONSIDER USING A UNION ALL
 
-        selects = f"""
-            SELECT DISTINCT {', '.join(self.POST_SELECTS)} 
-            FROM post as p
-        """
+        selects = f"""SELECT DISTINCT {', '.join(self.POST_SELECTS)} 
+            FROM post as p"""
 
         wheres = []
         binds = []
@@ -162,11 +160,11 @@ class PostsDAO(object):
                 owner_type = PostOwnerType.USER.value
             joins.append(
                 """
-            LEFT JOIN post owned_post
+                LEFT JOIN post owned_post
                 ON owned_post.id = p.id
                 AND owned_post.owner_id = %s
                 AND owned_post.owner_type = %s
-            """
+                """
             )
 
             binds.append(filter.profile_id)
@@ -184,12 +182,12 @@ class PostsDAO(object):
 
             joins.append(
                 """
-            LEFT JOIN feature
+                LEFT JOIN feature
                 ON  feature.featured_entity_id = p.id
                 AND feature.featured_entity_type = %s
                 AND feature.featurer_type = %s
                 AND feature.featurer_id = %s
-            """
+                """
             )
 
             binds.append(FeaturedEntityType.POST.value)
@@ -207,12 +205,12 @@ class PostsDAO(object):
 
             joins.append(
                 """
-            LEFT JOIN tag
+                LEFT JOIN tag
                 ON tag.tagged_in_entity_id = p.id
                 AND tag.tagged_in_entity_type = %s
                 AND tag.tagged_entity_id = %s
                 AND tag.tagged_entity_type = %s
-            """
+                """
             )
 
             binds.append(TaggedInEntityType.POST.value)
@@ -231,14 +229,18 @@ class PostsDAO(object):
 
         final_wheres_string = wheres_string
 
-        # Now filter out any rows where there is a null in all 3 columns. We dont need to add any new line escape characters here because of our use of triple strings above.
-        sql = (
-            selects
-            + f"".join(joins)
-            + final_wheres_string
-            + f" ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC"
-        )  
 
+        binds.append(filter.limit if filter.limit else 27)
+        binds.append(filter.offset if filter.offset else 0)
+        # Now filter out any rows where there is a null in all 3 columns. We dont need to add any new line escape characters here because of our use of triple strings above.
+        sql = f"""
+            {selects}
+            {"".join(joins)}
+            {final_wheres_string}
+            ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC
+            LIMIT %s OFFSET %s
+        """
+        
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
             rows = cursor.fetchall()

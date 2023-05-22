@@ -489,3 +489,24 @@ tag_create_request = TagCreateRequest(
 )
 
 tag = tags_mid.tag_create(tag_create_request)
+
+
+
+# Create some extra posts for view more testing
+i = 0
+
+while i < 20:
+    post_create_request = PostCreateRequest(
+        creator_id=user_one.id,
+        content=f"Post {i}",
+        owner_id=performer.id,
+        owner_type=PostOwnerType.PERFORMER.value,
+    )
+    post = posts_mid.post_create(post_create_request).post
+
+    post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post.id, file_id=dog_video_file.id
+    )
+
+    i += 1
+
