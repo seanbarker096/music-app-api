@@ -229,8 +229,7 @@ class PostsDAO(object):
 
         final_wheres_string = wheres_string
 
-
-        binds.append(filter.limit if filter.limit else 27)
+        binds.append(filter.limit if filter.limit else 9)
         binds.append(filter.offset if filter.offset else 0)
         # Now filter out any rows where there is a null in all 3 columns. We dont need to add any new line escape characters here because of our use of triple strings above.
         sql = f"""

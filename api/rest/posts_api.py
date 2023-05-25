@@ -1,4 +1,5 @@
 import json
+import random
 from test import test_utils
 from typing import List
 from unittest.mock import MagicMock, patch
@@ -218,12 +219,15 @@ def get_profiles_posts(profile_id: str):
     include_featured = rest_utils.process_bool_api_request_param("include_featured")
     profile_type = rest_utils.process_enum_api_request_param("profile_type", ProfileType)
 
+    offset = rest_utils.process_int_api_request_param("offset", optional=True)
+
     profile_posts_get_filter = ProfilePostsGetFilter(
         profile_id=profile_id,
         profile_type=profile_type,
         include_tagged=include_tagged,
         include_owned=include_owned,
         include_featured=include_featured,
+        offset=offset,
     )
 
     posts = flask.current_app.conns.midlayer.profile_posts_get(profile_posts_get_filter).posts
