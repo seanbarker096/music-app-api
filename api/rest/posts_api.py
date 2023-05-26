@@ -220,6 +220,7 @@ def get_profiles_posts(profile_id: str):
     profile_type = rest_utils.process_enum_api_request_param("profile_type", ProfileType)
 
     offset = rest_utils.process_int_api_request_param("offset", optional=True)
+    limit = rest_utils.process_int_api_request_param("limit", optional=True)
 
     profile_posts_get_filter = ProfilePostsGetFilter(
         profile_id=profile_id,
@@ -228,6 +229,7 @@ def get_profiles_posts(profile_id: str):
         include_owned=include_owned,
         include_featured=include_featured,
         offset=offset,
+        limit=limit,
     )
 
     posts = flask.current_app.conns.midlayer.profile_posts_get(profile_posts_get_filter).posts
