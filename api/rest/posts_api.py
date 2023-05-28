@@ -113,8 +113,10 @@ def posts_get():
 
     ids = rest_utils.process_api_set_request_param("ids[]", type=int)
 
+    limit = rest_utils.process_int_api_request_param("limit", optional=True)
+
     posts_get_filter = PostsGetFilter(
-        owner_ids=owner_ids, owner_types=owner_types, ids=ids, is_deleted=False
+        owner_ids=owner_ids, owner_types=owner_types, ids=ids, is_deleted=False, limit=limit
     )
 
     posts_get_result = flask.current_app.conns.midlayer.posts_get(posts_get_filter)
@@ -154,12 +156,15 @@ def featured_posts_get():
         raise Exception(
             "Invalid request. Must provide at least one of is_featured_by_users or is_featured_by_performers in request"
         )
+    
+    limit = rest_utils.process_int_api_request_param("limit", optional=True)
 
     featured_posts_get_filter = FeaturedPostsGetFilter(
         owner_id=owner_id, 
         owner_type=owner_type,
         is_featured_by_users=is_featured_by_users,
         is_featured_by_performers=is_featured_by_performers,
+        limit=limit
     )
 
     featured_posts_get_result = flask.current_app.conns.midlayer.featured_posts_get(

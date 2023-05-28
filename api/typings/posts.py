@@ -69,6 +69,7 @@ class PostsGetFilter(object):
     is_deleted: Optional[bool] = ...
     owner_ids: Optional[List[int]] = ...
     owner_types: Optional[List[PostOwnerType]] = ...
+    limit: Optional[int] = ...
 
     def __init__(
         self,
@@ -76,11 +77,13 @@ class PostsGetFilter(object):
         is_deleted: Optional[bool] = None,
         owner_ids: Optional[List[int]] = None,
         owner_types: Optional[List[PostOwnerType]] = None,
+        limit: Optional[int] = None,
     ) -> None:
         self.ids = ids
         self.is_deleted = is_deleted
         self.owner_ids = owner_ids
         self.owner_types = owner_types
+        self.limit = limit
 
 
 class PostsGetResult(object):
@@ -129,6 +132,7 @@ class FeaturedPostsGetFilter:
     owner_type: PostOwnerType
     is_featured_by_users: bool
     is_featured_by_performers: bool
+    limit: Optional[int]
 
     def __init__(
         self,
@@ -136,11 +140,13 @@ class FeaturedPostsGetFilter:
         owner_type: PostOwnerType,
         is_featured_by_users: bool,
         is_featured_by_performers: bool,
+        limit: Optional[int] = None,
     ) -> None:
         self.owner_id = owner_id
         self.owner_type = owner_type
         self.is_featured_by_users = is_featured_by_users
         self.is_featured_by_performers = is_featured_by_performers
+        self.limit = limit
 
 
 # ********* POST ATTACHMENTS ************* #

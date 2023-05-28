@@ -121,7 +121,13 @@ class PostsDAO(object):
 
         where_string = build_where_query_string(wheres, "AND")
 
-        sql = selects + where_string
+        binds.append(filter.limit if filter.limit else 10)
+
+        sql = f"""
+            {selects}
+            {where_string}
+            LIMIT %s
+        """
 
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)
@@ -229,7 +235,7 @@ class PostsDAO(object):
 
         final_wheres_string = wheres_string
 
-        binds.append(filter.limit if filter.limit else 9)
+        binds.append(filter.limit if filter.limit else 10)
         binds.append(filter.offset if filter.offset else 0)
         # Now filter out any rows where there is a null in all 3 columns. We dont need to add any new line escape characters here because of our use of triple strings above.
         sql = f"""
@@ -299,12 +305,17 @@ class PostsDAO(object):
         wheres_string = build_where_query_string(wheres, "AND")
         havings_string = build_having_query_string(havings, "AND")
 
+        binds.append(filter.limit if filter.limit else 10)
+    
+
         sql = f"""
             SELECT {', '.join(selects)} from post as p
             {"".join(joins)}
             {wheres_string}
             GROUP BY {", ".join(self.POST_COLUMNS)}
             {havings_string}
+            ORDER BY {PostDBAlias.POST_CREATE_TIME} DESC
+            LIMIT %s
             """
         
         with self.db(self.config) as cursor:

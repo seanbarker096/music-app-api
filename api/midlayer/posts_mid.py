@@ -110,6 +110,8 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 f"Ubounded request made to posts_get. Must provide at least one filter field. Filter: {vars(filter)}",
                 "PostsGetFilter",
             )
+        
+        process_int_request_param("limit", filter.limit)
 
         posts = self.posts_dao.posts_get(filter)
 
@@ -153,6 +155,9 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 f"Must include at least one of include_featured, include_owned, or include_tagged.",
                 "filter.include_featured, filter.include_owned, filter.include_tagged",
             )
+        
+        process_int_request_param("limit", filter.limit)
+        process_int_request_param("offset", filter.offset)
 
         try:
             posts = self.posts_dao.profile_posts_get(filter)
@@ -170,6 +175,7 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
         process_enum_request_param("owner_type", filter.owner_type, PostOwnerType, optional=False)
         process_bool_request_param("is_featured_by_users", filter.is_featured_by_users)
         process_bool_request_param("is_featured_by_performers", filter.is_featured_by_performers)
+        process_int_request_param("limit", filter.limit)
 
         if not filter.is_featured_by_users and not filter.is_featured_by_performers:
             raise InvalidArgumentException(
