@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import time
 from configparser import ConfigParser
 
@@ -116,47 +117,78 @@ tag_event_subject = TagEventSubject(
     ],
 )
 tags_mid = TagsMidlayerMixin(
-    config=config_dict, conns=tags_mid_conns, tag_event_subject=tag_event_subject, performances_mid=performances_mid
+    config=config_dict,
+    conns=tags_mid_conns,
+    tag_event_subject=tag_event_subject,
+    performances_mid=performances_mid,
 )
 
-
-## Create user 1 and their avatar image
-password_hash = hash_password("password")
-request = UserCreateRequest(
-    username="sean",
-    first_name="Sean",
-    second_name="Barker",
-    email="seanbarker6@sky.com",
-    password="password",
-)
-
-user_one = users_dao.user_create(request=request, password_hash=password_hash)
-
-request = UserCreateRequest(
-    username="gregory",
-    first_name="Greg",
-    second_name="Baxter",
-    email="gg_no_re@sky.com",
-    password="password",
-)
-
-user_two = users_dao.user_create(request=request, password_hash=password_hash)
-
-# Create avatar file
-avatar_file_uuid = "123456"
-avatar_file = None
+#### CREATE files ####
 
 with open(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), "male-profile-pic.jpg"), "rb"
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show1.mp4"), "rb"
 ) as file_bytes_buffer_reader:
     request = FileCreateRequest(
-        uuid=avatar_file_uuid,
-        file_name="profile-pic.jpg",
+        uuid="show1",
+        file_name="show1.mp4",
         bytes=file_bytes_buffer_reader.read(),
-        mime_type="image/jpeg",
+        mime_type="video/mp4",
         url=None,
     )
-    avatar_file = file_service.create_file(request).file
+    show1_video = file_service.create_file(request).file
+
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show2.mp4"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show2",
+        file_name="show2.mp4",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="video/mp4",
+        url=None,
+    )
+    show2_video = file_service.create_file(request).file
+
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show3.mp4"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show3",
+        file_name="show3.mp4",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="video/mp4",
+        url=None,
+    )
+    show3_video = file_service.create_file(request).file
+
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show4.mp4"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show4",
+        file_name="show4.mp4",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="video/mp4",
+        url=None,
+    )
+    show4_video = file_service.create_file(request).file
+
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show5.mp4"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show5",
+        file_name="show5.mp4",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="video/mp4",
+        url=None,
+    )
+    show5_video = file_service.create_file(request).file
+
 
 dog_video_uuid = "202"
 dog_video_file = None
@@ -174,137 +206,21 @@ with open(
     dog_video_file = file_service.create_file(request).file
 
 
-# set it on the user
-user_update_request = UserUpdateRequest(user_one.id, avatar_file_uuid=avatar_file_uuid)
+# Create avatar file
+avatar_file_uuid = "123456"
+avatar_file = None
 
-users_dao.user_update(user_update_request)
-
-
-## Create user 2
-
-password_hash = hash_password("password")
-request = UserCreateRequest(
-    username="tim14",
-    first_name="Tim",
-    second_name="Smith",
-    email="timsmith@sky.com",
-    password="password",
-)
-
-user_two = users_dao.user_create(request=request, password_hash=password_hash)
-
-
-################### CREATE POSTS ####################
-
-# 1 - Post uploaded by the user we created
-post_create_request = PostCreateRequest(
-    owner_id=user_one.id,
-    owner_type=PostOwnerType.USER.value,
-    content="This is a new post",
-    creator_id=user_one.id,
-)
-
-post_one = posts_dao.post_create(post_create_request)
-
-post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post_one.id, file_id=dog_video_file.id
-)
-
-# 2 Post uploaded by second user, and tags the first user
-post_create_request = PostCreateRequest(
-    owner_id=user_two.id,
-    owner_type=PostOwnerType.USER.value,
-    content="This is a post which user one will be tagged in",
-    creator_id=user_two.id,
-)
-
-post_two = posts_dao.post_create(post_create_request)
-
-post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post_two.id, file_id=dog_video_file.id
-)
-
-tag_create_request = TagCreateRequest(
-    tagged_in_entity_id=post_two.id,
-    tagged_in_entity_type=TaggedInEntityType.POST.value,
-    tagged_entity_type=TaggedEntityType.USER.value,
-    tagged_entity_id=user_one.id,
-    creator_id=user_two.id,
-)
-tag = tags_mid.tag_create(tag_create_request)
-
-# # 3 Post uploaded be second user, featured by first user
-post_create_request = PostCreateRequest(
-    owner_id=user_two.id,
-    owner_type=PostOwnerType.USER.value,
-    content="This is a thrid post which user one will feature on their profile",
-    creator_id=user_two.id,
-)
-
-post_three = posts_dao.post_create(post_create_request)
-
-post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post_three.id, file_id=dog_video_file.id
-)
-
-feature_create_request = FeatureCreateRequest(
-    featured_entity_type=FeaturedEntityType.POST.value,
-    featured_entity_id=post_three.id,
-    featurer_type=FeaturerType.USER.value,
-    featurer_id=user_one.id,
-    creator_id=user_one.id,
-)
-
-feature = features_mid.feature_create(feature_create_request).feature
-
-# # 4
-# post_create_request = PostCreateRequest(owner_id=user_one.id, content="This is a fourth post")
-
-# post = posts_dao.post_create(post_create_request)
-
-# post_attachment = post_attachments_dao.post_attachment_create(
-#     post_id=post.id, file_id=avatar_file.id
-# )
-
-
-###################### CREATE PERFORMERS ######################
-
-performer_create_request = PerformerCreateRequest(
-    name="Taylor Swift",
-    biography="Im a singer",
-    uuid="06HL4z0CvFAxyc27GXpf02",
-    owner_id=user_two.id,
-    image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
-)
-
-taylor_swift = performers_mid.performer_create(performer_create_request).performer
-
-
-performer_create_request = PerformerCreateRequest(
-    name="Eminem",
-    biography="I'm a rapper",
-    uuid="7dGJo4pcD2V6oG8kP0tJRR",
-    owner_id=user_one.id,
-    image_url="https://i.scdn.co/image/ab6761610000f178a00b11c129b27a88fc72f36b",
-)
-
-performer = performers_mid.performer_create(performer_create_request).performer
-
-
-# Create a post for him
-
-post_create_request = PostCreateRequest(
-    owner_id=performer.id,
-    owner_type=PostOwnerType.PERFORMER.value,
-    content="Eminems first post",
-    creator_id=user_two.id,
-)
-
-post_four = posts_dao.post_create(post_create_request)
-
-post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post_four.id, file_id=dog_video_file.id
-)
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "male-profile-pic.jpg"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid=avatar_file_uuid,
+        file_name="profile-pic.jpg",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="image/jpeg",
+        url=None,
+    )
+    avatar_file = file_service.create_file(request).file
 
 
 #### CREATE EVENTS ####
@@ -327,21 +243,307 @@ event_create_request = EventCreateRequest(
 
 event_two = events_mid.event_create(event_create_request).event
 
+event_create_request = EventCreateRequest(
+    venue_name="Primavera Sound",
+    event_type=EventType.MUSIC_FESTIVAL.value,
+    start_date=1681531032 + 200000,
+    end_date=1681531032 + 300000,
+)
 
-################### CREATE PERFORMANCES ####################
+prima = events_mid.event_create(event_create_request).event
+
+## Create user 1 and their avatar image
+password_hash = hash_password("password")
+request = UserCreateRequest(
+    username="sean",
+    first_name="Sean",
+    second_name="Barker",
+    email="seanbarker6@sky.com",
+    password="password",
+)
+
+user_one = users_dao.user_create(request=request, password_hash=password_hash)
+
+# set it on the user
+user_update_request = UserUpdateRequest(user_one.id, avatar_file_uuid=avatar_file_uuid)
+
+users_dao.user_update(user_update_request)
+
+
+request = UserCreateRequest(
+    username="gregory",
+    first_name="Greg",
+    second_name="Baxter",
+    email="gg_no_re@sky.com",
+    password="password",
+)
+
+user_two = users_dao.user_create(request=request, password_hash=password_hash)
+
+
+## Create user 2
+
+password_hash = hash_password("password")
+request = UserCreateRequest(
+    username="tim14",
+    first_name="Tim",
+    second_name="Smith",
+    email="timsmith@sky.com",
+    password="password",
+)
+
+user_two = users_dao.user_create(request=request, password_hash=password_hash)
+
+
+password_hash = hash_password("password")
+request = UserCreateRequest(
+    username="seanborker",
+    first_name="Sean",
+    second_name="Borker",
+    email="seanborker@sky.com",
+    password="password",
+)
+
+user_three = users_dao.user_create(request=request, password_hash=password_hash)
+
+# set it on the user
+
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "avatar2.jpg"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="aaaaaaaaaaaaaaa",
+        file_name="profile-pic2.jpg",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="image/jpeg",
+        url=None,
+    )
+    avatar_file = file_service.create_file(request).file
+
+
+user_update_request = UserUpdateRequest(user_three.id, avatar_file_uuid=avatar_file_uuid)
+
+users_dao.user_update(user_update_request)
+
+
+################### CREATE POSTS with no tags or features ####################
+
+# 1 - Post uploaded by the user we created
+post_create_request = PostCreateRequest(
+    owner_id=user_one.id,
+    owner_type=PostOwnerType.USER.value,
+    content="What a great day at Glastonbury!",
+    creator_id=user_one.id,
+)
+
+post_one = posts_dao.post_create(post_create_request)
+
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post_one.id, file_id=show1_video.id
+)
+
+# 2 Post uploaded by second user, and tags the first user
+post_create_request = PostCreateRequest(
+    owner_id=user_two.id,
+    owner_type=PostOwnerType.USER.value,
+    content="This is a post which user one will be tagged in",
+    creator_id=user_two.id,
+)
+
+post_two = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=post_two.id, file_id=show2_video.id
+)
+
+###################### PERFORMER ONE ######################
+
+performer_create_request = PerformerCreateRequest(
+    name="Taylor Swift",
+    biography="Im a singer",
+    uuid="06HL4z0CvFAxyc27GXpf02",
+    owner_id=user_two.id,
+    image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
+)
+
+taylor_swift = performers_mid.performer_create(performer_create_request).performer
+
+
+# Create a performance created by them
 
 performance_create_request = PerformanceCreateRequest(
-    performer_id=performer.id,
+    performer_id=taylor_swift.id,
     event_id=event_one.id,
     performance_date=time.time(),
 )
 
-performance_one = performances_mid.performance_create(
+taylor_performance = performances_mid.performance_create(
     request=performance_create_request
 ).performance
 
+
+# 1 - Post uploaded by the user we created
+post_create_request = PostCreateRequest(
+    owner_id=user_one.id,
+    owner_type=PostOwnerType.USER.value,
+    content="Taylor swifts show was good!",
+    creator_id=user_one.id,
+)
+
+taylor_post = posts_dao.post_create(post_create_request)
+
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=taylor_post.id, file_id=show3_video.id
+)
+
+
+# Also tag their performance in a post. This will mark them as having attended too
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=taylor_performance.id,
+    tagged_entity_type=TaggedEntityType.PERFORMANCE.value,
+    tagged_in_entity_id=taylor_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id,
+)
+
+talyor_performance_post_tag = tags_mid.tag_create(tag_create_request)
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=taylor_swift.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=taylor_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id,
+)
+
+taylor_post_tag = tags_mid.tag_create(tag_create_request)
+
+
+# Create a feature for a post they are tagged in
+
+feature_create_request = FeatureCreateRequest(
+    featured_entity_id=taylor_post.id,
+    featured_entity_type=FeaturedEntityType.POST.value,
+    featurer_id=taylor_swift.id,
+    featurer_type=FeaturerType.PERFORMER.value,
+    creator_id=user_two.id,
+)
+
+feature = features_mid.feature_create(feature_create_request).feature
+
+
+# Create another post, performance tag and performanc attendance
+
+performance_create_request = PerformanceCreateRequest(
+    performer_id=taylor_swift.id,
+    event_id=prima.id,
+    performance_date=time.time(),
+)
+
+prima_performance = performances_mid.performance_create(
+    request=performance_create_request
+).performance
+
+print("prima_performance id", prima_performance.id)
+
+post_create_request = PostCreateRequest(
+    owner_id=user_three.id,
+    owner_type=PostOwnerType.USER.value,
+    content="Taylor swifts show at prima was sick!",
+    creator_id=user_one.id,
+)
+
+taylor_prima_post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=taylor_prima_post.id, file_id=show5_video.id
+)
+
+
+# Also tag their performance in a post
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=prima_performance.id,
+    tagged_entity_type=TaggedEntityType.PERFORMANCE.value,
+    tagged_in_entity_id=taylor_prima_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id,
+)
+
+talyor_prima_performance_post_tag = tags_mid.tag_create(tag_create_request)
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=taylor_swift.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=taylor_prima_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id,
+)
+
+taylor_prima_post_tag = tags_mid.tag_create(tag_create_request)
+
+
+
+###################### PERFORMER TWO ######################
+
+# Eminem can have no performances, and only posts
+
+performer_create_request = PerformerCreateRequest(
+    name="Eminem",
+    biography="I'm a rapper",
+    uuid="7dGJo4pcD2V6oG8kP0tJRR",
+    owner_id=user_one.id,
+    image_url="https://i.scdn.co/image/ab6761610000f178a00b11c129b27a88fc72f36b",
+)
+
+eminem = performers_mid.performer_create(performer_create_request).performer
+
+# 1 - Post uploaded by the user we created
+post_create_request = PostCreateRequest(
+    owner_id=user_three.id,
+    owner_type=PostOwnerType.USER.value,
+    content="Eminems show was good!",
+    creator_id=user_three.id,
+)
+
+em_post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=em_post.id, file_id=show1_video.id
+)
+
+
+# Also tag their performance in a post
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=eminem.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=em_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_three.id,
+)
+
+performance_post_tag = tags_mid.tag_create(tag_create_request)
+
+
+###################### PERFORMER THREE ######################
+
+performer_create_request = PerformerCreateRequest(
+    name="J cole",
+    biography="Im J cole",
+    uuid="6l3HvQ5sa6mXTsMTB19rO5",
+    owner_id=user_three.id,
+    image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
+)
+
+jcole = performers_mid.performer_create(performer_create_request).performer
+
+################### CREATE MORE PERFORMANCES for taylor that wont have any posts ####################
+
+
 performance_two_create_request = PerformanceCreateRequest(
-    performer_id=performer.id,
+    performer_id=taylor_swift.id,
     event_id=event_two.id,
     performance_date=time.time() + 200000,
 )
@@ -351,7 +553,7 @@ performance_two = performances_mid.performance_create(
 ).performance
 
 performance_three_create_request = PerformanceCreateRequest(
-    performer_id=performer.id,
+    performer_id=taylor_swift.id,
     event_id=event_one.id,
     performance_date=time.time() + 400000,
 )
@@ -371,127 +573,6 @@ performance_four = performances_mid.performance_create(
 ).performance
 
 
-################### CREATE PERFORMANCE ATTENDANCES ####################
-
-performance_attendance_two_create_request = PerformanceAttendanceCreateRequest(
-    performance_id=performance_two.id,
-    attendee_id=user_one.id,
-)
-
-performance_attendance_two = performance_attendances_mid.performance_attendance_create(
-    request=performance_attendance_two_create_request
-).performance_attendance
-
-
-################### CREATE TAGS for the performances ####################
-
-tag_create_request = TagCreateRequest(
-    tagged_entity_id=performance_one.id,
-    tagged_entity_type=TaggedEntityType.PERFORMANCE.value,
-    tagged_in_entity_id=post_one.id,
-    tagged_in_entity_type=TaggedInEntityType.POST.value,
-    creator_id=user_two.id,
-)
-
-tag = tags_mid.tag_create(tag_create_request)
-
-tag_two_create_request = TagCreateRequest(
-    tagged_entity_id=performance_one.id,
-    tagged_entity_type=TaggedEntityType.PERFORMANCE.value,
-    tagged_in_entity_id=post_two.id,
-    tagged_in_entity_type=TaggedInEntityType.POST.value,
-    creator_id=user_two.id,
-)
-
-tag = tags_mid.tag_create(tag_two_create_request)
-
-################### CREATE FEATURES for the performances ####################
-feature_create_request = FeatureCreateRequest(
-    featured_entity_id=post_one.id,
-    featured_entity_type=FeaturedEntityType.POST.value,
-    featurer_id=performer.id,
-    featurer_type=FeaturerType.PERFORMER.value,
-    creator_id=user_two.id,
-)
-
-feature = features_mid.feature_create(feature_create_request).feature
-
-feature_two_create_request = FeatureCreateRequest(
-    featured_entity_id=post_two.id,
-    featured_entity_type=FeaturedEntityType.POST.value,
-    featurer_id=performer.id,
-    featurer_type=FeaturerType.PERFORMER.value,
-    creator_id=user_two.id,
-)
-
-feature_two = features_mid.feature_create(feature_two_create_request).feature
-
-feature_three_create_request = FeatureCreateRequest(
-    featured_entity_id=post_three.id,
-    featured_entity_type=FeaturedEntityType.POST.value,
-    featurer_id=performer.id,
-    featurer_type=FeaturerType.PERFORMER.value,
-    creator_id=user_two.id,
-)
-
-
-feature_three = features_mid.feature_create(feature_three_create_request).feature
-
-feature_create_request = FeatureCreateRequest(
-    featured_entity_id=post_one.id,
-    featured_entity_type=FeaturedEntityType.POST.value,
-    featurer_id=user_two.id,
-    featurer_type=FeaturerType.USER.value,
-    creator_id=user_two.id,
-)
-
-feature = features_mid.feature_create(feature_create_request).feature
-
-
-################### create some user TAGS for posts so we cna view them from the Manage pages ####################
-
-tag_create_request = TagCreateRequest(
-    tagged_entity_id=performer.id,
-    tagged_entity_type=TaggedEntityType.PERFORMER.value,
-    tagged_in_entity_id=post_one.id,
-    tagged_in_entity_type=TaggedInEntityType.POST.value,
-    creator_id=user_one.id
-)
-
-tag = tags_mid.tag_create(tag_create_request)
-
-tag_create_request = TagCreateRequest(
-    tagged_entity_id=performer.id,
-    tagged_entity_type=TaggedEntityType.PERFORMER.value,
-    tagged_in_entity_id=post_two.id,
-    tagged_in_entity_type=TaggedInEntityType.POST.value,
-    creator_id=user_one.id
-)
-
-tag = tags_mid.tag_create(tag_create_request)
-
-tag_create_request = TagCreateRequest(
-    tagged_entity_id=performer.id,
-    tagged_entity_type=TaggedEntityType.PERFORMER.value,
-    tagged_in_entity_id=post_three.id,
-    tagged_in_entity_type=TaggedInEntityType.POST.value,
-    creator_id=user_one.id
-)
-
-tag = tags_mid.tag_create(tag_create_request)
-
-tag_create_request = TagCreateRequest(
-    tagged_entity_id=taylor_swift.id,
-    tagged_entity_type=TaggedEntityType.PERFORMER.value,
-    tagged_in_entity_id=post_four.id,
-    tagged_in_entity_type=TaggedInEntityType.POST.value,
-    creator_id=user_one.id
-)
-
-tag = tags_mid.tag_create(tag_create_request)
-
-
-
 # Create some extra posts for view more testing
 i = 0
 
@@ -499,14 +580,37 @@ while i < 27:
     post_create_request = PostCreateRequest(
         creator_id=user_one.id,
         content=f"Post {i}",
-        owner_id=performer.id,
-        owner_type=PostOwnerType.PERFORMER.value,
+        owner_id=user_one.id,
+        owner_type=PostOwnerType.USER.value,
     )
     post = posts_mid.post_create(post_create_request).post
 
-    post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post.id, file_id=dog_video_file.id
-    )
+    x = random.randint(1, 5)
+
+    if x == 1:
+        video_id = show1_video.id
+    elif x == 2:
+        video_id = show2_video.id
+    elif x == 3:
+        video_id = show3_video.id
+    elif x == 4:
+        video_id = show4_video.id
+    elif x == 5:
+        video_id = show5_video.id
+
+    post_attachment = post_attachments_dao.post_attachment_create(post_id=post.id, file_id=video_id)
 
     i += 1
 
+# Create user who has done nothing
+
+password_hash = hash_password("password")
+request = UserCreateRequest(
+    username="newuser",
+    first_name="Geoff",
+    second_name="Mi Name",
+    email="newuser@sky.com",
+    password="password",
+)
+
+users_dao.user_create(request=request, password_hash=password_hash)

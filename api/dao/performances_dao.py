@@ -115,6 +115,7 @@ class PerformancesDAO:
             {selects}
             {"".join(joins)}
             {where_string}
+            ORDER BY p.performance_date DESC
             """
 
         with self.db(self.config) as cursor:
