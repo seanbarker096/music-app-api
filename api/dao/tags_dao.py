@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List, Optional
 
 from api.db.db import DBConnectionManager, FlaskDBConnectionManager
@@ -78,10 +79,10 @@ class TagsDAO:
         binds = []
         joins = []
 
-        wheres.append("t.is_deleted = %s")
-        binds.append(0)
-
-        if filter.only_single_tagged_entity_type is True and filter.tagged_entity_type in (TaggedEntityType.PERFORMANCE.value, TaggedEntityType.PERFORMER.value):
+        if filter.only_single_tagged_entity_type is True and filter.tagged_entity_type in (
+            TaggedEntityType.PERFORMANCE.value,
+            TaggedEntityType.PERFORMER.value,
+        ):
             joins.append(
                 """
                 LEFT JOIN tag t2
@@ -90,10 +91,17 @@ class TagsDAO:
                 AND t2.tagged_entity_type = %s
                 """
             )
-            other_tagged_entity_type = TaggedEntityType.PERFORMER.value if filter.tagged_entity_type == TaggedEntityType.PERFORMANCE.value else TaggedEntityType.PERFORMANCE.value
+            other_tagged_entity_type = (
+                TaggedEntityType.PERFORMER.value
+                if filter.tagged_entity_type == TaggedEntityType.PERFORMANCE.value
+                else TaggedEntityType.PERFORMANCE.value
+            )
 
             binds.append(other_tagged_entity_type)
-            wheres.append('t2.id is null')
+            wheres.append("t2.id is null")
+
+        wheres.append("t.is_deleted = %s")
+        binds.append(0)
 
         if filter.tagged_entity_id:
             wheres.append("t.tagged_entity_id = %s")
@@ -118,8 +126,9 @@ class TagsDAO:
             {''.join(joins)}
             {where_string}
             """
-
+        
         with self.db(self.config) as cursor:
+
             cursor.execute(sql, binds)
             rows = cursor.fetchall()
 
