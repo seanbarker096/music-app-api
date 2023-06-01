@@ -485,7 +485,6 @@ tag_create_request = TagCreateRequest(
 taylor_prima_post_tag = tags_mid.tag_create(tag_create_request)
 
 
-
 ###################### PERFORMER TWO ######################
 
 # Eminem can have no performances, and only posts
@@ -573,6 +572,60 @@ performance_four = performances_mid.performance_create(
 ).performance
 
 
+###################### PERFORMER FOUR ####################
+
+performer_create_request = PerformerCreateRequest(
+    name="Kendrick Lamar",
+    biography="Im Kendrick Lamar",
+    uuid="2YZyLoL8N0Wb9xBt1NhZWg",
+    owner_id=5677,
+    image_url="https://i.scdn.co/image/ab6761610000f178437b9e2a82505b3d93ff1022",
+)
+
+kendrick = performers_mid.performer_create(performer_create_request).performer
+
+kendrick_perf_create_request = PerformanceCreateRequest(
+    performer_id=kendrick.id,
+    event_id=event_two.id,
+    performance_date=time.time() + 700000,
+)
+
+kendrick_per = performances_mid.performance_create(request=kendrick_perf_create_request).performance
+
+post_create_request = PostCreateRequest(
+    owner_id=user_one.id,
+    owner_type=PostOwnerType.USER.value,
+    content="Kendrick at o2",
+    creator_id=user_one.id,
+)
+
+kendrick_post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=kendrick_post.id, file_id=dog_video_file.id
+)
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=kendrick.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=kendrick_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id,
+)
+
+kendrick_post_tag = tags_mid.tag_create(tag_create_request)
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=kendrick_per.id,
+    tagged_entity_type=TaggedEntityType.PERFORMANCE.value,
+    tagged_in_entity_id=kendrick_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id,
+)
+
+kendrick_performance_post_tag = tags_mid.tag_create(tag_create_request)
+
+
 # Create some extra posts for view more testing
 i = 0
 
@@ -614,3 +667,16 @@ request = UserCreateRequest(
 )
 
 users_dao.user_create(request=request, password_hash=password_hash)
+
+
+# Create a feature for a post they are tagged in
+
+feature_create_request = FeatureCreateRequest(
+    featured_entity_id=taylor_prima_post.id,
+    featured_entity_type=FeaturedEntityType.POST.value,
+    featurer_id=taylor_swift.id,
+    featurer_type=FeaturerType.PERFORMER.value,
+    creator_id=user_two.id,
+)
+
+feature = features_mid.feature_create(feature_create_request).feature
