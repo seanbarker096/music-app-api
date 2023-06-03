@@ -7,6 +7,7 @@ from api.typings.performances import (
     PeformanceAttendancesGetResult,
     PerformanceAttendanceCreateRequest,
     PerformanceAttendanceCreateResult,
+    PerformanceAttendanceDeleteRequest,
     PerformanceAttendancesGetFilter,
     PerformanceCreateRequest,
     PerformanceCreateResult,
@@ -192,6 +193,33 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
         except Exception as e:
             raise Exception(
                 f"Failed to create performance attendance because {str(e)}. Request: {vars(request)}"
+            )
+
+    def performance_attendance_delete(self, request: PerformanceAttendanceDeleteRequest) -> None:
+        process_int_request_param(
+            parameter_name="id",
+            parameter=request.id,
+            optional=False,
+        )
+    
+        try:
+            # Check if the performance exists
+            filter = PerformancesGetFilter(ids=[request.id])
+            
+            performances = self.performances_mid.performances_get(filter=filter).performances
+
+            if len(performances) == 0:
+                raise PerformanceNotFoundException(
+                    f"Failed to delete performance attendance for performance attendance with id {request.id} because the performance attendance could not be found"
+                )
+            
+            return self.performance_attendances_dao.performance_attendance_delete(
+                request=request
+            )
+
+        except Exception as e:
+            raise Exception(
+                f"Failed to delete performance attendance because {str(e)}. Request: {vars(request)}"
             )
 
     def performance_attedances_get(self, filter: PerformanceAttendancesGetFilter) -> PeformanceAttendancesGetResult:

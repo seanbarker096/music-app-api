@@ -100,6 +100,17 @@ class PerformersDAOIntegrrationTest(IntegrationTestCase):
         self.fixture_factory.performance_attendance_fixture_create(
             performance_attendance_two_dto
         )
+        
+        # Create a performance attendance for a different attendee
+        performance_attendance_three_dto = PerformanceAttendanceFixtureDTO(
+            performance_id=performance_two_id,
+            attendee_id=6546,
+            create_time=self.current_time,
+        )
+
+        self.fixture_factory.performance_attendance_fixture_create(
+            performance_attendance_three_dto
+        )
 
         # Test
 

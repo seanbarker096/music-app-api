@@ -159,3 +159,12 @@ class PostNotFoundException(ResponseBaseException):
 
     def __init__(self, message: str):
         super().__init__(message=message)
+
+class TagNotFoundException(ResponseBaseException):
+    _http_code = 404
+    _name = "TAG_NOT_FOUND"
+    _enum_value = ErrorCodes.TAG_NOT_FOUND.value
+    _detail = "Failed to find tag"
+
+    def __init__(self, message: str):
+        super().__init__(message=message)

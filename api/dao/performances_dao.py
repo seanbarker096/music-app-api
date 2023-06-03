@@ -9,6 +9,7 @@ from api.typings.performances import (
     Performance,
     PerformanceAttendance,
     PerformanceAttendanceCreateRequest,
+    PerformanceAttendanceDeleteRequest,
     PerformanceAttendancesGetFilter,
     PerformanceCounts,
     PerformanceCreateRequest,
@@ -314,6 +315,21 @@ class PerformanceAttendancesDAO:
             attendee_id=request.attendee_id,
             create_time=now,
         )
+    
+    def performance_attendance_delete(
+        self, request: PerformanceAttendanceDeleteRequest
+    ) -> None:
+        sql = """
+                DELETE FROM performance_attendance
+                WHERE id = %s
+                """
+
+        binds = (
+            request.id,
+        )
+
+        with self.db(self.config) as cursor:
+            cursor.execute(sql, binds)
 
     def performance_attendances_get(
         self, filter: PerformanceAttendancesGetFilter

@@ -4,6 +4,7 @@ from typing import Optional
 
 from api.events.tags.event_objects.tag_event import (
     TagCreatedEvent,
+    TagDeletedEvent,
     TagEvent,
     TagEventType,
 )
@@ -13,6 +14,7 @@ from api.midlayer.posts_mid import PostsMidlayerMixin
 from api.typings.performances import (
     PerformanceAttendance,
     PerformanceAttendanceCreateRequest,
+    PerformanceAttendanceDeleteRequest,
     PerformanceAttendancesGetFilter,
 )
 from api.typings.posts import PostsGetFilter
@@ -41,6 +43,8 @@ class PerformanceTagEventObserver(TagEventObserver):
         try:
             if event.type == TagEventType.CREATED.value:
                 return self._handle_tag_created_event(event)
+            elif event.type == TagEventType.DELETED.value:
+                return self._handle_tag_deleted_event(event)
 
         except Exception as e:
             return self.handle_exception(e, event)
@@ -94,3 +98,43 @@ class PerformanceTagEventObserver(TagEventObserver):
         return self.performance_attendances_midlayer.performance_attendance_create(
             request=request
         ).performance_attendance
+
+    def _handle_tag_deleted_event(self, event: TagDeletedEvent) ->  None:
+
+        tag = event.tag
+        if (
+
+            tag.tagged_entity_type != TaggedEntityType.PERFORMANCE.value
+            or tag.tagged_in_entity_type != TaggedInEntityType.POST.value
+
+        ):
+            return None
+        
+        post_id = tag.tagged_in_entity_id
+        posts_get_filter = PostsGetFilter(ids=[post_id])
+
+        posts = self.posts_midlayer.posts_get(filter=posts_get_filter).posts
+
+        if len(posts) == 0:
+            raise PostNotFoundException(
+                f"Failed to process tag deleted event because the tagged in post with id {post_id} could not be found."
+            )
+        
+        post = posts[0]
+
+        filter = PerformanceAttendancesGetFilter(
+            performance_ids=[tag.tagged_entity_id], attendee_ids=[post.owner_id]
+        )
+
+        performance_attendances = self.performance_attendances_midlayer.performance_attedances_get(filter=filter).performance_attendances
+
+        if len(performance_attendances) == 0:
+            return None
+        
+        performance_attendance = performance_attendances[0]
+
+        request = PerformanceAttendanceDeleteRequest(id=performance_attendance.id)
+
+        return self.performance_attendances_midlayer.performance_attendance_delete(
+            request=request
+        )

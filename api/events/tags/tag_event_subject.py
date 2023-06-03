@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from api.events.tags.event_objects.tag_event import (
     TagCreatedEvent,
+    TagDeletedEvent,
     TagEvent,
     TagEventType,
 )
@@ -41,5 +42,8 @@ class TagEventSubject:
 
         if event_type == TagEventType.CREATED.value:
             return TagCreatedEvent(tag)
+        
+        elif event_type == TagEventType.DELETED.value:
+            return TagDeletedEvent(tag)
 
         raise InvalidArgumentException(f"Invalid tag event type: {event_type}", "event_type")

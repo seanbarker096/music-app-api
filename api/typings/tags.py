@@ -71,6 +71,7 @@ class TagCreateResult:
 
 
 class TagsGetFilter:
+    ids: Optional[List[int]] = ...
     tagged_entity_id: Optional[int] = ...
     tagged_entity_type: Optional[TaggedEntityType] = ...
     tagged_in_entity_type: Optional[TaggedInEntityType] = ...
@@ -80,12 +81,14 @@ class TagsGetFilter:
 
     def __init__(
             self, 
+            ids: Optional[List[int]] = None,
             tagged_entity_id: Optional[int] = None, 
             tagged_entity_type: Optional[TaggedEntityType] = None, 
             tagged_in_entity_type: Optional[TaggedInEntityType] = None, 
             tagged_in_entity_id: Optional[int] = None,
             only_single_tagged_entity_type: Optional[bool] = None
             ) -> None:
+        self.ids = ids
         self.tagged_entity_id = tagged_entity_id
         self.tagged_entity_type = tagged_entity_type
         self.tagged_in_entity_type = tagged_in_entity_type
@@ -101,7 +104,7 @@ class TagsGetResult:
 
 
 class TagDeleteRequest:
-    ids: List[int] = ...
+    id: int = ...
 
-    def __init__(self, ids: List[int]) -> None:
-        self.ids = ids
+    def __init__(self, id: int) -> None:
+        self.id = id

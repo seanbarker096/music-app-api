@@ -25,6 +25,7 @@ from api.utils.rest_utils import (
     process_int_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
+from exceptions.response.exceptions import TagNotFoundException
 
 
 class TagsMidlayerConnections:
@@ -131,6 +132,13 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
         )
 
     def tags_get(self, request: TagsGetFilter) -> TagsGetResult:
+        
+        if request.ids and len(request.ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid argument ids. Must provide at least one id if providing this filter field. Request: {json.dumps(vars(request))}",
+                "request.ids",
+            )
+
         process_enum_request_param(parameter_name="tagged_entity_type", parameter=request.tagged_entity_type, enum=TaggedEntityType)
         process_int_request_param("tagged_entity_id", request.tagged_entity_id)
         process_enum_request_param(parameter_name="tagged_in_entity_type", parameter=request.tagged_in_entity_type, enum=TaggedInEntityType)
@@ -152,20 +160,37 @@ class TagsMidlayerMixin(BaseMidlayerMixin):
                 f"Failed to get tags because {json.dumps(str(err))}. Request: {json.dumps(vars(request))}"
             )
 
-    def tags_delete(self, request: TagDeleteRequest):
-        if not request.ids or len(request.ids) == 0:
+    def tags_delete(self, request: TagDeleteRequest) -> None:
+        
+        if not request.id:
             raise InvalidArgumentException(
                 f"Must provide at least one tag id to delete. Request: {json.dumps(vars(request))}",
                 "request.ids",
             )
         
+        tag_id = request.id
+        
         try:
-            return self.tags_dao.tags_delete(request)
-            # Notify observers
-            # for deleted_tag in deleted_tags:
-            #     self.tag_event_subject.publish_event(state=deleted_tag, event_type=TagEventType.DELETED.value)
+            # CHeck if tag exists
+            tags_get_filter = TagsGetFilter(
+                ids=[request.id]
+            )
+            tags = self.tags_dao.tags_get(filter=tags_get_filter)
+
+            if len(tags) == 0:
+                raise TagNotFoundException(f"Failed to delete tags because no tags with id {tag_id} exists")
+            
+            tag = tags[0]
+            
+            self.tags_dao.tags_delete(request)   
 
         except Exception as err:
             raise Exception(
                 f"Failed to delete tags because {json.dumps(str(err))}. Request: {json.dumps(vars(request))}"
             )
+
+        # Notify observers
+        self.tag_event_subject.publish_event(state=tag, event_type=TagEventType.DELETED.value)
+
+        return
+       

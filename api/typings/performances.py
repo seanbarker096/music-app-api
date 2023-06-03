@@ -135,6 +135,15 @@ class PerformanceAttendanceCreateResult:
     ) -> None:
         self.performance_attendance = performance_attendance
 
+class PerformanceAttendanceDeleteRequest:
+    id: int = ...
+
+    def __init__(
+        self,
+        id: int,
+    ) -> None:
+        self.id = id
+      
 class PerformanceAttendancesGetFilter:
     performance_ids: Optional[list[int]] = ...
     attendee_ids: Optional[list[int]] = ...

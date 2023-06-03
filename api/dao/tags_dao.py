@@ -103,6 +103,10 @@ class TagsDAO:
         wheres.append("t.is_deleted = %s")
         binds.append(0)
 
+        if filter.ids:
+            wheres.append("t.id in %s")
+            binds.append(filter.ids)
+
         if filter.tagged_entity_id:
             wheres.append("t.tagged_entity_id = %s")
             binds.append(filter.tagged_entity_id)
@@ -137,10 +141,10 @@ class TagsDAO:
     def tags_delete(self, request: TagDeleteRequest) -> None:
         query = """
             DELETE FROM tag t
-            WHERE t.id in %s
+            WHERE t.id = %s
         """
 
-        binds = set(request.ids)  # PyMySQL requires a unique list of values for DELETE statements
+        binds = request.id  # PyMySQL requires a unique list of values for DELETE statements
 
         with self.db(self.config) as cursor:
             cursor.execute(query, binds)

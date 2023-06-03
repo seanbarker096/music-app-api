@@ -25,3 +25,6 @@ class ErrorCodes(Enum):
 
     # Resource = Post
     POST_NOT_FOUND = 4000
+
+    # Resource = Tag
+    TAG_NOT_FOUND = 5000

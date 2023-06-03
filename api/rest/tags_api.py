@@ -93,9 +93,9 @@ def tags_get():
 @blueprint.route("/tags/", methods=["DELETE"])
 @auth
 def tag_delete():
-    tag_ids = process_api_set_request_param(parameter_name="ids[]", type=int, optional=False)
+    tag_id = process_int_api_request_param(parameter_name="id", optional=False)
 
-    tag_delete_request = TagDeleteRequest(ids=tag_ids)
+    tag_delete_request = TagDeleteRequest(id=tag_id)
     flask.current_app.conns.midlayer.tags_delete(request=tag_delete_request)
 
     return flask.current_app.response_class(status=204, mimetype="application/json")
