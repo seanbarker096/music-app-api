@@ -70,6 +70,8 @@ class PostsDAO(object):
         """
         now = time.time()
 
+        request.content = None if request.content == "" else request.content
+        
         binds = (
             request.owner_id,
             request.owner_type,

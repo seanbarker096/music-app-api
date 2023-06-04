@@ -42,14 +42,14 @@ class PostCreateRequest(object):
     creator_id: int = ...
     owner_id: int = ...
     owner_type: PostOwnerType = ...
-    content: str = ...
+    content: Optional[str] = ...
 
     def __init__(
         self,
         creator_id: int,
         owner_id: int,
         owner_type: PostOwnerType,
-        content: str,
+        content: Optional[str] = None,
     ):
         self.creator_id = creator_id
         self.owner_id = owner_id

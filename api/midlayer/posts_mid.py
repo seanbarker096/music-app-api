@@ -22,6 +22,7 @@ from api.utils.rest_utils import (
     process_enum_request_param,
     process_enum_set_param,
     process_int_request_param,
+    process_string_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -55,10 +56,7 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
                 "owner_type",
             )
 
-        if not isinstance(request.content, str) or not request.content:
-            raise InvalidArgumentException(
-                f"Invalid value {request.content} for argument content", "content"
-            )
+        process_string_request_param('content', request.content)
 
         try:
             post = self.posts_dao.post_create(request)

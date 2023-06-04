@@ -7,7 +7,7 @@ CREATE TABLE gigs.post (
     id int(10) unsigned auto_increment,
     owner_id int(10) unsigned NOT NULL,
     owner_type enum('user', 'performer') NOT NULL,
-    content text NULL,
+    content varchar(1000) DEFAULT NULL,
     creator_id int(10) unsigned NOT NULL,
     create_time datetime NOT NULL,
     update_time datetime DEFAULT NULL,
