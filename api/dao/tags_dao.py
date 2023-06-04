@@ -20,7 +20,6 @@ class TagsDBAlias:
     TAG_TAGGED_IN_ENTITY_TYPE = "tag_tagged_in_entity_type"
     TAG_TAGGED_IN_ENTITY_ID = "tag_tagged_in_entity_id"
     TAG_CREATOR_ID = "tag_creator_id"
-    TAG_IS_DELETED = "tag_is_deleted"
 
 
 class TagsDAO:
@@ -33,7 +32,6 @@ class TagsDAO:
         "t.tagged_in_entity_type as " + TagsDBAlias.TAG_TAGGED_IN_ENTITY_TYPE,
         "t.tagged_in_entity_id as " + TagsDBAlias.TAG_TAGGED_IN_ENTITY_ID,
         "t.creator_id as " + TagsDBAlias.TAG_CREATOR_ID,
-        "t.is_deleted as " + TagsDBAlias.TAG_IS_DELETED,
     ]
 
     def __init__(self, config, db: Optional[FlaskDBConnectionManager] = None) -> None:
@@ -43,8 +41,8 @@ class TagsDAO:
 
     def tag_create(self, request: TagCreateRequest) -> Tag:
         query = """
-            INSERT INTO tag(tagged_entity_type, tagged_entity_id, tagged_in_entity_type, tagged_in_entity_id, creator_id, is_deleted)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO tag(tagged_entity_type, tagged_entity_id, tagged_in_entity_type, tagged_in_entity_id, creator_id)
+            VALUES (%s, %s, %s, %s, %s)
         """
 
         binds = (
@@ -67,7 +65,6 @@ class TagsDAO:
             tagged_in_entity_type=request.tagged_in_entity_type,
             tagged_in_entity_id=request.tagged_in_entity_id,
             creator_id=request.creator_id,
-            is_deleted=False,
         )
 
     def tags_get(self, filter: TagsGetFilter) -> List[Tag]:
@@ -99,9 +96,6 @@ class TagsDAO:
 
             binds.append(other_tagged_entity_type)
             wheres.append("t2.id is null")
-
-        wheres.append("t.is_deleted = %s")
-        binds.append(0)
 
         if filter.ids:
             wheres.append("t.id in %s")
@@ -196,9 +190,6 @@ class TagsDAO:
         assert_row_key_exists(db_row, TagsDBAlias.TAG_CREATOR_ID)
         creator_id = int(db_row[TagsDBAlias.TAG_CREATOR_ID])
 
-        assert_row_key_exists(db_row, TagsDBAlias.TAG_IS_DELETED)
-        is_deleted = bool(db_row[TagsDBAlias.TAG_IS_DELETED])
-
         return Tag(
             id=tag_id,
             tagged_entity_type=tagged_entity_type,
@@ -206,5 +197,4 @@ class TagsDAO:
             tagged_in_entity_type=tagged_in_entity_type,
             tagged_in_entity_id=tagged_in_entity_id,
             creator_id=creator_id,
-            is_deleted=is_deleted,
         )

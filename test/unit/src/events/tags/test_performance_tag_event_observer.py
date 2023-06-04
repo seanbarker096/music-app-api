@@ -10,6 +10,7 @@ from api.events.tags.event_objects.tag_event import (
 from api.events.tags.performance_tag_event_observer import PerformanceTagEventObserver
 from api.events.tags.tag_event_subject import TagEventSubject
 from api.typings.performances import (
+    PeformanceAttendancesGetResult,
     PerformanceAttendance,
     PerformanceAttendanceCreateRequest,
     PerformanceAttendanceCreateResult,
@@ -47,6 +48,12 @@ class PerformanceTagEventObserverTest(TestCase):
         mock_performances_attendance_midlayer.performance_attendance_create = Mock(
             return_value=PerformanceAttendanceCreateResult(
                 performance_attendance=expected_performance_attendance
+            )
+        )
+
+        mock_performances_attendance_midlayer.performance_attedances_get = Mock(
+            return_value=PeformanceAttendancesGetResult(
+                performance_attendances=[]
             )
         )
 
