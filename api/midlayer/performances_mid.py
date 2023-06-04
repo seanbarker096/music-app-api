@@ -17,7 +17,10 @@ from api.typings.performances import (
 )
 from api.utils.rest_utils import process_bool_request_param, process_int_request_param
 from exceptions.exceptions import InvalidArgumentException
-from exceptions.response.exceptions import PerformanceNotFoundException
+from exceptions.response.exceptions import (
+    PerformanceAttendanceNotFoundException,
+    PerformanceNotFoundException,
+)
 
 
 class PerformancesMidlayerConnections:
@@ -203,14 +206,14 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
         )
     
         try:
-            # Check if the performance exists
-            filter = PerformancesGetFilter(ids=[request.id])
+            # Check if the performance attendance exists
+            filter = PerformanceAttendancesGetFilter(ids=[request.id])
             
-            performances = self.performances_mid.performances_get(filter=filter).performances
+            performance_attendances = self.performance_attedances_get(filter=filter).performance_attendances
 
-            if len(performances) == 0:
-                raise PerformanceNotFoundException(
-                    f"Failed to delete performance attendance for performance attendance with id {request.id} because the performance attendance could not be found"
+            if len(performance_attendances) == 0:
+                raise PerformanceAttendanceNotFoundException(
+                    f"Failed to delete performance attendance with id {request.id} because it could not be found"
                 )
             
             return self.performance_attendances_dao.performance_attendance_delete(
@@ -234,8 +237,14 @@ class PerformanceAttendancesMidlayerMixin(BaseMidlayerMixin):
                 f"Invalid value provided for filter field attendee_ids: {filter.attendee_ids}. At least one attendee_id must be provided",
                 "filter.attendee_ids",
             )
+        
+        if filter.ids and len(filter.ids) == 0:
+            raise InvalidArgumentException(
+                f"Invalid value provided for filter field ids: {filter.ids}. At least one id must be provided",
+                "filter.ids",
+            )
 
-        if not filter.performance_ids and not filter.attendee_ids:
+        if not filter.performance_ids and not filter.attendee_ids and not filter.ids:
             raise InvalidArgumentException(
                 f"At least one filter field must be provided. Filter: {json.dumps(vars(filter))}",
                 "filter",

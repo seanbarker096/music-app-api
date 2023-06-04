@@ -51,7 +51,6 @@ class TagsDAO:
             request.tagged_in_entity_type,
             request.tagged_in_entity_id,
             request.creator_id,
-            0,
         )
 
         with self.db(self.config) as cursor:

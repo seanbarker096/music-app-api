@@ -60,6 +60,7 @@ class PerformanceTagEventObserver(TagEventObserver):
         """
         tag = event.tag
 
+        print("tag", json.dumps(vars(tag)))
         if (
             tag.tagged_entity_type != TaggedEntityType.PERFORMANCE.value
             or tag.tagged_in_entity_type != TaggedInEntityType.POST.value
@@ -68,6 +69,7 @@ class PerformanceTagEventObserver(TagEventObserver):
             #     f"Invalid tag event. Currently only tagging perforamnces in posts is supported. Please extend these checks if you want to support other tag events. Tag event: {json.dumps(vars(event))}",
             #     "event",
             # )
+          
             return None
 
         post_id = tag.tagged_in_entity_id
@@ -88,6 +90,8 @@ class PerformanceTagEventObserver(TagEventObserver):
         )
         performance_attendances = self.performance_attendances_midlayer.performance_attedances_get(filter=filter).performance_attendances
 
+
+        print("performance attendances", len(performance_attendances))
         if len(performance_attendances) > 0:
             return None
 

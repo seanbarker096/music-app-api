@@ -343,6 +343,11 @@ class PerformanceAttendancesDAO:
         binds = []
         wheres = []
 
+
+        if filter.ids:
+            wheres.append("pa.id in %s")
+            binds.append(filter.ids)
+            
         if filter.performance_ids:
             wheres.append("pa.performance_id in %s")
             binds.append(filter.performance_ids)

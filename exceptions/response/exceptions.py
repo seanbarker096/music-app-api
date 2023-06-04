@@ -150,6 +150,14 @@ class PerformanceNotFoundException(ResponseBaseException):
     def __init__(self, message: str):
         super().__init__(message=message)
 
+class PerformanceAttendanceNotFoundException(ResponseBaseException):
+    _http_code = 404
+    _name = "PERFORMANCE_ATTENDANCE_NOT_FOUND"
+    _enum_value = ErrorCodes.PERFORMANCE_ATTENDANCE_NOT_FOUND.value
+    _detail = "Failed to find performance attendance"
+
+    def __init__(self, message: str):
+        super().__init__(message=message)
 
 class PostNotFoundException(ResponseBaseException):
     _http_code = 404

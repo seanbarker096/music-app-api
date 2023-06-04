@@ -123,6 +123,7 @@ def performance_create():
     events = flask.current_app.conns.midlayer.events_get(event_filter).events
 
     if len(events) == 0:
+        # TODO: Add a creator_id so its easy to track who created what in the case where similar events keep getting created
         event_create_request = EventCreateRequest(
             start_date=event_start_date_unix_timestamp,
             end_date=event_end_date_unix_timestamp,
