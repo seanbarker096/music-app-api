@@ -93,7 +93,13 @@ class UsersDAO(object):
 
         where_string = build_where_query_string(wheres, "AND")
 
-        sql = selects + where_string
+        binds.append(filter.limit if filter.limit else 20)
+
+        sql = f"""
+            {selects}
+            {where_string}
+            LIMIT %s
+            """
 
         with self.db(self.config) as cursor:
             cursor.execute(sql, binds)

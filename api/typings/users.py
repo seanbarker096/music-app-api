@@ -79,14 +79,17 @@ class UserWithPassword:
 class UsersGetFilter:
     user_ids: Optional[List[str]] = None
     search_query: Optional[str] = None
+    limit: Optional[int] = None
 
     def __init__(
         self,
         user_ids: Optional[List[str]] = None,
         search_query: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> None:
         self.user_ids = user_ids
         self.search_query = search_query
+        self.limit = limit
 
 
 class UsersGetProjection:

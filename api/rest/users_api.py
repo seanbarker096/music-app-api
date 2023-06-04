@@ -9,6 +9,7 @@ from api.utils.rest_utils import (
     class_to_dict,
     process_api_set_request_param,
     process_bool_api_request_param,
+    process_int_api_request_param,
     process_string_api_post_request_param,
     process_string_api_request_param,
     process_string_request_param,
@@ -106,7 +107,9 @@ def user_search():
         parameter_name="include_profile_image", optional=True
     )
 
-    filter = UsersGetFilter(search_query=search_query)
+    limit = process_int_api_request_param(parameter_name="limit", optional=True)
+
+    filter = UsersGetFilter(search_query=search_query, limit=limit)
     projection = UsersGetProjection(include_profile_image=include_profile_image)
     result = flask.current_app.conns.midlayer.users_get(filter, projection)
 

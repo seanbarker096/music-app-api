@@ -18,7 +18,7 @@ from api.typings.users import (
     UserWithPassword,
 )
 from api.utils import hash_password, validate_password, verify_hash
-from api.utils.rest_utils import process_string_request_param
+from api.utils.rest_utils import process_int_request_param, process_string_request_param
 from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
@@ -63,6 +63,8 @@ class UsersMidlayerMixin(BaseMidlayerMixin):
         search_query = process_string_request_param(
             "search_query", filter.search_query, optional=True, allow_empty_string=True
         )
+
+        process_int_request_param("limit", filter.limit, optional=True)
 
         if not search_query and not filter.user_ids:
             raise InvalidArgumentException(

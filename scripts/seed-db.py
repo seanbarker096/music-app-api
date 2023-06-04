@@ -484,6 +484,31 @@ tag_create_request = TagCreateRequest(
 
 taylor_prima_post_tag = tags_mid.tag_create(tag_create_request)
 
+# Create one final post not linked to a performance
+
+post_create_request = PostCreateRequest(
+    owner_id=user_three.id,
+    owner_type=PostOwnerType.USER.value,
+    content="Cool show mite",
+    creator_id=user_one.id,
+)
+
+taylor_not_linked_to_performance_post = posts_dao.post_create(post_create_request)
+
+post_attachment = post_attachments_dao.post_attachment_create(
+    post_id=taylor_not_linked_to_performance_post.id, file_id=show1_video.id
+)
+
+tag_create_request = TagCreateRequest(
+    tagged_entity_id=taylor_swift.id,
+    tagged_entity_type=TaggedEntityType.PERFORMER.value,
+    tagged_in_entity_id=taylor_not_linked_to_performance_post.id,
+    tagged_in_entity_type=TaggedInEntityType.POST.value,
+    creator_id=user_one.id,
+)
+
+taylor_prima_post_tag = tags_mid.tag_create(tag_create_request)
+
 
 ###################### PERFORMER TWO ######################
 
@@ -680,3 +705,21 @@ feature_create_request = FeatureCreateRequest(
 )
 
 feature = features_mid.feature_create(feature_create_request).feature
+
+
+i = 0
+
+while i < 40:
+    password_hash = hash_password("password")
+    request = UserCreateRequest(
+        username=f"user{i}",
+        first_name=f"User {i}",
+        second_name=f"Second name is {i}",
+        email=f"user{i}@gmail.com",
+        password="password",
+    )
+
+    users_dao.user_create(request=request, password_hash=password_hash)
+
+    i += 1
+

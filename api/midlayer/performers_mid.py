@@ -76,9 +76,10 @@ class PerformersMidlayerMixin(BaseMidlayerMixin):
         performers = self.performers_dao.performers_get(filter)
         return PerformersGetResult(performers=performers)
 
-    def performer_search(self, searchQuery: str) -> PerformersSearchResult:
+    def performer_search(self, searchQuery: str, limit: Optional[int] = 20) -> PerformersSearchResult:
         request = PerformersSearchRequest(
             search_terms={"q": searchQuery},
+            limit=limit,
         )
 
         return self.performer_search_service.search(request)

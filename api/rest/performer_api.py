@@ -9,6 +9,7 @@ from api.utils.rest_utils import (
     class_to_dict,
     process_api_set_request_param,
     process_bool_api_request_param,
+    process_int_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
 
@@ -54,10 +55,12 @@ def performers_search():
 
     search_query = data.get("search_query", None)
 
+    limit = process_int_request_param("limit", data.get("limit", None))
+
     if not search_query or not isinstance(search_query, str):
         raise InvalidArgumentException("Must provide a search query", search_query)
 
-    result = flask.current_app.conns.midlayer.performer_search(search_query)
+    result = flask.current_app.conns.midlayer.performer_search(search_query, limit)
 
     performers = result.performers
     performer_dicts = [rest_utils.class_to_dict(performer) for performer in performers]

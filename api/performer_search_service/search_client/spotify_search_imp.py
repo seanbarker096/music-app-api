@@ -36,7 +36,11 @@ class SpotifySearchImp(SearchImp):
         if not searchTerm:
             raise Exception("Invalid search terms provided")
 
-        return SpotifySearchRequest(q=searchTerm, limit=request.limit)
+        limit = request.limit
+        if request.limit > 50:
+            limit = 50
+        
+        return SpotifySearchRequest(q=searchTerm, limit=limit)
 
     def search(self, request: SpotifySearchRequest) -> str:
         ## TODO: Avoid calling this every time. Instead cache the token somwhere and request it
@@ -93,6 +97,7 @@ class SpotifySearchImp(SearchImp):
 
     def _spotify_search_artists(self, access_token, search_term, limit) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
+        print(f"search limit: {limit}")
         url = f"https://api.spotify.com/v1/search?q={search_term}&type=artist&limit={limit}"
         response = requests.get(url, headers=headers)
         try:
