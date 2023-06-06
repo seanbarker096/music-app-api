@@ -260,9 +260,21 @@ request = UserCreateRequest(
     second_name="Barker",
     email="seanbarker6@sky.com",
     password="password",
+    
 )
 
+
+
 user_one = users_dao.user_create(request=request, password_hash=password_hash)
+
+update_request = UserUpdateRequest(
+    user_id=user_one.id,
+    bio="I love music and live in London",
+)
+
+users_dao.user_update(request=update_request)
+
+
 
 # set it on the user
 user_update_request = UserUpdateRequest(user_one.id, avatar_file_uuid=avatar_file_uuid)
@@ -294,6 +306,13 @@ request = UserCreateRequest(
 
 user_two = users_dao.user_create(request=request, password_hash=password_hash)
 
+update_request = UserUpdateRequest(
+    user_id=user_two.id,
+    bio="Mi nem Geoff. Mi like watching people play music and venues and shit",
+)
+
+users_dao.user_update(request=update_request)
+
 
 password_hash = hash_password("password")
 request = UserCreateRequest(
@@ -305,6 +324,13 @@ request = UserCreateRequest(
 )
 
 user_three = users_dao.user_create(request=request, password_hash=password_hash)
+
+update_request = UserUpdateRequest(
+    user_id=user_three.id,
+    bio="Reeeeeeeeeeee. Im 28 years old and moved to London 2 years ago. I love music and live in London",
+)
+
+users_dao.user_update(request=update_request)
 
 # set it on the user
 
@@ -362,10 +388,10 @@ post_attachment = post_attachments_dao.post_attachment_create(
 
 performer_create_request = PerformerCreateRequest(
     name="Taylor Swift",
-    biography="Im a singer",
     uuid="06HL4z0CvFAxyc27GXpf02",
     owner_id=user_two.id,
     image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
+    biography='Taylor Alison Swift is an American singer-songwriter. Her narrative songwriting, which often centers around her personal life, has received widespread critical plaudits and media coverage.',
 )
 
 taylor_swift = performers_mid.performer_create(performer_create_request).performer
@@ -516,10 +542,10 @@ taylor_prima_post_tag = tags_mid.tag_create(tag_create_request)
 
 performer_create_request = PerformerCreateRequest(
     name="Eminem",
-    biography="I'm a rapper",
     uuid="7dGJo4pcD2V6oG8kP0tJRR",
     owner_id=user_one.id,
     image_url="https://i.scdn.co/image/ab6761610000f178a00b11c129b27a88fc72f36b",
+    biography="Eminem is an American rapper, songwriter, record producer, record executive, and actor. He is consistently cited as one of the greatest and most influential rappers of all time and was labeled the King of Hip Hop by Rolling Stone magazine.",
 )
 
 eminem = performers_mid.performer_create(performer_create_request).performer
@@ -555,10 +581,10 @@ performance_post_tag = tags_mid.tag_create(tag_create_request)
 
 performer_create_request = PerformerCreateRequest(
     name="J cole",
-    biography="Im J cole",
     uuid="6l3HvQ5sa6mXTsMTB19rO5",
     owner_id=user_three.id,
     image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
+    biography="Jermaine Lamarr Cole, known professionally as J. Cole, is an American rapper, singer, songwriter, record producer, and record executive. Born on a military base in Germany and raised in Fayetteville, North Carolina, Cole initially gained recognition as a rapper following the release of his debut mixtape, The Come Up, in early 2007.",
 )
 
 jcole = performers_mid.performer_create(performer_create_request).performer
@@ -601,10 +627,10 @@ performance_four = performances_mid.performance_create(
 
 performer_create_request = PerformerCreateRequest(
     name="Kendrick Lamar",
-    biography="Im Kendrick Lamar",
     uuid="2YZyLoL8N0Wb9xBt1NhZWg",
     owner_id=5677,
     image_url="https://i.scdn.co/image/ab6761610000f178437b9e2a82505b3d93ff1022",
+    biography="Kendrick Lamar Duckworth is an American rapper, songwriter, and record producer. Since his debut into the mainstream with Good Kid, M.A.A.D City, Lamar has been regarded as one of the most influential artists of his generation, as well as one of the greatest rappers and lyricists of all time.",
 )
 
 kendrick = performers_mid.performer_create(performer_create_request).performer
