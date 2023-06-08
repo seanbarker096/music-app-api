@@ -577,17 +577,7 @@ tag_create_request = TagCreateRequest(
 performance_post_tag = tags_mid.tag_create(tag_create_request)
 
 
-###################### PERFORMER THREE ######################
 
-performer_create_request = PerformerCreateRequest(
-    name="J cole",
-    uuid="6l3HvQ5sa6mXTsMTB19rO5",
-    owner_id=user_three.id,
-    image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
-    biography="Jermaine Lamarr Cole, known professionally as J. Cole, is an American rapper, singer, songwriter, record producer, and record executive. Born on a military base in Germany and raised in Fayetteville, North Carolina, Cole initially gained recognition as a rapper following the release of his debut mixtape, The Come Up, in early 2007.",
-)
-
-jcole = performers_mid.performer_create(performer_create_request).performer
 
 ################### CREATE MORE PERFORMANCES for taylor that wont have any posts ####################
 
@@ -748,4 +738,30 @@ while i < 40:
     users_dao.user_create(request=request, password_hash=password_hash)
 
     i += 1
+
+
+    # Create user and performer for testing empty states
+
+password_hash = hash_password("password")
+
+request = UserCreateRequest(
+        username=f"emptystateuser",
+        first_name=f"Empty",
+        second_name=f"State",
+        email=f"emptystateuser@gmail.com",
+        password="password",
+    )
+
+empty_state_user = users_dao.user_create(request=request, password_hash=password_hash)
+
+
+performer_create_request = PerformerCreateRequest(
+    name="J cole",
+    uuid="6l3HvQ5sa6mXTsMTB19rO5",
+    owner_id=empty_state_user.id,
+    image_url="https://i.scdn.co/image/ab6761610000f1785a00969a4698c3132a15fbb0",
+    biography="Jermaine Lamarr Cole, known professionally as J. Cole, is an American rapper, singer, songwriter, record producer, and record executive. Born on a military base in Germany and raised in Fayetteville, North Carolina, Cole initially gained recognition as a rapper following the release of his debut mixtape, The Come Up, in early 2007.",
+)
+
+jcole = performers_mid.performer_create(performer_create_request).performer
 
