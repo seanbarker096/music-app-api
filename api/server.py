@@ -34,6 +34,17 @@ filename = os.path.join(flask.helpers.get_root_path(__name__), "config", f"{env}
 
 config.read(filename)
 
+# If we are in aws we need to use the RDS environment variables
+if 'RDS_HOSTNAME' in os.environ:
+    config['db'] = {
+        'user' : os.environ['RDS_USERNAME'], 
+        'password' : os.environ['RDS_PASSWORD'],
+        'database' : os.environ['RDS_DB_NAME'],
+        'host' : os.environ['RDS_HOSTNAME'],
+        'port' : os.environ['RDS_PORT'],
+    }
+
+
 application = FlaskApp(config)
 application.config["MAX_CONTENT_LENGTH"] = 50 * 1000 * 1000  # TODO: Come up with sensible max file size
 origin = config.get("cors", "origin")
