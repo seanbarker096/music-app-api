@@ -3,7 +3,7 @@
 # !**/.elasticbeanstalk/*.cfg.yml
 # !**/.elasticbeanstalk/*.global.yml
 
-**/.devcontainer
+/.devcontainer
 
 **/__pycache__
 
@@ -21,4 +21,4 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
-**/venv
+/venv*
