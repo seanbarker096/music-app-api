@@ -1,4 +1,3 @@
-from typing import Optional
 
 from api.midlayer.events_mid import EventsMidlayerMixin
 from api.midlayer.features_mid import FeaturesMidlayerMixin

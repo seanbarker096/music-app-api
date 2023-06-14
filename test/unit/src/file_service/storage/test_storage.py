@@ -1,15 +1,12 @@
 from test.unit import TestCase
 from unittest.mock import Mock
-from urllib import request
 
 from api.file_service.api import AcceptedMimeTypes
 from api.file_service.storage.api import Storage
 from api.file_service.storage.s3_storage_imp import S3UploadRequest
 from api.file_service.typings.typings import (
     FileDownloadURLGetRequest,
-    FileServiceFile,
     FileUploadRequest,
-    FileUploadResult,
 )
 
 

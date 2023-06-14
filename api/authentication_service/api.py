@@ -1,16 +1,13 @@
 import json
-import logging
 import secrets
 import time
 from abc import ABC
 from typing import Dict, Optional
 
-import flask
 import jwt
 
 from api.authentication_service.dao.api import AuthTokenServiceDAO
 from api.authentication_service.typings import (
-    AuthenticateRequest,
     AuthState,
     AuthStateCreateRequest,
     AuthStateCreateResult,
@@ -21,11 +18,7 @@ from api.authentication_service.typings import (
     TokenCreateRequest,
     TokenType,
 )
-from api.utils.rest_utils import (
-    process_int_request_param,
-    process_string_request_param,
-    remove_bearer_from_token,
-)
+from api.utils.rest_utils import process_int_request_param, process_string_request_param
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import InvalidTokenException
 

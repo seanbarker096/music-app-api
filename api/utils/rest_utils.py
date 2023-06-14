@@ -8,7 +8,6 @@ from typing import Dict, List
 import flask
 
 from api.authentication_service.typings import AuthUser, TokenType
-from exceptions.codes import ErrorCodes
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
     BadRequestException,

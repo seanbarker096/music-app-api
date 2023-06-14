@@ -13,11 +13,7 @@ from api.typings.features import (
     FeaturesGetFilter,
     FeaturesGetResult,
 )
-from api.utils.rest_utils import (
-    process_enum_request_param,
-    process_enum_set_param,
-    process_int_request_param,
-)
+from api.utils.rest_utils import process_enum_request_param, process_int_request_param
 from exceptions.exceptions import InvalidArgumentException
 
 

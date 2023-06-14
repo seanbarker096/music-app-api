@@ -10,7 +10,6 @@ from api.performer_search_service.api import (
 )
 from api.typings.performers import (
     AttendeePerformersGetFilter,
-    AttendeePerformersGetResult,
     PerformerCreateRequest,
     PerformerCreateResult,
     PerformersGetFilter,

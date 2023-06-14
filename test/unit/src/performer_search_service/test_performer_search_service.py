@@ -1,6 +1,5 @@
-import json
 from test.unit import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from api.performer_search_service.api import PerformerSearchService
 from api.performer_search_service.search_client.spotify_search_imp import (

@@ -1,4 +1,3 @@
-import json as JSON
 import time
 from test.test_utils import set_up_patches
 from test.unit.src.rest.base import APITestCase

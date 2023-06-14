@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import requests
 
@@ -10,7 +10,6 @@ from api.performer_search_service.types import (
     PerformersSearchResult,
 )
 from api.typings.performers import PerformerSearchPerformer
-from exceptions.exceptions import AppSearchServiceException
 
 
 class SpotifySearchRequest:

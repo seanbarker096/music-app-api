@@ -1,4 +1,3 @@
-import json
 import time
 from typing import Dict, List, Optional
 
@@ -139,7 +138,7 @@ class PerformersDAO(object):
         selects = [*self.PERFORMER_SELECTS]
 
         if not filter.attendee_id:
-            raise InvalidArgumentException("attendee_id is required for attendee_performers_get")
+            raise InvalidArgumentException("attendee_id is required for attendee_performers_get", "attendee_id")
 
         joins.append(
             """

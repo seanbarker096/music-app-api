@@ -2,7 +2,6 @@ import logging
 import os
 import uuid
 from configparser import ConfigParser
-from logging import Logger
 
 import flask
 from flask_cors import CORS
@@ -21,7 +20,7 @@ from api.rest import (
     tags_api,
     users_api,
 )
-from api.utils.rest_utils import add_token_headers, after_request_setup
+from api.utils.rest_utils import after_request_setup
 
 initialize_flask_server_debugger_if_needed()
 

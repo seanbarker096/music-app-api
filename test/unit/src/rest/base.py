@@ -1,7 +1,7 @@
 import os
 from configparser import ConfigParser
 from test.unit import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import flask
 

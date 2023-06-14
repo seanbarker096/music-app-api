@@ -1,5 +1,4 @@
 import io
-from contextlib import contextmanager
 from enum import Enum
 from typing import Optional
 
@@ -17,10 +16,7 @@ from api.file_service.typings.typings import (
 )
 from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
-from exceptions.response.exceptions import (
-    FileTooLargeException,
-    FileUUIDNotUniqueException,
-)
+from exceptions.response.exceptions import FileUUIDNotUniqueException
 
 # TODO: Update this
 

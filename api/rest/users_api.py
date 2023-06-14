@@ -1,5 +1,4 @@
 import json
-from unittest.mock import Mock
 
 import flask
 
@@ -10,7 +9,6 @@ from api.utils.rest_utils import (
     process_api_set_request_param,
     process_bool_api_request_param,
     process_int_api_request_param,
-    process_string_api_post_request_param,
     process_string_api_request_param,
     process_string_request_param,
 )

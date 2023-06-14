@@ -4,7 +4,7 @@ from test.test_utils import set_up_patches
 from test.unit.src.rest.base import APITestCase
 from unittest.mock import Mock
 
-from api.typings.users import User, UserUpdateRequest, UserUpdateResult
+from api.typings.users import User, UserUpdateResult
 
 set_up_patches()
 

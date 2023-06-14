@@ -1,6 +1,5 @@
 import json
 import logging
-from logging import Logger
 from typing import Optional
 
 from api.dao.tags_dao import TagsDAO
@@ -10,7 +9,6 @@ from api.midlayer import BaseMidlayerMixin
 from api.midlayer.performances_mid import PerformancesMidlayerMixin
 from api.typings.performances import PerformancesGetFilter
 from api.typings.tags import (
-    Tag,
     TagCreateRequest,
     TagCreateResult,
     TagDeleteRequest,

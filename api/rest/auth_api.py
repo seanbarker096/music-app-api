@@ -1,5 +1,4 @@
 import json
-import os
 
 import flask
 
@@ -11,13 +10,7 @@ from api.authentication_service.typings import (
     AuthUserRole,
     TokenType,
 )
-from api.typings.auth import LoginResult
-from api.typings.users import (
-    User,
-    UserCreateRequest,
-    UsersGetFilter,
-    UsersGetProjection,
-)
+from api.typings.users import UserCreateRequest, UsersGetProjection
 from api.utils.rest_utils import (
     api_error_response,
     auth,
@@ -25,10 +18,8 @@ from api.utils.rest_utils import (
     error_handler,
     process_string_api_post_request_param,
     process_string_api_request_param,
-    process_string_request_param,
     remove_bearer_from_token,
 )
-from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
     BadRequestException,
     InvalidTokenException,
@@ -86,7 +77,7 @@ def login():
     )
 
     response.headers["Authorization"] = f"Bearer {auth_state.access_token}"
-    
+
     return response
 
 
@@ -109,9 +100,9 @@ def signup():
         password=password,
         email=email,
     )
- 
+
     user = flask.current_app.conns.midlayer.user_create(request=user_create_request).user
-   
+
     ## now authenticate the new user
     auth_state_request = AuthStateCreateRequest(
         auth_user=AuthUser(user_id=user.id, role=AuthUserRole.USER.value)

@@ -1,6 +1,5 @@
 from unittest.mock import Mock, patch
 
-import jwt
 from rest.base import APITestCase
 
 from api.authentication_service.typings import (

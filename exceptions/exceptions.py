@@ -1,9 +1,3 @@
-"""For more generic error types"""
-
-
-from exceptions.codes import ErrorCodes
-from exceptions.response.exceptions import ResponseBaseException
-
 
 class AppException(Exception):
     """Parent Exception class which other non-client exceptions should wrap around. Defines some methods used by all exception classes."""

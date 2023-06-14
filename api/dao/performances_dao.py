@@ -1,4 +1,3 @@
-import datetime
 import time
 from typing import Dict, List, Optional
 
@@ -13,9 +12,7 @@ from api.typings.performances import (
     PerformanceAttendancesGetFilter,
     PerformanceCounts,
     PerformanceCreateRequest,
-    PerformancesCountsGetResult,
     PerformancesGetFilter,
-    PerformancesGetProjection,
 )
 from api.typings.tags import TaggedEntityType, TaggedInEntityType
 

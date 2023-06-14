@@ -2,9 +2,8 @@ import json
 from typing import Optional
 
 from api.dao.users_dao import UsersDAO
-from api.db.db import DBConnectionManager, DBDuplicateKeyException
 from api.file_service.api import FileService
-from api.file_service.typings.typings import FilesGetFilter, FilesGetResult
+from api.file_service.typings.typings import FilesGetFilter
 from api.midlayer import BaseMidlayerMixin
 from api.typings.users import (
     User,
@@ -19,10 +18,8 @@ from api.typings.users import (
 )
 from api.utils import hash_password, validate_password, verify_hash
 from api.utils.rest_utils import process_int_request_param, process_string_request_param
-from exceptions.db.exceptions import DBDuplicateKeyException
 from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import (
-    ResponseBaseException,
     UnauthorizedException,
     UserAlreadyExistsException,
     UserNotFoundException,

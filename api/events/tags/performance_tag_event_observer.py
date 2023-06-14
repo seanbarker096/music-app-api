@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Optional
 
 from api.events.tags.event_objects.tag_event import (
@@ -19,7 +18,6 @@ from api.typings.performances import (
 )
 from api.typings.posts import PostsGetFilter
 from api.typings.tags import TaggedEntityType, TaggedInEntityType
-from exceptions.exceptions import InvalidArgumentException
 from exceptions.response.exceptions import PostNotFoundException
 
 

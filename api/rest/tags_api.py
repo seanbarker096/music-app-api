@@ -12,11 +12,9 @@ from api.typings.tags import (
 from api.utils.rest_utils import (
     auth,
     class_to_dict,
-    process_api_set_request_param,
     process_bool_api_request_param,
     process_enum_api_request_param,
     process_int_api_request_param,
-    process_int_request_param,
 )
 from exceptions.exceptions import InvalidArgumentException
 

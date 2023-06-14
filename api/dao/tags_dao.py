@@ -1,7 +1,6 @@
-import json
 from typing import Dict, List, Optional
 
-from api.db.db import DBConnectionManager, FlaskDBConnectionManager
+from api.db.db import FlaskDBConnectionManager
 from api.db.utils.db_util import assert_row_key_exists, build_where_query_string
 from api.typings.tags import (
     Tag,

@@ -2,20 +2,14 @@ import time
 from test.unit import TestCase
 from unittest.mock import Mock
 
-from api.events.tags.event_objects.tag_event import (
-    TagCreatedEvent,
-    TagEvent,
-    TagEventType,
-)
+from api.events.tags.event_objects.tag_event import TagCreatedEvent
 from api.events.tags.performance_tag_event_observer import PerformanceTagEventObserver
-from api.events.tags.tag_event_subject import TagEventSubject
 from api.typings.performances import (
     PeformanceAttendancesGetResult,
     PerformanceAttendance,
-    PerformanceAttendanceCreateRequest,
     PerformanceAttendanceCreateResult,
 )
-from api.typings.posts import Post, PostOwnerType, PostsGetFilter, PostsGetResult
+from api.typings.posts import Post, PostOwnerType, PostsGetResult
 from api.typings.tags import Tag, TaggedEntityType, TaggedInEntityType
 
 
