@@ -52,7 +52,6 @@ class DBConnection(Singleton):
         self._open()
         self._cursor = self.connection.cursor()
         self.connection_id = randint(0, 1000000)
-        print(f"created cinnection with id {self.connection_id}")
 
     def _open(self):
         if not self.opened:
