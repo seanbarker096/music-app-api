@@ -379,6 +379,7 @@ class PostAttachmentDBAlias:
     POST_ATTACHMENT_ID = "post_attachment_id"
     POST_ATTACHMENT_POST_ID = "post_attachment_post_id"
     POST_ATTACHMENT_FILE_ID = "post_attachment_file_id"
+    POST_ATTACHMENT_ATTACHMENT_THUMBNAIL_FILE_ID = "post_attachment_attachment_thumbnail_file_id"
     POST_ATTACHMENT_CREATE_TIME = "post_attachment_create_time"
 
 
@@ -389,6 +390,7 @@ class PostAttachmentsDAO(object):
         "id as " + PostAttachmentDBAlias.POST_ATTACHMENT_ID,
         "post_id as " + PostAttachmentDBAlias.POST_ATTACHMENT_POST_ID,
         "file_id as " + PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID,
+        "attachment_thumbnail_file_id as " + PostAttachmentDBAlias.POST_ATTACHMENT_ATTACHMENT_THUMBNAIL_FILE_ID,
         "UNIX_TIMESTAMP(create_time) as " + PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME,
     ]
 
@@ -396,16 +398,17 @@ class PostAttachmentsDAO(object):
         self.config = config
         self.db = db if db else FlaskDBConnectionManager
 
-    def post_attachment_create(self, post_id: int, file_id: int) -> PostAttachment:
+    def post_attachment_create(self, post_id: int, attachment_file_id: int, attachment_thumbnail_file_id: Optional[int] = None) -> PostAttachment:
         sql = """
-            INSERT INTO post_attachment(post_id, file_id, create_time) VALUES(%s, %s, FROM_UNIXTIME(%s))
+            INSERT INTO post_attachment(post_id, file_id, attachment_thumbnail_file_id, create_time) VALUES(%s, %s, %s, FROM_UNIXTIME(%s))
         """
 
         now = time.time()
 
         binds = (
             post_id,
-            file_id,
+            attachment_file_id,
+            attachment_thumbnail_file_id,
             now,
         )
 
@@ -414,7 +417,10 @@ class PostAttachmentsDAO(object):
             post_attachment_id = cursor.lastrowid
 
         return PostAttachment(
-            id=post_attachment_id, post_id=post_id, file_id=file_id, create_time=now
+            id=post_attachment_id, 
+            post_id=post_id, file_id=attachment_file_id, 
+            thumbnail_file_id=attachment_thumbnail_file_id, 
+            create_time=now
         )
 
     def post_attachments_get(self, filter: PostAttachmentsGetFilter) -> List[PostAttachment]:
@@ -460,9 +466,16 @@ class PostAttachmentsDAO(object):
         assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID)
         file_id = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_FILE_ID])
 
+        assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_ATTACHMENT_THUMBNAIL_FILE_ID)
+        thumbnail_file_id = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_ATTACHMENT_THUMBNAIL_FILE_ID]) if db_row[PostAttachmentDBAlias.POST_ATTACHMENT_ATTACHMENT_THUMBNAIL_FILE_ID] else None
+
         assert_row_key_exists(db_row, PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME)
         create_time = int(db_row[PostAttachmentDBAlias.POST_ATTACHMENT_CREATE_TIME])
 
         return PostAttachment(
-            id=post_attachment_id, post_id=post_id, file_id=file_id, create_time=create_time
+            id=post_attachment_id, 
+            post_id=post_id, 
+            file_id=file_id, 
+            thumbnail_file_id=thumbnail_file_id,
+            create_time=create_time
         )

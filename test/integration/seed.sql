@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS gigs.post_attachments;
 CREATE TABLE gigs.post_attachment (
     id int(10) unsigned auto_increment,
     file_id varchar(255) NOT NULL,
+    attachment_thumbnail_file_id varchar(255) DEFAULT NULL,
     post_id int(10) unsigned NOT NULL,
     create_time datetime NOT NULL,
     PRIMARY KEY (id)

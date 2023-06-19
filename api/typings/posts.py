@@ -154,22 +154,34 @@ class PostAttachment(object):
     id: int = ...
     post_id: int = ...
     file_id: int = ...
+    thumbnail_file_id: Optional[int] = ...
     create_time: int = ...
 
-    def __init__(self, id: int, post_id: int, file_id: int, create_time: int):
+    def __init__(self, id: int, post_id: int, file_id: int,  create_time: int, thumbnail_file_id: Optional[int] = None):
         self.id = id
         self.post_id = post_id
         self.file_id = file_id
+        self.thumbnail_file_id = thumbnail_file_id
         self.create_time = create_time
+
+
+class PostAttachmentFileMap(object):
+    """Defines the mapping between an attachment file and the thumbnail of the attachment, which is also a file. This is for video attachments only. This is used when creating a post attachment"""
+    attachment_file_id: int = ...
+    thumbnail_file_id: Optional[int] = ...
+
+    def __init__(self, attachment_file_id: int, thumbnail_file_id: Optional[int] = None):
+        self.attachment_file_id = attachment_file_id
+        self.thumbnail_file_id = thumbnail_file_id
 
 
 class PostAttachmentsCreateRequest(object):
     post_id: int = ...
-    file_ids: list[int] = ...
+    post_attachment_file_maps: list[PostAttachmentFileMap] = ...
 
-    def __init__(self, post_id: int, file_ids: list[int]):
+    def __init__(self, post_id: int, post_attachment_file_maps: list[PostAttachmentFileMap]):
         self.post_id = post_id
-        self.file_ids = file_ids
+        self.post_attachment_file_maps = post_attachment_file_maps
 
 
 class PostAttachmentsCreateResult(object):

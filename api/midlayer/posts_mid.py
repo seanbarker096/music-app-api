@@ -222,21 +222,31 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
                 "post_id",
             )
 
-        file_ids = request.file_ids
+        post_attachment_file_maps = request.post_attachment_file_maps
 
-        if not isinstance(file_ids, list):
+        if not isinstance(post_attachment_file_maps, list) or len(post_attachment_file_maps) == 0:
             raise InvalidArgumentException(
-                f"Invalid value {file_ids} for field file_ids. Field must be iterable",
-                "file_ids",
+                f"Invalid value {json.dumps(post_attachment_file_maps)} for field post_attachment_file_maps. Must provide a valid list of post_attachment_file_maps to create post attachments.",
+                "post_attachment_file_maps",
             )
+        
+        for attachment_file in post_attachment_file_maps:
+            if not attachment_file.attachment_file_id:
+                raise InvalidArgumentException(f"""Invalid value {attachment_file.attachment_file_id} for field attachment_file_id. Must provide a valid integer to create post attachments.""", "attachment_file_id")
+
 
         try:
             ## TODO: Check if files exist by injecting file serving and calling files_get with array of file_ids
             attachments = []
-            for file_id in file_ids:
+            for map in post_attachment_file_maps:
+                
+                attachment_file_id = map.attachment_file_id
+                thumbnail_file_id = map.thumbnail_file_id
+
                 attachment = self.posts_attachments_dao.post_attachment_create(
-                    post_id=request.post_id, file_id=file_id
+                    post_id=request.post_id, attachment_file_id=attachment_file_id, attachment_thumbnail_file_id=thumbnail_file_id
                 )
+                
                 attachments.append(attachment)
 
             return PostAttachmentsCreateResult(post_attachments=attachments)

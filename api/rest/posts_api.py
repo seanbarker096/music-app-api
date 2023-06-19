@@ -8,6 +8,7 @@ from api.typings.performers import PerformersGetFilter
 from api.typings.posts import (
     FeaturedPostsGetFilter,
     Post,
+    PostAttachmentFileMap,
     PostAttachmentsCreateRequest,
     PostAttachmentsGetFilter,
     PostCreateRequest,
@@ -17,6 +18,7 @@ from api.typings.posts import (
     ProfileType,
 )
 from api.utils import rest_utils
+from exceptions.response.exceptions import BadRequestException
 
 blueprint = flask.Blueprint("posts", __name__)
 
@@ -40,15 +42,29 @@ def post_create():
     post_result = flask.current_app.conns.midlayer.post_create(post_create_request)
     post = post_result.post
 
-    attachment_file_ids = data.get("attachment_file_ids")
-    attachment_file_ids = [int(file_id) for file_id in attachment_file_ids]
+    attachment_files = data.get("attachment_files")
 
     attachment_dicts = []
 
-    if attachment_file_ids and len(attachment_file_ids) > 0:
+    if attachment_files and len(attachment_files) > 0:
+        maps = []
+
+        for attachment_file in attachment_files:
+            if not attachment_file.get('attachment_file_id'):
+                raise BadRequestException(f"""Invalid request. Must provide a valid attachment_file_id for all attachment_files. Request: {json.dumps(attachment_files)}""", source='attachment_files')
+            
+            maps.append(
+                PostAttachmentFileMap(
+                    attachment_file_id=attachment_file.get('attachment_file_id'), 
+                    thumbnail_file_id=attachment_file.get('thumbnail_file_id')
+                )
+            )
+
+
         attachment_create_request = PostAttachmentsCreateRequest(
-            post_id=post.id, file_ids=attachment_file_ids
-        )
+                post_id=post.id, post_attachment_file_maps=maps
+            )
+        
 
         attachment_result = flask.current_app.conns.midlayer.post_attachments_create(
             attachment_create_request
