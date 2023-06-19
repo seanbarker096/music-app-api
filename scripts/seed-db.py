@@ -137,6 +137,17 @@ with open(
     )
     show1_video = file_service.create_file(request).file
 
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show1-thumbnail.png"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show1thumbnail",
+        file_name="show1-thumbnail.png",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="img/png",
+        url=None,
+    )
+    show1_thumbnail = file_service.create_file(request).file
 
 with open(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "show2.mp4"), "rb"
@@ -149,6 +160,18 @@ with open(
         url=None,
     )
     show2_video = file_service.create_file(request).file
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show2-thumbnail.png"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show2thumbnail",
+        file_name="show2-thumbnail.png",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="img/png",
+        url=None,
+    )
+    show2_thumbnail = file_service.create_file(request).file
 
 
 with open(
@@ -163,6 +186,17 @@ with open(
     )
     show3_video = file_service.create_file(request).file
 
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show3-thumbnail.png"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show3thumbnail",
+        file_name="show3-thumbnail.png",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="img/png",
+        url=None,
+    )
+    show3_thumbnail = file_service.create_file(request).file
 
 with open(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "show4.mp4"), "rb"
@@ -176,6 +210,17 @@ with open(
     )
     show4_video = file_service.create_file(request).file
 
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show4-thumbnail.png"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show4thumbnail",
+        file_name="show4-thumbnail.png",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="img/png",
+        url=None,
+    )
+    show4_thumbnail = file_service.create_file(request).file
 
 with open(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "show5.mp4"), "rb"
@@ -188,6 +233,18 @@ with open(
         url=None,
     )
     show5_video = file_service.create_file(request).file
+
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "show5-thumbnail.png"), "rb"
+) as file_bytes_buffer_reader:
+    request = FileCreateRequest(
+        uuid="show5thumbnail",
+        file_name="show5-thumbnail.png",
+        bytes=file_bytes_buffer_reader.read(),
+        mime_type="img/png",
+        url=None,
+    )
+    show5_thumbnail = file_service.create_file(request).file
 
 
 dog_video_uuid = "202"
@@ -367,7 +424,7 @@ post_one = posts_dao.post_create(post_create_request)
 
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post_one.id, file_id=show1_video.id
+    post_id=post_one.id, attachment_file_id=show1_video.id, attachment_thumbnail_file_id=show1_thumbnail.id
 )
 
 # 2 Post uploaded by second user, and tags the first user
@@ -381,7 +438,7 @@ post_create_request = PostCreateRequest(
 post_two = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=post_two.id, file_id=show2_video.id
+    post_id=post_two.id, attachment_file_id=show2_video.id, attachment_thumbnail_file_id=show2_thumbnail.id
 )
 
 ###################### PERFORMER ONE ######################
@@ -422,7 +479,7 @@ taylor_post = posts_dao.post_create(post_create_request)
 
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=taylor_post.id, file_id=show3_video.id
+    post_id=taylor_post.id, attachment_file_id=show3_video.id, attachment_thumbnail_file_id=show3_thumbnail.id
 )
 
 
@@ -485,7 +542,7 @@ post_create_request = PostCreateRequest(
 taylor_prima_post = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=taylor_prima_post.id, file_id=show5_video.id
+    post_id=taylor_prima_post.id, attachment_file_id=show5_video.id, attachment_thumbnail_file_id=show5_thumbnail.id
 )
 
 
@@ -522,7 +579,7 @@ post_create_request = PostCreateRequest(
 taylor_not_linked_to_performance_post = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=taylor_not_linked_to_performance_post.id, file_id=show1_video.id
+    post_id=taylor_not_linked_to_performance_post.id, attachment_file_id=show1_video.id, attachment_thumbnail_file_id=show1_thumbnail.id
 )
 
 tag_create_request = TagCreateRequest(
@@ -561,7 +618,7 @@ post_create_request = PostCreateRequest(
 em_post = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=em_post.id, file_id=show1_video.id
+    post_id=em_post.id, attachment_file_id=show1_video.id, attachment_thumbnail_file_id=show1_thumbnail.id
 )
 
 
@@ -643,7 +700,7 @@ post_create_request = PostCreateRequest(
 kendrick_post = posts_dao.post_create(post_create_request)
 
 post_attachment = post_attachments_dao.post_attachment_create(
-    post_id=kendrick_post.id, file_id=dog_video_file.id
+    post_id=kendrick_post.id, attachment_file_id=dog_video_file.id, attachment_thumbnail_file_id=avatar_file.id
 )
 
 tag_create_request = TagCreateRequest(
@@ -683,16 +740,21 @@ while i < 27:
 
     if x == 1:
         video_id = show1_video.id
+        thumbnail_id = show1_thumbnail.id
     elif x == 2:
         video_id = show2_video.id
+        thumbnail_id = show2_thumbnail.id
     elif x == 3:
         video_id = show3_video.id
+        thumbnail_id = show3_thumbnail.id
     elif x == 4:
         video_id = show4_video.id
+        thumbnail_id = show4_thumbnail.id
     elif x == 5:
         video_id = show5_video.id
+        thumbnail_id = show5_thumbnail.id
 
-    post_attachment = post_attachments_dao.post_attachment_create(post_id=post.id, file_id=video_id)
+    post_attachment = post_attachments_dao.post_attachment_create(post_id=post.id, attachment_file_id=video_id, attachment_thumbnail_file_id=thumbnail_id)
 
     i += 1
 

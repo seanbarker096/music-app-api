@@ -166,7 +166,7 @@ class PostAttachment(object):
 
 
 class PostAttachmentFileMap(object):
-    """Defines the mapping between an attachment file and the thumbnail of the attachment, which is also a file. This is for video attachments only. This is used when creating a post attachment"""
+    """Defines the mapping between an attachment file and the thumbnail of the attachment, which is also a file. This is used when creating a post attachment. For attachments that are not videos, the thumbnail_file_id should be None. """
     attachment_file_id: int = ...
     thumbnail_file_id: Optional[int] = ...
 

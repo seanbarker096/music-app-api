@@ -44,6 +44,8 @@ def post_create():
 
     attachment_files = data.get("attachment_files")
 
+    print(json.dumps(attachment_files))
+
     attachment_dicts = []
 
     if attachment_files and len(attachment_files) > 0:

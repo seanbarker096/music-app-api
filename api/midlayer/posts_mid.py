@@ -232,29 +232,29 @@ class PostAttachmentsMidlayerMixin(BaseMidlayerMixin):
         
         for attachment_file in post_attachment_file_maps:
             if not attachment_file.attachment_file_id:
-                raise InvalidArgumentException(f"""Invalid value {attachment_file.attachment_file_id} for field attachment_file_id. Must provide a valid integer to create post attachments.""", "attachment_file_id")
+                raise InvalidArgumentException(f"""Invalid value {attachment_file.attachment_file_id} for field attachment_file_id in post_attachment_file_maps. Must provide a valid integer to create post attachments.""", "attachment_file_id")
 
 
-        try:
             ## TODO: Check if files exist by injecting file serving and calling files_get with array of file_ids
             attachments = []
             for map in post_attachment_file_maps:
-                
-                attachment_file_id = map.attachment_file_id
-                thumbnail_file_id = map.thumbnail_file_id
+                try:
+                    attachment_file_id = map.attachment_file_id
+                    thumbnail_file_id = map.thumbnail_file_id
 
-                attachment = self.posts_attachments_dao.post_attachment_create(
-                    post_id=request.post_id, attachment_file_id=attachment_file_id, attachment_thumbnail_file_id=thumbnail_file_id
-                )
-                
-                attachments.append(attachment)
+                    attachment = self.posts_attachments_dao.post_attachment_create(
+                        post_id=request.post_id, attachment_file_id=attachment_file_id, attachment_thumbnail_file_id=thumbnail_file_id
+                    )
+
+                    attachments.append(attachment)
+
+                except Exception:
+                    raise Exception(
+                        f"Failed to create attachment for post with id {request.post_id} and file with id {attachment_file_id}"
+                    )
 
             return PostAttachmentsCreateResult(post_attachments=attachments)
 
-        except Exception:
-            raise Exception(
-                f"Failed to create attachment for post with id {request.post_id} and file with id {file_id}  "
-            )
 
     def post_attachments_get(self, filter=PostAttachmentsGetFilter) -> PostAttachmentsGetResult:
 
