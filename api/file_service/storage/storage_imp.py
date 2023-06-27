@@ -26,3 +26,9 @@ class StorageImp(ABC):
     @abstractmethod
     def get_file_url(self, request: FileDownloadURLGetRequest) -> str:
         ...
+
+    @abstractmethod
+    def validate_file_url(self, download_url: str) -> str:
+        '''Validates the download url and returns true if valid, false if not'''
+        ...
+

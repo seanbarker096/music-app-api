@@ -7,6 +7,7 @@ from api.file_service.storage.api import Storage
 from api.file_service.typings.typings import (
     FileCreateRequest,
     FileCreateResult,
+    FileDownloadURLGetRequest,
     FileMetaCreateRequest,
     FileMetaUpdateRequest,
     FilesGetFilter,
@@ -172,11 +173,27 @@ class FileService:
 
         files = self.file_service_dao.files_get(filter)
 
-        if get_bytes:
-            for file in files:
+        new_files = []
+
+        for file in files:
+            if get_bytes:
                 bytes_object = self.storage.get_file(file.uuid)
                 ## seek required for some reason otherwise image not returned from api correctly
                 bytes_object.seek(0)
                 file.bytes = bytes_object
+            
+            has_expired = self.storage.validate_file_url(file.url)
+            
 
-        return FilesGetResult(files=files)
+            if has_expired:
+                new_url = self.storage.get_file_url(FileDownloadURLGetRequest(file_identifier=file.uuid))
+                
+                #Overwrite the file
+                new_file = self.file_service_dao.update_file(
+                    request=FileMetaUpdateRequest(id=file.id, url=new_url)
+                )
+                new_files.append(new_file)
+            else:
+                new_files.append(file)
+            
+        return FilesGetResult(files=new_files)

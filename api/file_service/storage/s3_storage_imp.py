@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 from boto3 import Session
@@ -29,11 +30,13 @@ class S3StorageImp(StorageImp):
         config_file = self.config["config_file"]
         s3_access_key = config_file.get("aws", "aws_access_key_id")
         s3_secret_key = config_file.get("aws", "aws_secret_access_key")
-
+        region = config_file.get("aws", "region")
+  
         return Session(
             aws_access_key_id=s3_access_key,
             aws_secret_access_key=s3_secret_key,
             aws_session_token=None,
+            region_name=region,
         )
 
     def save(self, request: S3UploadRequest) -> any:
@@ -86,7 +89,7 @@ class S3StorageImp(StorageImp):
         bucket_name = self.config["config_file"].get("s3", "file-service-bucket-arn")
         ## TODO: Shoulld store this in db and only call S3 to generate it the first time the file is created
         url = self._create_presigned_url(
-            bucket_name=bucket_name, object_name=request.file_identifier, expiration=3600
+            bucket_name=bucket_name, object_name=request.file_identifier, expiration=3600 * 24 * 7
         )
 
         # TODO:: Validate the url returned from s3
@@ -94,7 +97,7 @@ class S3StorageImp(StorageImp):
         return url
 
     # TODO: Either remove the expiration on the download url, or set the time expiration time in the db so we know if we need to get a new aws download url when getting the file from the db
-    def _create_presigned_url(self, bucket_name: str, object_name: str, expiration=3600) -> str:
+    def _create_presigned_url(self, bucket_name: str, object_name: str, expiration=3600 * 24 * 7) -> str:
         session = self._get_s3_connection()
         s3_client = session.client("s3")
         try:
@@ -111,3 +114,29 @@ class S3StorageImp(StorageImp):
 
         # The response contains the presigned URL
         return response
+
+    def validate_file_url(self, url) -> bool:
+        '''
+        Check if the presigned URL has expired.
+
+        :param url: The presigned URL, assumed to be in UTC format
+        '''
+
+        # Extract the expiration timestamp from the URL
+        expiration_delta_t = int(url.split('X-Amz-Expires=')[1].split('&')[0])
+  
+        # Extract the X-Amz-Date parameter from the URL, which is in UTC format (e.g X-Amz-Date=20230627T204322Z)
+        date_string = url.split('X-Amz-Date=')[1].split('&')[0]
+        x_amz_date = datetime.strptime(date_string, '%Y%m%dT%H%M%SZ').replace(tzinfo=timezone.utc)
+
+        # Calculate the expiration datetime by adding the expiration timestamp to the X-Amz-Date
+        expiration_datetime = x_amz_date + timedelta(seconds=expiration_delta_t)
+
+        # Get the current datetime in UTC
+        current_datetime = datetime.now(timezone.utc)
+
+        # Check if the URL has expired
+        if current_datetime > expiration_datetime:
+            return True  # The URL has expired
+        else:
+            return False  # The URL is still valid

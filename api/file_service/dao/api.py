@@ -25,7 +25,7 @@ class FileDBAlias:
     FILE_MIME_TYPE = "file_mime_type"
     FILE_URL = "file_url"
 
-
+# TODO: We shouldn't be storing the url in here - we should be using presigned s3 urls which expire after x hours
 class FileServiceDAO:
     FILE_SELECTS = [
         "id as " + FileDBAlias.FILE_ID,

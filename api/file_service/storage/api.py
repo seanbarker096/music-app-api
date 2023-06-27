@@ -38,7 +38,7 @@ class Storage:
 
         url = self.get_file_url(request=FileDownloadURLGetRequest(file_identifier=request.uuid))
 
-        ## TODO: Can probably just send in the uuid and bytes here and not return a FileServiceFile. Just return the download url. However this does encourage the file to be created before uploading it
+        ## We cache the aws presigned url so that every requuest for the file doesn't request a new presigned url
         return FileServiceFile(
             id=request.id,
             uuid=request.uuid,
@@ -49,12 +49,13 @@ class Storage:
             url=url,
         )
 
-    # def get_file(self, request: FileGetResult) -> FileGetResult:
-    #     ...
-
+    # TODO: Rename to create_file_url
     def get_file_url(self, request: FileDownloadURLGetRequest) -> str:
         return self.storage_imp.get_file_url(request)
 
     def get_file(self, uuid: str) -> BytesIO:
         bytes_object = self.storage_imp.get_item(uuid)
         return bytes_object
+    
+    def validate_file_url(self, url: str) -> bool:
+        return self.storage_imp.validate_file_url(url)
