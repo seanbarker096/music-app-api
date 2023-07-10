@@ -64,12 +64,14 @@ class PostsDAO(object):
 
     def post_create(self, request: PostCreateRequest) -> Post:
         sql = """
-            INSERT INTO post(owner_id, owner_type, content, creator_id, create_time, update_time, is_deleted)
-            VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s)
+            INSERT INTO post(owner_id, owner_type, content, creator_id, create_time, update_time, note, is_deleted)
+            VALUES(%s, %s, %s, %s, FROM_UNIXTIME(%s), FROM_UNIXTIME(%s), %s, %s)
         """
         now = time.time()
 
         request.content = None if request.content == "" else request.content
+
+        request.note = None if request.note == "" else request.note
         
         binds = (
             request.owner_id,
@@ -78,6 +80,7 @@ class PostsDAO(object):
             request.creator_id,
             now,
             None,
+            request.note, # We don't return add this to the Post object, but its used by staff to help linking posts to performances
             0,
         )
 

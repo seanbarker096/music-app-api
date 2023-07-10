@@ -11,6 +11,7 @@ CREATE TABLE gigs.post (
     creator_id int(10) unsigned NOT NULL,
     create_time datetime NOT NULL,
     update_time datetime DEFAULT NULL,
+    note varchar(1000) DEFAULT NULL,
     is_deleted tinyint(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB

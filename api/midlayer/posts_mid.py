@@ -58,6 +58,8 @@ class PostsMidlayerMixin(BaseMidlayerMixin):
 
         process_string_request_param('content', request.content)
 
+        process_string_request_param('note', request.note)
+
         try:
             post = self.posts_dao.post_create(request)
             return PostCreateResult(post=post)

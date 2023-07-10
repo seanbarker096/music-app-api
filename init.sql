@@ -236,6 +236,7 @@ CREATE TABLE `post` (
   `creator_id` int unsigned NOT NULL,
   `create_time` datetime NOT NULL,
   `update_time` datetime DEFAULT NULL,
+  `note` varchar(1000) DEFAULT NULL,
   `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

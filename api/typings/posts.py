@@ -43,6 +43,7 @@ class PostCreateRequest(object):
     owner_id: int = ...
     owner_type: PostOwnerType = ...
     content: Optional[str] = ...
+    note: Optional[str] = ...
 
     def __init__(
         self,
@@ -50,11 +51,13 @@ class PostCreateRequest(object):
         owner_id: int,
         owner_type: PostOwnerType,
         content: Optional[str] = None,
+        note: Optional[str] = None,
     ):
         self.creator_id = creator_id
         self.owner_id = owner_id
         self.owner_type = owner_type
         self.content = content
+        self.note = note
 
 
 class PostCreateResult(object):

@@ -37,6 +37,7 @@ def post_create():
         owner_type=data.get("owner_type", None),
         content=data.get("content", None),
         creator_id=creator_id,
+        note=data.get("note", None),
     )
 
     post_result = flask.current_app.conns.midlayer.post_create(post_create_request)
