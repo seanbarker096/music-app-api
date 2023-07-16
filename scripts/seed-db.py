@@ -1,4 +1,3 @@
-import logging
 import os
 import random
 import time
@@ -46,12 +45,6 @@ from api.typings.tags import TagCreateRequest, TaggedEntityType, TaggedInEntityT
 from api.typings.users import UserCreateRequest, UserUpdateRequest
 from api.utils import hash_password
 
-log_file_path = f"{os.path.dirname(__file__)}/../api/db.log"
-with open(log_file_path, "w") as file:
-    file.write("")
-
-logging.basicConfig(filename=log_file_path, level=logging.ERROR)
-
 config = ConfigParser(allow_no_value=True, interpolation=None)
 config.optionxform = str
 
@@ -59,6 +52,29 @@ env = os.environ.get("ENVIRONMENT", "dev")
 filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../api/config/", f"{env}.cfg")
 
 config.read(filename)
+
+# If we are in aws we need to use the RDS environment variables
+if 'RDS_HOSTNAME' in os.environ:
+    config['db'] = {
+        'user' : os.environ['RDS_USERNAME'], 
+        'password' : os.environ['RDS_PASSWORD'],
+        'database' : os.environ['RDS_DB_NAME'],
+        'host' : os.environ['RDS_HOSTNAME'],
+        'port' : os.environ['RDS_PORT'],
+    }
+
+config['aws'] = {
+    'aws_access_key_id' : os.environ['aws_access_key_id'], 
+    'aws_secret_access_key' : os.environ['aws_secret_access_key'],
+    'region':  config.get("aws", "region")
+}
+
+
+config['performer-search-service'] = {
+    'search-client': config.get("performer-search-service", "search-client"),
+    'spotify-client-id' : os.environ['spotify_client_id'], 
+    'spotity-client-secret' : os.environ['spotify_client_secret'],
+}
 
 config_dict = {"config_file": config}
 

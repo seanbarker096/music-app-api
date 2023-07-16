@@ -96,7 +96,7 @@ class SpotifySearchImp(SearchImp):
 
     def _spotify_search_artists(self, access_token, search_term, limit) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
-        print(f"search limit: {limit}")
+
         url = f"https://api.spotify.com/v1/search?q={search_term}&type=artist&limit={limit}"
         response = requests.get(url, headers=headers)
         try:

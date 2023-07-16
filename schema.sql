@@ -17,7 +17,7 @@ CREATE TABLE gigs.post (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
-DROP TABLE IF EXISTS gigs.post_attachments;
+DROP TABLE IF EXISTS gigs.post_attachment;
 CREATE TABLE gigs.post_attachment (
     id int(10) unsigned auto_increment,
     file_id varchar(255) NOT NULL,

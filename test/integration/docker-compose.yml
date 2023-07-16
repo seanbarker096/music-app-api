@@ -13,8 +13,8 @@ services:
     ports:
       - "3306:3306" ## This is the default port applications like mypysql expect to use
     volumes:
-      # - ./src/db:/usr/src/db #Mount db folder so we can run seed files etc.
-      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
+      # - ./src/db:/usr/src/db #Mount db folder so we can run schema files etc.
+      - ./../../schema.sql:/docker-entrypoint-initdb.d/schema.sql
       #- mysql:/var/lib/mysql
     network_mode: bridge
     healthcheck:

@@ -9,7 +9,7 @@ PASSWORD="$RDS_PASSWORD"
 
 echo "Seeding RDS database...\n"
 # Path to your SQL file
-SQL_FILE="./init.sql"
+SQL_FILE="./schema.sql"
 
 # Connect to the database and execute SQL file
 mysql -h "$HOST" -P "$PORT" -u "$USERNAME" -p"$PASSWORD" "$DB_NAME" < "$SQL_FILE"

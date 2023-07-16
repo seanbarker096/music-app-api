@@ -22,8 +22,6 @@ def user_update(user_id: int):
     ## TODO: Add update time for user object and update this value in DAO
     request = flask.request.json
 
-    print(request)
-
     avatar_file_uuid = process_string_request_param(
         "avatar_file_uuid", request.get("avatar_file_uuid", None)
     )

@@ -87,7 +87,6 @@ class DBConnection(Singleton):
         connection = DBConnection.instance(DBConnection, instance_key=instance_key)
 
         try:
-            print(f"Closing connection with id {connection.connection_id}")
             connection._cursor.close()
             connection.connection.close()
             DBConnection.remove_instance(instance_key=instance_key)

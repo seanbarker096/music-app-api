@@ -44,6 +44,21 @@ if 'RDS_HOSTNAME' in os.environ:
     }
 
 
+config['aws'] = {
+    'aws_access_key_id' : os.environ['aws_access_key_id'], 
+    'aws_secret_access_key' : os.environ['aws_secret_access_key'],
+    'region':  config.get("aws", "region")
+}
+
+
+config['performer-search-service'] = {
+    'search-client': config.get("performer-search-service", "search-client"),
+    'spotify-client-id' : os.environ['spotify_client_id'], 
+    'spotity-client-secret' : os.environ['spotify_client_secret'],
+}
+
+
+
 application = FlaskApp(config)
 application.config["MAX_CONTENT_LENGTH"] = 50 * 1000 * 1000  # TODO: Come up with sensible max file size
 origin = config.get("cors", "origin")
