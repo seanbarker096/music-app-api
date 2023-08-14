@@ -78,7 +78,7 @@ def performers_search():
     )
 
 
-@blueprint.route("attendees/<int:attendee_id>", methods=["GET"])
+@blueprint.route("/attendees/<int:attendee_id>", methods=["GET"])
 @auth
 def attendee_performers_get(attendee_id: int):
     """

@@ -47,7 +47,7 @@ def user_update(user_id: int):
     )
 
 
-@blueprint.route("/users", methods=["GET"])
+@blueprint.route("/users/", methods=["GET"])
 @auth
 def users_get():
     user_ids = process_api_set_request_param(parameter_name="user_ids[]", type=int)
@@ -86,7 +86,7 @@ def user_get_by_id(user_id: int):
     )
 
 
-@blueprint.route("/search", methods=["GET"])
+@blueprint.route("/search/", methods=["GET"])
 @auth
 def user_search():
 

@@ -224,7 +224,7 @@ def post_attachments_get():
     )
 
 
-@blueprint.route("/profiles/<string:profile_id>/posts", methods=["GET"])
+@blueprint.route("/profiles/<string:profile_id>/posts/", methods=["GET"])
 @auth
 def get_profiles_posts(profile_id: str):
     """Get all posts for a user. This includes posts they created, posts they are tagged in and posts they have featured in their profile (depending on the filters applied)."""
