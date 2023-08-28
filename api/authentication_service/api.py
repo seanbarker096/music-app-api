@@ -59,7 +59,7 @@ class TokenAuthService(ABC):
 ## TODO: Create getters and setters for these TTL, leways etc.
 class JWTTokenAuthService(TokenAuthService):
     _ACCESS_TOKEN_TTL = 60 * 60 * 1  # Valid for 1 hours
-    _REFRESH_TOKEN_TTL = 60 * 60 * 30 # Valid for 30 days
+    _REFRESH_TOKEN_TTL = 60 * 60 * 24 * 30 # Valid for 30 days
     _LEWAY = 0
     SIGNING_ALGORITHM = "HS256"
 

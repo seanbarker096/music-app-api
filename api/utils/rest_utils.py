@@ -13,6 +13,7 @@ from exceptions.response.exceptions import (
     BadRequestException,
     InvalidTokenException,
     ResponseBaseException,
+    UnauthorizedException,
     UnknownException,
 )
 
@@ -218,7 +219,6 @@ def class_to_dict(class_instance: object):
 
 def api_error_response(e: Exception):
     if not isinstance(e, ResponseBaseException):
-        print("test")
         e = UnknownException(message=f"An unknown error occured. {json.dumps(str(e))}")
 
     response = {
@@ -279,7 +279,8 @@ def auth(func):
                 return func(*args, **kwargs)
 
             except InvalidTokenException as e:
-                return api_error_response(e)
+                new_e = UnauthorizedException('Invalid auth token')
+                return api_error_response(new_e)
 
         refresh_token = flask.request.headers.get("Refresh-Token")
         refresh_token = remove_bearer_from_token(refresh_token) if refresh_token else None
